@@ -1134,10 +1134,10 @@ const CF_KEYS = ["crd_portfolio", "crd_testimonials", "crd_posts", "crd_settings
 async function loadFromCloud() {
   try {
     await Promise.all(CF_KEYS.map(async key => {
-      const res = await fetch(CF_URL + '/' + key);
+      const res = await fetch(CF_URL + '/' + key + '?t=' + Date.now()); // bypass cache
       const text = await res.text();
       if (text && text !== 'null') {
-        localStorage.setItem(key, text);
+        localStorage.setItem(key, text); // always overwrite with cloud data
       }
     }));
   } catch(e) {
