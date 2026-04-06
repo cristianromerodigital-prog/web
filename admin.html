@@ -243,6 +243,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 .cnt-item-row { display:grid; grid-template-columns:24px 1fr 90px 28px; gap:8px; margin-bottom:6px; align-items:center; transition:border-top 0.1s; }
 
 </style>
+<script src="https://upload-widget.cloudinary.com/global/all.js"></script>
 </head>
 <body>
 
@@ -403,7 +404,13 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       <div class="page" id="page-portfolio">
         <div class="section-header">
           <h2 class="section-h">Gestión de Portfolio</h2>
-          <button class="btn-add" onclick="openPortfolioModal()">+ Agregar foto</button>
+          <div style="display:flex;gap:10px">
+            <button class="btn-add" onclick="openCloudinaryWidget()" style="background:var(--gold);color:var(--black);display:flex;align-items:center;gap:8px">
+              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+              Subir fotos
+            </button>
+            <button class="btn-sm" onclick="openPortfolioModal()">+ Manual</button>
+          </div>
         </div>
         <div class="tabs">
           <button class="tab active" onclick="filterPortfolioAdmin('all',this)">Todos</button>
@@ -1227,7 +1234,16 @@ async function syncToCloud(key, value) {
 // ── STORAGE ──
 const S = {
   get: k => { try { return JSON.parse(localStorage.getItem(k)) } catch(e) { return null } },
-  set: (k,v) => { const str = JSON.stringify(v); localStorage.setItem(k, str); syncToCloud(k, str); }
+  set: (k,v) => {
+    const str = JSON.stringify(v);
+    // Skip localStorage for large values (>2MB) — go direct to cloud
+    try {
+      localStorage.setItem(k, str);
+    } catch(e) {
+      console.log('localStorage full for', k, '— syncing to cloud only');
+    }
+    syncToCloud(k, str);
+  }
 };
 
 // ── AUTH ──
@@ -1518,7 +1534,7 @@ function pmHandleFiles(files) {
       // Compress via canvas before storing — keeps localStorage under limit
       const img = new Image();
       img.onload = () => {
-        const MAX = 1200; // max dimension px
+        const MAX = 800; // smaller = less storage // max dimension px
         let w = img.width, h = img.height;
         if (w > MAX || h > MAX) {
           if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
@@ -2875,6 +2891,69 @@ async function generateAndDownload() {
   } catch(err) {
     toast('Error: ' + err.message + ' — abrí el admin desde un servidor local o GitHub Pages', 'error');
   }
+}
+
+// ── CLOUDINARY UPLOAD WIDGET ──
+let cloudinaryWidget = null;
+
+function openCloudinaryWidget() {
+  if(!cloudinaryWidget) {
+    cloudinaryWidget = cloudinary.createUploadWidget({
+      cloudName: 'dqpu3yurj',
+      uploadPreset: 'crd_portfolio',
+      multiple: true,
+      maxFiles: 20,
+      resourceType: 'image',
+      folder: 'portfolio',
+      clientAllowedFormats: ['jpg','jpeg','png','webp'],
+      maxFileSize: 10000000,
+      language: 'es',
+      text: {
+        'es': {
+          'queue': { 'title': 'Cola de subida', 'title_uploading_with_counter': 'Subiendo {num} archivos' },
+          'local': { 'browse': 'Elegir fotos', 'dd_title_single': 'Arrastrá una foto acá', 'dd_title_multi': 'Arrastrá las fotos acá' }
+        }
+      },
+      styles: {
+        palette: {
+          window: '#111111',
+          windowBorder: '#333333',
+          tabIcon: '#c9a84c',
+          menuIcons: '#c9a84c',
+          textDark: '#ffffff',
+          textLight: '#ffffff',
+          link: '#c9a84c',
+          action: '#c9a84c',
+          inactiveTabIcon: '#888888',
+          error: '#ff4444',
+          inProgress: '#c9a84c',
+          complete: '#33cc77',
+          sourceBg: '#1a1a1a'
+        }
+      }
+    }, (error, result) => {
+      if(error) { console.error('Cloudinary error:', error); return; }
+      if(result.event === 'success') {
+        const info = result.info;
+        // Add to portfolio
+        const items = S.get('crd_portfolio') || [];
+        items.push({
+          id: Date.now() + Math.random(),
+          url: info.secure_url,
+          title: info.original_filename || 'Foto',
+          category: 'xv',
+          cloudinaryId: info.public_id
+        });
+        S.set('crd_portfolio', items);
+        renderPortfolioAdmin();
+        toast('Foto subida ✓');
+      }
+      if(result.event === 'close') {
+        renderPortfolioAdmin();
+      }
+    });
+  }
+  cloudinaryWidget.open();
 }
 
 // Check session on load
