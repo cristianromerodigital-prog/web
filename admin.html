@@ -2981,7 +2981,7 @@ async function openCloudinaryBrowser() {
 
   try {
     // Use Cloudinary Search API via our Worker proxy
-    const res = await fetch('https://web.cristian-romero-digital.workers./cloudinary_list?t=' + Date.now());
+    const res = await fetch(CF_URL + '/cloudinary_list?t=' + Date.now());
     const data = await res.json();
     
     if(!data || !data.resources || !data.resources.length) {
