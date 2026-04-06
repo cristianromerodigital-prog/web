@@ -581,6 +581,41 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           </p>
         </div>
         <button class="btn-add" onclick="saveSettings()">Guardar configuración</button>
+
+        <!-- PUBLICAR -->
+        <div class="settings-section" style="margin-top:32px;border:2px solid var(--gold);padding:24px">
+          <div class="settings-section-title" style="color:var(--gold)">📤 Publicar sitio — generar index.html</div>
+          <p style="font-size:13px;color:var(--gray2);margin-bottom:20px;line-height:1.8">
+            Las fotos y el video cargados desde Cloudinary quedan guardados solo en este navegador.<br>
+            Con este botón generás un nuevo <strong style="color:var(--white)">index.html</strong> con las URLs embebidas — así funcionan en <strong style="color:var(--white)">todos los dispositivos</strong> sin depender del navegador.
+          </p>
+          <div class="form-group">
+            <label class="form-label">URL foto "Sobre mí" (retrato)</label>
+            <input class="form-input" id="pub-portrait" placeholder="https://res.cloudinary.com/...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">URL video hero</label>
+            <input class="form-input" id="pub-video" placeholder="https://res.cloudinary.com/...mp4">
+          </div>
+          <div class="form-group">
+            <label class="form-label">URL foto hero (imagen, opcional)</label>
+            <input class="form-input" id="pub-hero-img" placeholder="https://res.cloudinary.com/...">
+          </div>
+          <p style="font-size:11px;color:var(--gray);margin-bottom:16px;letter-spacing:1px">Fotos de redes sociales (opcionales)</p>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Social 1</label><input class="form-input" id="pub-social0" placeholder="URL..."></div>
+            <div class="form-group"><label class="form-label">Social 2</label><input class="form-input" id="pub-social1" placeholder="URL..."></div>
+            <div class="form-group"><label class="form-label">Social 3</label><input class="form-input" id="pub-social2" placeholder="URL..."></div>
+            <div class="form-group"><label class="form-label">Social 4</label><input class="form-input" id="pub-social3" placeholder="URL..."></div>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px">
+            <button class="btn-add" onclick="loadCurrentUrls()" style="background:none;border:1px solid var(--gold);color:var(--gold)">Cargar URLs actuales</button>
+            <button class="btn-add" onclick="generateAndDownload()">⬇ Generar y descargar index.html</button>
+          </div>
+          <p style="font-size:11px;color:var(--gray);margin-top:12px;letter-spacing:1px">
+            Reemplazá el <code style="color:var(--cyan)">index.html</code> en tu GitHub con el archivo descargado.
+          </p>
+        </div>
       </div>
 
       <!-- FOTOS DEL SITIO -->
@@ -1170,10 +1205,29 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 </div>
 
 <script>
+
+// ── CLOUDFLARE SYNC ──
+const CF_URL = 'https://web.cristian-romero-digital.workers.dev';
+const CF_AUTH = 'crd2025';
+const CF_SYNC_KEYS = ["crd_portfolio","crd_testimonials","crd_posts","crd_settings","crd_content","crd_site_photos","crd_hero_video_url"];
+
+async function syncToCloud(key, value) {
+  if (!CF_SYNC_KEYS.includes(key)) return;
+  try {
+    await fetch(CF_URL + '/' + key, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': CF_AUTH },
+      body: value
+    });
+  } catch(e) {
+    console.log('Cloud sync failed for', key, e.message);
+  }
+}
+
 // ── STORAGE ──
 const S = {
   get: k => { try { return JSON.parse(localStorage.getItem(k)) } catch(e) { return null } },
-  set: (k,v) => localStorage.setItem(k, JSON.stringify(v))
+  set: (k,v) => { const str = JSON.stringify(v); localStorage.setItem(k, str); syncToCloud(k, str); }
 };
 
 // ── AUTH ──
@@ -2211,7 +2265,7 @@ function saveHeroVideo() {
   }
 
   try {
-    localStorage.setItem('crd_hero_video_url', src);
+    localStorage.setItem('crd_hero_video_url', src); syncToCloud('crd_hero_video_url', src);
     toast('Video aplicado al sitio ✓');
     loadVideoPage();
   } catch(e) {
@@ -2768,6 +2822,57 @@ function previewGoogleReviews() {
         <p style="font-size:12px;color:var(--gray2);margin-top:4px">${(r.text||r.comment||'').substring(0,100)}...</p>
       </div>`).join('') +
     (reviews.length > 3 ? `<p style="font-size:11px;color:var(--gray);text-align:center">...y ${reviews.length-3} más</p>` : '');
+}
+
+// ── PUBLISH / GENERATE index.html ──
+function loadCurrentUrls() {
+  const photos = (() => { try { return JSON.parse(localStorage.getItem('crd_site_photos'))||{}; } catch(e){return{};} })();
+  const video = localStorage.getItem('crd_hero_video_url') || '';
+  if(photos.portrait) document.getElementById('pub-portrait').value = photos.portrait;
+  if(video) document.getElementById('pub-video').value = video;
+  if(photos.hero) document.getElementById('pub-hero-img').value = photos.hero;
+  [0,1,2,3].forEach(i => {
+    if(photos['social-'+i]) document.getElementById('pub-social'+i).value = photos['social-'+i];
+  });
+  toast('URLs cargadas desde este navegador ✓');
+}
+
+async function generateAndDownload() {
+  const portrait  = document.getElementById('pub-portrait').value.trim();
+  const heroVideo = document.getElementById('pub-video').value.trim();
+  const heroImage = document.getElementById('pub-hero-img').value.trim();
+  const socials   = [0,1,2,3].map(i => document.getElementById('pub-social'+i).value.trim());
+
+  toast('Generando index.html...');
+
+  try {
+    // Fetch the current index.html
+    const res = await fetch('index.html');
+    if(!res.ok) throw new Error('No se pudo leer index.html');
+    let src = await res.text();
+
+    // Replace SITE_CONFIG with actual values
+    const newConfig = `const SITE_CONFIG = {
+  portrait: '${portrait}',
+  heroVideo: '${heroVideo}',
+  heroImage: '${heroImage}',
+  social0: '${socials[0]}', social1: '${socials[1]}', social2: '${socials[2]}', social3: '${socials[3]}'
+};`;
+
+    src = src.replace(/const SITE_CONFIG = \{[\s\S]*?\};/, newConfig);
+
+    // Download
+    const blob = new Blob([src], {type:'text/html'});
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = 'index.html';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('index.html descargado ✓ — subilo a GitHub para publicar');
+  } catch(err) {
+    toast('Error: ' + err.message + ' — abrí el admin desde un servidor local o GitHub Pages', 'error');
+  }
 }
 
 // Check session on load

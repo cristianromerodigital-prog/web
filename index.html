@@ -359,7 +359,7 @@ nav.scrolled { box-shadow: 0 4px 40px rgba(0,0,0,0.5); }
 
 /* ── SERVICES ── */
 .services { padding:120px 80px; background:var(--paper2); }
-.services-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:white var(--border); margin-top:64px; }
+.services-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); margin-top:64px; }
 .service-card { min-width:0; }
 .service-card[style*="display: none"] + .service-card, .service-card[style*="display:none"] + .service-card { border-left:none; }
 .service-card { background:var(--paper); padding:52px 36px; position:relative; overflow:hidden; transition:background var(--trans); }
@@ -540,7 +540,6 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 /* ── VIDEO HERO: pantalla completa, texto flotando abajo ── */
 .hero.has-video {
   display:block; padding:0 !important; background:var(--paper); min-height:100vh; position:relative; overflow:hidden;
-  /*display:block; padding:0 !important; background:#000; min-height:100vh; position:relative; overflow:hidden;*/
 }
 .hero-video-wrap { display:none; }
 .hero.has-video .hero-video-wrap {
@@ -1119,6 +1118,32 @@ body::before {
   }
 })();
 
+// ── EMBEDDED SITE CONFIG (set by admin export) ──
+const SITE_CONFIG = {
+  portrait: '',
+  heroVideo: '',
+  heroImage: '',
+  social0: '', social1: '', social2: '', social3: ''
+};
+
+
+// ── CLOUDFLARE SYNC — load data from cloud ──
+const CF_URL = 'https://web.cristian-romero-digital.workers.dev';
+const CF_KEYS = ["crd_portfolio", "crd_testimonials", "crd_posts", "crd_settings", "crd_content", "crd_site_photos", "crd_hero_video_url"];
+
+async function loadFromCloud() {
+  try {
+    await Promise.all(CF_KEYS.map(async key => {
+      const res = await fetch(CF_URL + '/' + key);
+      const text = await res.text();
+      if (text && text !== 'null') {
+        localStorage.setItem(key, text);
+      }
+    }));
+  } catch(e) {
+    console.log('Cloud sync failed, using localStorage:', e.message);
+  }
+}
 // ── STORAGE HELPERS ──
 const S = {
   get: k => { try { return JSON.parse(localStorage.getItem(k)) } catch(e) { return null } },
@@ -1148,6 +1173,26 @@ function initDefaults() {
   }
 }
 initDefaults();
+// Load from cloud then render
+loadFromCloud().then(() => {
+  renderPortfolio();
+  renderTestimonials();
+  renderBlog();
+  renderPricing();
+  applySitePhotos();
+  applyHeroVideo();
+  applyContent();
+  initPortfolioReveal();
+}).catch(() => {
+  renderPortfolio();
+  renderTestimonials();
+  renderBlog();
+  renderPricing();
+  applySitePhotos();
+  applyHeroVideo();
+  applyContent();
+  initPortfolioReveal();
+});
 
 // ── PRELOADER ──
 window.addEventListener('load', () => {
@@ -1424,9 +1469,12 @@ initPortfolioReveal();
 // ── SITE PHOTOS ──
 function applySitePhotos() {
   const photos = (() => { try { return JSON.parse(localStorage.getItem('crd_site_photos'))||{}; } catch(e){return{};} })();
-  if (photos.hero) { const f=document.querySelector('.hero-frame'); if(f){ f.innerHTML='<img src="'+photos.hero+'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0" alt="">'; const b=document.querySelector('.hero-badge'); if(b) b.style.display='none'; }}
-  if (photos.portrait) { const a=document.querySelector('.about-img'); if(a) a.innerHTML='<img src="'+photos.portrait+'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0" alt="Cristian Romero Digital">'; }
-  document.querySelectorAll('.social-img').forEach((el,i) => { if(photos['social-'+i]) el.innerHTML='<img src="'+photos['social-'+i]+'" style="width:100%;height:100%;object-fit:cover" alt="">'; });
+  // Use localStorage value OR fallback to embedded SITE_CONFIG
+  const portrait = photos.portrait || SITE_CONFIG.portrait;
+  const heroImg = photos.hero || SITE_CONFIG.heroImage;
+  if (heroImg) { const f=document.querySelector('.hero-frame'); if(f){ f.innerHTML='<img src="'+heroImg+'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0" alt="">'; const b=document.querySelector('.hero-badge'); if(b) b.style.display='none'; }}
+  if (portrait) { const a=document.querySelector('.about-img'); if(a) a.innerHTML='<img src="'+portrait+'" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0" alt="Cristian Romero Digital">'; }
+  document.querySelectorAll('.social-img').forEach((el,i) => { const url=photos['social-'+i]||SITE_CONFIG['social'+i]; if(url) el.innerHTML='<img src="'+url+'" style="width:100%;height:100%;object-fit:cover" alt="">'; });
 }
 
 // ── PORTFOLIO SCROLL REVEAL — fotos se levantan del piso ──
@@ -1655,7 +1703,7 @@ window.addEventListener('scroll', () => {
 
 // ── APPLY HERO VIDEO ──
 function applyHeroVideo() {
-  const src = localStorage.getItem('crd_hero_video_url');
+  const src = localStorage.getItem('crd_hero_video_url') || SITE_CONFIG.heroVideo;
   const section = document.querySelector('.hero');
   const wrap = document.getElementById('hero-video-wrap');
   const vid = document.getElementById('hero-video');
