@@ -1164,7 +1164,8 @@ function renderPortfolio() {
   const grid = document.getElementById('portfolio-grid');
   const empty = document.getElementById('portfolio-empty');
   const items = S.get('crd_portfolio') || [];
-  const filtered=(currentFilter==='all'?[...items]:[...items].filter(i=>i.category===currentFilter)).sort(()=>Math.random()-0.5);
+  const pool=(currentFilter==='all'?[...items]:[...items].filter(i=>i.category===currentFilter)).sort(()=>Math.random()-0.5);
+  const filtered=currentFilter==='all'?pool.slice(0,15):pool;
   portfolioItems = filtered;
   lightboxItems = filtered.filter(i => i.url);
   if (!filtered.length) { grid.innerHTML=''; empty.style.display='block'; return; }
