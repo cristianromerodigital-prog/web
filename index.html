@@ -1196,10 +1196,18 @@ function renderAll() {
 
 renderAll();
 loadFromCloud().then(() => {
-  renderAll();
-}).catch(() => {
-  renderAll();
-});
+  // Only re-render if portfolio was empty (first load on new device)
+  const grid = document.getElementById('portfolio-grid');
+  const wasEmpty = !grid || grid.children.length === 0;
+  renderPortfolioFilters();
+  if(wasEmpty) renderPortfolio();
+  renderTestimonials();
+  renderBlog();
+  renderPricing();
+  applySitePhotos();
+  applyHeroVideo();
+  applyContent();
+}).catch(() => {});
 
 // ── PRELOADER ──
 window.addEventListener('load', () => {
@@ -1294,6 +1302,7 @@ function renderPortfolio() {
   const grid = document.getElementById('portfolio-grid');
   const empty = document.getElementById('portfolio-empty');
   let items = S.get('crd_portfolio') || [];
+  items = [...items].sort(() => Math.random() - 0.5);
   const filtered = currentFilter === 'all' ? items : items.filter(i => i.category === currentFilter);
   portfolioItems = filtered;
   lightboxItems = filtered.filter(i => i.url);
