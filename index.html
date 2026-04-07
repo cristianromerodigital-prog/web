@@ -1300,7 +1300,8 @@ function renderPortfolio() {
   const empty = document.getElementById('portfolio-empty');
   let items = S.get('crd_portfolio') || [];
   items = shuffleArray([...items]);
-  const filtered = currentFilter === 'all' ? items : items.filter(i => i.category === currentFilter);
+  const _pool = currentFilter === 'all' ? items : items.filter(i => i.category === currentFilter);
+  const filtered = currentFilter === 'all' ? _pool.slice(0, 20) : _pool;
   portfolioItems = filtered;
   lightboxItems = filtered.filter(i => i.url);
   if (!filtered.length) { grid.innerHTML=''; empty.style.display='block'; return; }
