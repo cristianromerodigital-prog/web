@@ -1118,7 +1118,7 @@ body::before {
   <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
 </a>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false">
 // ── EMAILJS INIT ──
 (function(){
   if(typeof emailjs !== 'undefined') {
@@ -1166,7 +1166,7 @@ async function loadFromCloud() {
 // GLOBAL DEBUG SYSTEM
 // ══════════════════════════════════════════
 window.__debugStart = Date.now();
-function dbg(msg, type='info') {
+window.dbg = function dbg(msg, type='info') {
   const el = document.getElementById('debug-lines');
   if(!el) { console.log('[DBG]', msg); return; }
   const t = ((Date.now() - window.__debugStart) / 1000).toFixed(2) + 's';
@@ -1234,42 +1234,11 @@ function initDefaults() {
 dbg('initDefaults done');
 
 // Render immediately from localStorage, then update from cloud
-function renderAll() {
-  dbg('renderAll() called');
-  renderPortfolioFilters();
-  renderPortfolio();
-  renderTestimonials();
-  renderBlog();
-  renderPricing();
-  applySitePhotos();
-  applyHeroVideo();
-  applyContent();
-  initPortfolioReveal();
-}
-
-dbg('First renderAll...');
-renderAll();
-dbg('First renderAll done — starting cloud fetch');
-loadFromCloud().then(() => {
-  dbg('Cloud fetch resolved');
-  renderPortfolioFilters();
-  renderTestimonials();
-  renderBlog();
-  renderPricing();
-  applySitePhotos();
-  applyHeroVideo();
-  applyContent();
-  // Re-render portfolio after delay so it doesn't interrupt scroll
-  setTimeout(() => {
-    const grid = document.getElementById('portfolio-grid');
-    const wasEmpty = !grid || grid.children.length === 0;
-    if(wasEmpty) renderPortfolio();
-  }, 1500);
-}).catch(() => {});
+// renderAll moved below — see end of script
 
 // ── PRELOADER ──
 // Hide preloader immediately on user interaction
-function hidePreloaderNow() {
+window.hidePreloaderNow = function hidePreloaderNow() {
   const p = document.getElementById('preloader');
   if(p && !p.classList.contains('hidden')) {
     p.classList.add('hidden');
@@ -1286,7 +1255,7 @@ window.addEventListener('load', () => {
 });
 
 // Hide preloader immediately on any click or scroll
-function hidePreloaderNow() {
+window.hidePreloaderNow = function hidePreloaderNow() {
   const p = document.getElementById('preloader');
   if(p && !p.classList.contains('hidden')) {
     p.classList.add('hidden');
@@ -1362,31 +1331,9 @@ updateCountdown(); setInterval(updateCountdown, 1000);
 
 // ── PORTFOLIO ──
 
-function renderPortfolioFilters() {
-  try {
-    const cats = JSON.parse(localStorage.getItem('crd_categories'));
-    if(!cats || !cats.length) return;
-    const enabled = cats.filter(c => c.enabled);
-    if(!enabled.length) return;
-    const container = document.querySelector('.portfolio-filters');
-    if(!container) return;
-    container.innerHTML = '<button class="filter-btn active" data-filter="all">Todos</button>' +
-      enabled.map(c => `<button class="filter-btn" data-filter="${c.key}">${c.name}</button>`).join('');
-    // Re-attach filter events
-    container.querySelectorAll('.filter-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        container.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentFilter = btn.dataset.filter;
-        renderPortfolio();
-      });
-    });
-  } catch(e) {}
-}
+window.debugLog = function debugLog(msg) { dbg(msg); }
 
-function debugLog(msg) { dbg(msg); }
-
-function renderPortfolio() {
+window.renderPortfolio = function renderPortfolio() {
   const grid = document.getElementById('portfolio-grid');
   const empty = document.getElementById('portfolio-empty');
   let items = S.get('crd_portfolio') || [];
@@ -1902,6 +1849,61 @@ function applyHeroVideo() {
   }
 }
 }
+
+function renderPortfolioFilters() {
+  try {
+    const cats = JSON.parse(localStorage.getItem('crd_categories'));
+    if(!cats || !cats.length) return;
+    const enabled = cats.filter(c => c.enabled);
+    if(!enabled.length) return;
+    const container = document.querySelector('.portfolio-filters');
+    if(!container) return;
+    container.innerHTML = '<button class="filter-btn active" data-filter="all">Todos</button>' +
+      enabled.map(c => `<button class="filter-btn" data-filter="${c.key}">${c.name}</button>`).join('');
+    // Re-attach filter events
+    container.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        container.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        renderPortfolio();
+      });
+    });
+  } catch(e) {}
+}
+
+window.renderAll = function renderAll() {
+  dbg('renderAll() called');
+  renderPortfolioFilters();
+  renderPortfolio();
+  renderTestimonials();
+  renderBlog();
+  renderPricing();
+  applySitePhotos();
+  applyHeroVideo();
+  applyContent();
+  initPortfolioReveal();
+}
+
+dbg('First renderAll...');
+renderAll();
+dbg('First renderAll done — starting cloud fetch');
+loadFromCloud().then(() => {
+  dbg('Cloud fetch resolved');
+  renderPortfolioFilters();
+  renderTestimonials();
+  renderBlog();
+  renderPricing();
+  applySitePhotos();
+  applyHeroVideo();
+  applyContent();
+  // Re-render portfolio after delay so it doesn't interrupt scroll
+  setTimeout(() => {
+    const grid = document.getElementById('portfolio-grid');
+    const wasEmpty = !grid || grid.children.length === 0;
+    if(wasEmpty) renderPortfolio();
+  }, 1500);
+}).catch(() => {});
 </script>
 </body>
 </html>
