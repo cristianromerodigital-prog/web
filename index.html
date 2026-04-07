@@ -1835,9 +1835,22 @@ if(__portfolioSection) {
       const grid = document.getElementById('portfolio-grid');
       const count = grid ? grid.children.length : 0;
       dbg('Portfolio section ' + (e.isIntersecting ? 'ENTERED' : 'LEFT') + ' viewport — grid children: ' + count + ' | ratio: ' + e.intersectionRatio.toFixed(2), e.isIntersecting && count === 0 ? 'warn' : 'ok');
-      if(e.isIntersecting && count === 0) {
-        dbg('Grid empty when entering viewport — forcing render', 'warn');
-        renderPortfolio();
+      if(e.isIntersecting) {
+        // Debug all parent containers
+        let el = document.getElementById('portfolio-grid');
+        let depth = 0;
+        while(el && depth < 10) {
+          const cs = window.getComputedStyle(el);
+          if(cs.opacity !== '1' || cs.visibility !== 'visible' || cs.display === 'none' || cs.overflow === 'hidden') {
+            dbg('PARENT ISSUE at depth ' + depth + ' (' + el.tagName + '.' + el.className.substring(0,20) + ') — opacity:' + cs.opacity + ' visibility:' + cs.visibility + ' display:' + cs.display + ' overflow:' + cs.overflow, 'warn');
+          }
+          el = el.parentElement;
+          depth++;
+        }
+        if(count === 0) {
+          dbg('Grid empty — forcing render', 'warn');
+          renderPortfolio();
+        }
       }
     });
   }, {threshold: [0, 0.1, 0.5]}).observe(__portfolioSection);
