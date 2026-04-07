@@ -243,6 +243,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 .cnt-item-row { display:grid; grid-template-columns:24px 1fr 90px 28px; gap:8px; margin-bottom:6px; align-items:center; transition:border-top 0.1s; }
 
 </style>
+<script src="https://upload-widget.cloudinary.com/global/all.js"></script>
 </head>
 <body>
 
@@ -403,13 +404,41 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       <div class="page" id="page-portfolio">
         <div class="section-header">
           <h2 class="section-h">Gestión de Portfolio</h2>
-          <button class="btn-add" onclick="openPortfolioModal()">+ Agregar foto</button>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn-add" onclick="openCloudinaryWidget()" style="background:var(--gold);color:var(--black);display:flex;align-items:center;gap:8px">
+              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+              Subir fotos
+            </button>
+            <button class="btn-sm" onclick="openPortfolioModal()">+ Manual</button>
+            <button class="btn-sm" onclick="openCloudinaryBrowser()" style="border-color:var(--cyan);color:var(--cyan)">☁ Mis fotos</button>
+          </div>
         </div>
-        <div class="tabs">
-          <button class="tab active" onclick="filterPortfolioAdmin('all',this)">Todos</button>
-          <button class="tab" onclick="filterPortfolioAdmin('casamiento',this)">Casamientos</button>
-          <button class="tab" onclick="filterPortfolioAdmin('xv',this)">Eventos de XV</button>
-          <button class="tab" onclick="filterPortfolioAdmin('book',this)">Books</button>
+        <!-- Bulk delete toolbar -->
+        <div id="bulk-toolbar" style="display:none;background:rgba(255,60,60,0.08);border:1px solid rgba(255,60,60,0.2);padding:12px 16px;margin-bottom:16px;display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:12px">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;letter-spacing:1px;text-transform:uppercase">
+              <input type="checkbox" id="select-all-cb" onchange="toggleSelectAll(this.checked)" style="width:16px;height:16px;accent-color:var(--red);cursor:pointer">
+              Seleccionar todas
+            </label>
+            <span id="bulk-count" style="font-size:12px;color:var(--gray)">0 seleccionadas</span>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn-sm" onclick="toggleBulkMode(false)" style="border-color:rgba(255,255,255,0.2)">Cancelar</button>
+            <button onclick="deleteSelected()" style="background:var(--red);color:#fff;border:none;padding:8px 16px;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:inherit">Eliminar seleccionadas</button>
+          </div>
+        </div>
+        <div style="margin-bottom:12px">
+          <button class="btn-sm" id="bulk-toggle-btn" onclick="toggleBulkMode(true)" style="font-size:10px;border-color:rgba(255,60,60,0.4);color:rgba(255,100,100,0.8)">☑ Selección múltiple</button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:4px">
+          <div class="tabs" id="portfolio-category-tabs" style="flex:1">
+            <button class="tab active" onclick="filterPortfolioAdmin('all',this)">Todos</button>
+            <button class="tab" onclick="filterPortfolioAdmin('casamiento',this)">Casamientos</button>
+            <button class="tab" onclick="filterPortfolioAdmin('xv',this)">Eventos de XV</button>
+            <button class="tab" onclick="filterPortfolioAdmin('book-xv',this)">Book de XV</button>
+            <button class="tab" onclick="filterPortfolioAdmin('book-boda',this)">Book Pre-Boda</button>
+          </div>
+          <button class="btn-sm" onclick="openCategoryManager()" style="font-size:10px;white-space:nowrap">⚙ Gestionar categorías</button>
         </div>
         <div class="portfolio-admin-grid" id="portfolio-admin-grid"></div>
         <div class="table-wrap">
@@ -581,6 +610,41 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           </p>
         </div>
         <button class="btn-add" onclick="saveSettings()">Guardar configuración</button>
+
+        <!-- PUBLICAR -->
+        <div class="settings-section" style="margin-top:32px;border:2px solid var(--gold);padding:24px">
+          <div class="settings-section-title" style="color:var(--gold)">📤 Publicar sitio — generar index.html</div>
+          <p style="font-size:13px;color:var(--gray2);margin-bottom:20px;line-height:1.8">
+            Las fotos y el video cargados desde Cloudinary quedan guardados solo en este navegador.<br>
+            Con este botón generás un nuevo <strong style="color:var(--white)">index.html</strong> con las URLs embebidas — así funcionan en <strong style="color:var(--white)">todos los dispositivos</strong> sin depender del navegador.
+          </p>
+          <div class="form-group">
+            <label class="form-label">URL foto "Sobre mí" (retrato)</label>
+            <input class="form-input" id="pub-portrait" placeholder="https://res.cloudinary.com/...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">URL video hero</label>
+            <input class="form-input" id="pub-video" placeholder="https://res.cloudinary.com/...mp4">
+          </div>
+          <div class="form-group">
+            <label class="form-label">URL foto hero (imagen, opcional)</label>
+            <input class="form-input" id="pub-hero-img" placeholder="https://res.cloudinary.com/...">
+          </div>
+          <p style="font-size:11px;color:var(--gray);margin-bottom:16px;letter-spacing:1px">Fotos de redes sociales (opcionales)</p>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Social 1</label><input class="form-input" id="pub-social0" placeholder="URL..."></div>
+            <div class="form-group"><label class="form-label">Social 2</label><input class="form-input" id="pub-social1" placeholder="URL..."></div>
+            <div class="form-group"><label class="form-label">Social 3</label><input class="form-input" id="pub-social2" placeholder="URL..."></div>
+            <div class="form-group"><label class="form-label">Social 4</label><input class="form-input" id="pub-social3" placeholder="URL..."></div>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px">
+            <button class="btn-add" onclick="loadCurrentUrls()" style="background:none;border:1px solid var(--gold);color:var(--gold)">Cargar URLs actuales</button>
+            <button class="btn-add" onclick="generateAndDownload()">⬇ Generar y descargar index.html</button>
+          </div>
+          <p style="font-size:11px;color:var(--gray);margin-top:12px;letter-spacing:1px">
+            Reemplazá el <code style="color:var(--cyan)">index.html</code> en tu GitHub con el archivo descargado.
+          </p>
+        </div>
       </div>
 
       <!-- FOTOS DEL SITIO -->
@@ -896,6 +960,39 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         </div>
       </div><!-- /page-content -->
 
+
+        <!-- Cloudinary Browser Modal -->
+        <div id="cloudinary-browser" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:2000;overflow-y:auto;padding:24px">
+          <div style="max-width:1000px;margin:0 auto;background:var(--black2);border:1px solid rgba(255,255,255,0.1);padding:24px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+              <h3 style="font-size:14px;letter-spacing:2px;text-transform:uppercase;color:var(--white)">☁ Mis fotos en Cloudinary</h3>
+              <button onclick="document.getElementById('cloudinary-browser').style.display='none'" style="background:none;border:none;color:var(--gray);font-size:20px;cursor:pointer">✕</button>
+            </div>
+            <p style="font-size:12px;color:var(--gray);margin-bottom:16px">Hacé clic en las fotos para agregarlas al portfolio en la categoría seleccionada.</p>
+            <div id="cloudinary-browser-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px"></div>
+            <div id="cloudinary-browser-loading" style="text-align:center;padding:40px;color:var(--gray);font-size:13px">Cargando fotos...</div>
+          </div>
+        </div>
+
+
+        <!-- Category Manager Modal -->
+        <div id="category-manager" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:2000;display:none;align-items:center;justify-content:center;padding:24px">
+          <div style="background:var(--black2);border:1px solid rgba(255,255,255,0.1);padding:28px;max-width:500px;width:100%;max-height:85vh;overflow-y:auto">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+              <h3 style="font-size:13px;letter-spacing:2px;text-transform:uppercase">⚙ Categorías del Portfolio</h3>
+              <button onclick="closeCategoryManager()" style="background:none;border:none;color:var(--gray);font-size:20px;cursor:pointer">✕</button>
+            </div>
+            <p style="font-size:12px;color:var(--gray);margin-bottom:16px">Habilitá, deshabilitá, renombrá o agregá categorías. Las deshabilitadas no aparecen en el sitio.</p>
+            <div id="category-list"></div>
+            <div style="margin-top:16px;display:flex;gap:8px">
+              <input class="form-input" id="new-category-name" placeholder="Nombre nueva categoría" style="flex:1;font-size:12px">
+              <input class="form-input" id="new-category-key" placeholder="clave (sin espacios)" style="width:140px;font-size:12px">
+              <button class="btn-sm" onclick="addCategory()">+ Agregar</button>
+            </div>
+            <button class="btn-add" onclick="saveCategoryManager()" style="margin-top:16px;width:100%">Guardar categorías</button>
+          </div>
+        </div>
+
     </div><!-- /content -->
   </div><!-- /main -->
 </div><!-- /app -->
@@ -1170,10 +1267,38 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 </div>
 
 <script>
+
+// ── CLOUDFLARE SYNC ──
+const CF_URL = 'https://web.cristian-romero-digital.workers.dev';
+const CF_AUTH = 'crd2025';
+const CF_SYNC_KEYS = ["crd_portfolio","crd_testimonials","crd_posts","crd_settings","crd_content","crd_site_photos","crd_hero_video_url"];
+
+async function syncToCloud(key, value) {
+  if (!CF_SYNC_KEYS.includes(key)) return;
+  try {
+    await fetch(CF_URL + '/' + key, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': CF_AUTH },
+      body: value
+    });
+  } catch(e) {
+    console.log('Cloud sync failed for', key, e.message);
+  }
+}
+
 // ── STORAGE ──
 const S = {
   get: k => { try { return JSON.parse(localStorage.getItem(k)) } catch(e) { return null } },
-  set: (k,v) => localStorage.setItem(k, JSON.stringify(v))
+  set: (k,v) => {
+    const str = JSON.stringify(v);
+    // Skip localStorage for large values (>2MB) — go direct to cloud
+    try {
+      localStorage.setItem(k, str);
+    } catch(e) {
+      console.log('localStorage full for', k, '— syncing to cloud only');
+    }
+    syncToCloud(k, str);
+  }
 };
 
 // ── AUTH ──
@@ -1464,7 +1589,7 @@ function pmHandleFiles(files) {
       // Compress via canvas before storing — keeps localStorage under limit
       const img = new Image();
       img.onload = () => {
-        const MAX = 1200; // max dimension px
+        const MAX = 800; // smaller = less storage // max dimension px
         let w = img.width, h = img.height;
         if (w > MAX || h > MAX) {
           if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
@@ -1671,8 +1796,9 @@ function renderPortfolioAdmin() {
   const grid = document.getElementById('portfolio-admin-grid');
   if (!filtered.length) { tbody.innerHTML=''; grid.innerHTML=''; empty.style.display='block'; return; }
   empty.style.display='none';
-  grid.innerHTML = filtered.slice(0,8).map(item => `
-    <div class="portfolio-admin-item">
+  grid.innerHTML = filtered.map(item => `
+    <div class="portfolio-admin-item" style="position:relative">
+      ${bulkMode ? `<input type="checkbox" class="portfolio-item-cb" data-id="${item.id}" onchange="updateBulkCount()" style="position:absolute;top:8px;left:8px;z-index:10;width:20px;height:20px;accent-color:#ff4444;cursor:pointer">` : ''}
       ${item.url ? `<img src="${item.url}" alt="${item.title}" loading="lazy">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.1);font-size:10px;letter-spacing:1px;text-transform:uppercase">${item.title}</div>`}
       <div class="portfolio-admin-item-overlay">
         <button class="btn-sm btn-edit" onclick="openPortfolioModal(${item.id})">Editar</button>
@@ -2211,7 +2337,7 @@ function saveHeroVideo() {
   }
 
   try {
-    localStorage.setItem('crd_hero_video_url', src);
+    localStorage.setItem('crd_hero_video_url', src); syncToCloud('crd_hero_video_url', src);
     toast('Video aplicado al sitio ✓');
     loadVideoPage();
   } catch(e) {
@@ -2286,7 +2412,9 @@ function getContent() {
   try { return JSON.parse(localStorage.getItem('crd_content')) || {}; } catch(e) { return {}; }
 }
 function setContent(data) {
-  localStorage.setItem('crd_content', JSON.stringify(data));
+  const str = JSON.stringify(data);
+  localStorage.setItem('crd_content', str);
+  syncToCloud('crd_content', str);
 }
 
 function switchContentTab(tab, btn) {
@@ -2391,8 +2519,22 @@ function renderServicesEditor(svcs) {
   const container = document.getElementById('cnt-services-list');
   if(!container) return;
   container.innerHTML = svcs.map((s,i) => `
-    <div class="cnt-svc-card">
-      <div class="cnt-svc-card-header">Servicio ${i+1}</div>
+    <div class="cnt-svc-card" draggable="true"
+      ondragstart="svcDragStart(event,${i})"
+      ondragover="svcDragOver(event)"
+      ondrop="svcDrop(event,${i})"
+      ondragleave="this.style.borderTop=''"
+      style="opacity:${s.hidden?0.45:1};cursor:grab">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="color:var(--gray);font-size:18px;cursor:grab;user-select:none">☰</span>
+          <div class="cnt-svc-card-header" style="margin-bottom:0">Servicio ${i+1} — ${s.title||''}</div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:${s.hidden?'var(--red)':'var(--green)'}">
+          <input type="checkbox" id="svc-visible-${i}" ${s.hidden?'':'checked'} onchange="toggleServiceVisibility(${i})" style="width:16px;height:16px;cursor:pointer;accent-color:var(--gold)">
+          ${s.hidden?'Oculto':'Visible'}
+        </label>
+      </div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Título</label><input class="form-input" id="svc-title-${i}" value="${s.title||''}"></div>
         <div class="form-group"><label class="form-label">Texto del link</label><input class="form-input" id="svc-link-${i}" value="${s.link||''}"></div>
@@ -2406,14 +2548,60 @@ function collectServices() {
   const count = parseInt(document.getElementById('cnt-services-list').dataset.count || 0);
   const svcs = [];
   for(let i=0; i<count; i++) {
+    const cb = document.getElementById('svc-visible-'+i);
     svcs.push({
       id: SERVICES_DEFAULT[i]?.id || 'svc'+i,
       title: (document.getElementById('svc-title-'+i)||{}).value || '',
       desc: (document.getElementById('svc-desc-'+i)||{}).value || '',
-      link: (document.getElementById('svc-link-'+i)||{}).value || ''
+      link: (document.getElementById('svc-link-'+i)||{}).value || '',
+      hidden: cb ? !cb.checked : false
     });
   }
   return svcs;
+}
+
+// ── SERVICE DRAG REORDER ──
+let svcDragSrc = null;
+function svcDragStart(e, i) {
+  svcDragSrc = i;
+  e.dataTransfer.effectAllowed = 'move';
+}
+function svcDragOver(e) {
+  e.preventDefault();
+  e.currentTarget.style.borderTop = '2px solid var(--gold)';
+}
+function svcDrop(e, i) {
+  e.preventDefault();
+  e.currentTarget.style.borderTop = '';
+  if(svcDragSrc === null || svcDragSrc === i) return;
+  // Re-collect current state
+  const count = parseInt(document.getElementById('cnt-services-list').dataset.count || 0);
+  const current = [];
+  for(let j=0; j<count; j++) {
+    current.push({
+      id: 'svc'+j,
+      title: (document.getElementById('svc-title-'+j)||{}).value || '',
+      desc: (document.getElementById('svc-desc-'+j)||{}).value || '',
+      link: (document.getElementById('svc-link-'+j)||{}).value || '',
+      hidden: !(document.getElementById('svc-visible-'+j)||{checked:true}).checked
+    });
+  }
+  // Reorder
+  const moved = current.splice(svcDragSrc, 1)[0];
+  current.splice(i, 0, moved);
+  renderServicesEditor(current);
+  svcDragSrc = null;
+}
+
+function toggleServiceVisibility(i) {
+  const cb = document.getElementById('svc-visible-'+i);
+  const card = cb?.closest('.cnt-svc-card');
+  const label = cb?.closest('label');
+  if(card) card.style.opacity = cb.checked ? '1' : '0.45';
+  if(label) {
+    label.style.color = cb.checked ? 'var(--green)' : 'var(--red)';
+    label.childNodes[label.childNodes.length-1].textContent = cb.checked ? ' Visible' : ' Oculto';
+  }
 }
 
 // ── PRICING EDITOR ──
@@ -2708,6 +2896,300 @@ function previewGoogleReviews() {
         <p style="font-size:12px;color:var(--gray2);margin-top:4px">${(r.text||r.comment||'').substring(0,100)}...</p>
       </div>`).join('') +
     (reviews.length > 3 ? `<p style="font-size:11px;color:var(--gray);text-align:center">...y ${reviews.length-3} más</p>` : '');
+}
+
+// ── PUBLISH / GENERATE index.html ──
+function loadCurrentUrls() {
+  const photos = (() => { try { return JSON.parse(localStorage.getItem('crd_site_photos'))||{}; } catch(e){return{};} })();
+  const video = localStorage.getItem('crd_hero_video_url') || '';
+  if(photos.portrait) document.getElementById('pub-portrait').value = photos.portrait;
+  if(video) document.getElementById('pub-video').value = video;
+  if(photos.hero) document.getElementById('pub-hero-img').value = photos.hero;
+  [0,1,2,3].forEach(i => {
+    if(photos['social-'+i]) document.getElementById('pub-social'+i).value = photos['social-'+i];
+  });
+  toast('URLs cargadas desde este navegador ✓');
+}
+
+async function generateAndDownload() {
+  const portrait  = document.getElementById('pub-portrait').value.trim();
+  const heroVideo = document.getElementById('pub-video').value.trim();
+  const heroImage = document.getElementById('pub-hero-img').value.trim();
+  const socials   = [0,1,2,3].map(i => document.getElementById('pub-social'+i).value.trim());
+
+  toast('Generando index.html...');
+
+  try {
+    // Fetch the current index.html
+    const res = await fetch('index.html');
+    if(!res.ok) throw new Error('No se pudo leer index.html');
+    let src = await res.text();
+
+    // Replace SITE_CONFIG with actual values
+    const newConfig = `const SITE_CONFIG = {
+  portrait: '${portrait}',
+  heroVideo: '${heroVideo}',
+  heroImage: '${heroImage}',
+  social0: '${socials[0]}', social1: '${socials[1]}', social2: '${socials[2]}', social3: '${socials[3]}'
+};`;
+
+    src = src.replace(/const SITE_CONFIG = \{[\s\S]*?\};/, newConfig);
+
+    // Download
+    const blob = new Blob([src], {type:'text/html'});
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = 'index.html';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('index.html descargado ✓ — subilo a GitHub para publicar');
+  } catch(err) {
+    toast('Error: ' + err.message + ' — abrí el admin desde un servidor local o GitHub Pages', 'error');
+  }
+}
+
+// ── CATEGORY MANAGER ──
+const DEFAULT_CATEGORIES = [
+  {key:'casamiento', name:'Casamientos', enabled:true},
+  {key:'xv', name:'Eventos de XV', enabled:true},
+  {key:'book-xv', name:'Book de XV', enabled:true},
+  {key:'book-boda', name:'Book Pre-Boda', enabled:true},
+];
+
+function getCategories() {
+  try { return JSON.parse(localStorage.getItem('crd_categories')) || DEFAULT_CATEGORIES; } catch(e) { return DEFAULT_CATEGORIES; }
+}
+function saveCategories(cats) {
+  localStorage.setItem('crd_categories', JSON.stringify(cats));
+  syncToCloud('crd_categories', JSON.stringify(cats));
+}
+
+function openCategoryManager() {
+  document.getElementById('category-manager').style.display = 'flex';
+  renderCategoryList();
+}
+function closeCategoryManager() {
+  document.getElementById('category-manager').style.display = 'none';
+}
+
+function renderCategoryList() {
+  const cats = getCategories();
+  document.getElementById('category-list').innerHTML = cats.map((c,i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+      <input type="checkbox" ${c.enabled?'checked':''} id="cat-enabled-${i}" style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer">
+      <input class="form-input" value="${c.name}" id="cat-name-${i}" style="flex:1;font-size:12px">
+      <span style="font-size:10px;color:var(--gray);letter-spacing:1px;min-width:80px">${c.key}</span>
+      <button onclick="deleteCategory(${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px">✕</button>
+    </div>`).join('');
+}
+
+function addCategory() {
+  const name = document.getElementById('new-category-name').value.trim();
+  const key = document.getElementById('new-category-key').value.trim().replace(/\s+/g,'-').toLowerCase();
+  if(!name || !key) { toast('Completá nombre y clave','error'); return; }
+  const cats = getCategories();
+  if(cats.find(c=>c.key===key)) { toast('Ya existe esa clave','error'); return; }
+  cats.push({key, name, enabled:true});
+  saveCategories(cats);
+  renderCategoryList();
+  rebuildPortfolioTabs();
+  document.getElementById('new-category-name').value='';
+  document.getElementById('new-category-key').value='';
+  toast('Categoría agregada ✓');
+}
+
+function deleteCategory(i) {
+  if(!confirm('¿Eliminar esta categoría? Las fotos en ella quedarán sin categoría.')) return;
+  const cats = getCategories();
+  cats.splice(i,1);
+  saveCategories(cats);
+  renderCategoryList();
+  rebuildPortfolioTabs();
+}
+
+function saveCategoryManager() {
+  const cats = getCategories();
+  cats.forEach((c,i) => {
+    const name = document.getElementById('cat-name-'+i);
+    const enabled = document.getElementById('cat-enabled-'+i);
+    if(name) c.name = name.value.trim();
+    if(enabled) c.enabled = enabled.checked;
+  });
+  saveCategories(cats);
+  rebuildPortfolioTabs();
+  closeCategoryManager();
+  toast('Categorías guardadas ✓');
+}
+
+function rebuildPortfolioTabs() {
+  const cats = getCategories();
+  const container = document.getElementById('portfolio-category-tabs');
+  if(!container) return;
+  container.innerHTML = `<button class="tab active" onclick="filterPortfolioAdmin('all',this)">Todos</button>` +
+    cats.filter(c=>c.enabled).map(c =>
+      `<button class="tab" onclick="filterPortfolioAdmin('${c.key}',this)">${c.name}</button>`
+    ).join('');
+}
+
+// ── BULK DELETE ──
+let bulkMode = false;
+
+function toggleBulkMode(on) {
+  bulkMode = on;
+  const toolbar = document.getElementById('bulk-toolbar');
+  const toggleBtn = document.getElementById('bulk-toggle-btn');
+  if(toolbar) toolbar.style.display = on ? 'flex' : 'none';
+  if(toggleBtn) toggleBtn.style.display = on ? 'none' : 'inline-block';
+  // Uncheck all
+  document.querySelectorAll('.portfolio-item-cb').forEach(cb => cb.checked = false);
+  document.querySelectorAll('.portfolio-item-cb').forEach(cb => {
+    cb.closest('.admin-photo-wrap').style.display = on ? 'block' : 'none';
+  });
+  updateBulkCount();
+  renderPortfolioAdmin();
+}
+
+function toggleSelectAll(checked) {
+  document.querySelectorAll('.portfolio-item-cb').forEach(cb => cb.checked = checked);
+  updateBulkCount();
+}
+
+function updateBulkCount() {
+  const count = document.querySelectorAll('.portfolio-item-cb:checked').length;
+  const el = document.getElementById('bulk-count');
+  if(el) el.textContent = count + ' seleccionada' + (count !== 1 ? 's' : '');
+}
+
+function deleteSelected() {
+  const selected = [...document.querySelectorAll('.portfolio-item-cb:checked')].map(cb => cb.dataset.id);
+  if(!selected.length) { toast('No hay fotos seleccionadas', 'error'); return; }
+  if(!confirm('¿Eliminar ' + selected.length + ' foto' + (selected.length>1?'s':'') + '? (Solo del sitio — para borrar de Cloudinary usá su dashboard)')) return;
+  const items = (S.get('crd_portfolio') || []).filter(item => !selected.includes(String(item.id)));
+  S.set('crd_portfolio', items);
+  bulkMode = false;
+  const toolbar = document.getElementById('bulk-toolbar');
+  const toggleBtn = document.getElementById('bulk-toggle-btn');
+  if(toolbar) toolbar.style.display = 'none';
+  if(toggleBtn) toggleBtn.style.display = 'inline-block';
+  toast(selected.length + ' foto' + (selected.length>1?'s':'') + ' eliminada' + (selected.length>1?'s':'') + ' ✓');
+  renderPortfolioAdmin();
+}
+
+// ── CLOUDINARY BROWSER ──
+async function openCloudinaryBrowser() {
+  document.getElementById('cloudinary-browser').style.display = 'block';
+  const grid = document.getElementById('cloudinary-browser-grid');
+  const loading = document.getElementById('cloudinary-browser-loading');
+  grid.innerHTML = '';
+  loading.style.display = 'block';
+  loading.textContent = 'Cargando fotos...';
+
+  try {
+    // Use Cloudinary Search API via our Worker proxy
+    const res = await fetch(CF_URL + '/cloudinary_list?t=' + Date.now());
+    const data = await res.json();
+    
+    if(!data || !data.resources || !data.resources.length) {
+      loading.textContent = 'No se encontraron fotos. Subí algunas primero usando el botón "Subir fotos".';
+      return;
+    }
+    
+    loading.style.display = 'none';
+    grid.innerHTML = data.resources.map(r => `
+      <div onclick="addFromCloudinary('${r.secure_url}','${r.public_id}')"
+        style="cursor:pointer;position:relative;aspect-ratio:1;overflow:hidden;background:var(--black3);border:2px solid transparent;transition:border-color 0.2s"
+        onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='transparent'">
+        <img src="${r.secure_url.replace('/upload/','/upload/w_200,h_200,c_fill/')}" 
+          style="width:100%;height:100%;object-fit:cover" loading="lazy">
+      </div>`).join('');
+  } catch(e) {
+    loading.textContent = 'Error cargando fotos. Verificá tu conexión.';
+    console.error(e);
+  }
+}
+
+function addFromCloudinary(url, publicId) {
+  const items = S.get('crd_portfolio') || [];
+  // Check if already added
+  if(items.find(i => i.cloudinaryId === publicId)) {
+    toast('Esta foto ya está en el portfolio', 'error');
+    return;
+  }
+  items.push({
+    id: Date.now() + Math.random(),
+    url: url,
+    title: publicId.split('/').pop() || 'Foto',
+    category: portfolioFilter !== 'all' ? portfolioFilter : 'xv',
+    cloudinaryId: publicId
+  });
+  S.set('crd_portfolio', items);
+  renderPortfolioAdmin();
+  toast('Foto agregada al portfolio ✓');
+}
+
+// ── CLOUDINARY UPLOAD WIDGET ──
+let cloudinaryWidget = null;
+
+function openCloudinaryWidget() {
+  if(!cloudinaryWidget) {
+    cloudinaryWidget = cloudinary.createUploadWidget({
+      cloudName: 'dqpu3yurj',
+      uploadPreset: 'crd_portfolio',
+      multiple: true,
+      maxFiles: 20,
+      resourceType: 'image',
+      folder: 'portfolio',
+      clientAllowedFormats: ['jpg','jpeg','png','webp'],
+      maxFileSize: 10000000,
+      sources: ['local', 'camera', 'url', 'google_drive', 'dropbox'],
+      language: 'es',
+      text: {
+        'es': {
+          'queue': { 'title': 'Cola de subida', 'title_uploading_with_counter': 'Subiendo {num} archivos' },
+          'local': { 'browse': 'Elegir fotos', 'dd_title_single': 'Arrastrá una foto acá', 'dd_title_multi': 'Arrastrá las fotos acá' }
+        }
+      },
+      styles: {
+        palette: {
+          window: '#111111',
+          windowBorder: '#333333',
+          tabIcon: '#c9a84c',
+          menuIcons: '#c9a84c',
+          textDark: '#ffffff',
+          textLight: '#ffffff',
+          link: '#c9a84c',
+          action: '#c9a84c',
+          inactiveTabIcon: '#888888',
+          error: '#ff4444',
+          inProgress: '#c9a84c',
+          complete: '#33cc77',
+          sourceBg: '#1a1a1a'
+        }
+      }
+    }, (error, result) => {
+      if(error) { console.error('Cloudinary error:', error); return; }
+      if(result.event === 'success') {
+        const info = result.info;
+        // Add to portfolio
+        const items = S.get('crd_portfolio') || [];
+        items.push({
+          id: Date.now() + Math.random(),
+          url: info.secure_url,
+          title: info.original_filename || 'Foto',
+          category: portfolioFilter !== 'all' ? portfolioFilter : 'xv',
+          cloudinaryId: info.public_id
+        });
+        S.set('crd_portfolio', items);
+        renderPortfolioAdmin();
+        toast('Foto subida ✓');
+      }
+      if(result.event === 'close') {
+        renderPortfolioAdmin();
+      }
+    });
+  }
+  cloudinaryWidget.open();
 }
 
 // Check session on load
