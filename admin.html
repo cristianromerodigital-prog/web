@@ -257,13 +257,19 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     <div class="login-sub">Panel de Administración</div>
     <div class="login-group">
       <label class="login-label">Usuario</label>
-      <input type="text" class="login-input" id="login-user" placeholder="admin" autocomplete="username">
+      <div id="login-step1">
+      <p style="font-size:12px;color:var(--gray2);text-align:center;margin-bottom:24px;letter-spacing:1px;line-height:1.8">Hacé clic para recibir un código de acceso en tu casilla registrada</p>
+      <div id="login-error" class="login-error"></div>
+      <button class="login-btn" onclick="requestOTP()" id="otp-request-btn">Enviar código</button>
     </div>
-    <div class="login-group">
-      <label class="login-label">Contraseña</label>
-      <input type="password" class="login-input" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+    <div id="login-step2" style="display:none">
+      <p style="font-size:12px;color:var(--gray2);text-align:center;margin-bottom:8px;letter-spacing:1px">Ingresá el código de 6 dígitos que te enviamos</p>
+      <p style="font-size:11px;color:var(--gold);text-align:center;margin-bottom:20px">Revisá tu casilla de email</p>
+      <input type="text" class="login-input" id="login-otp" placeholder="000000" maxlength="6" style="text-align:center;font-size:24px;letter-spacing:8px" autocomplete="one-time-code">
+      <div id="login-error2" class="login-error"></div>
+      <button class="login-btn" onclick="verifyOTP()">Ingresar</button>
+      <button onclick="document.getElementById('login-step1').style.display='block';document.getElementById('login-step2').style.display='none'" style="background:none;border:none;color:var(--gray);font-size:11px;cursor:pointer;width:100%;margin-top:12px;letter-spacing:1px">← Reenviar código</button>
     </div>
-    <button class="login-btn" onclick="doLogin()">Ingresar</button>
     <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
     <div style="margin-top:20px;text-align:center">
       <button onclick="resetCredentials()" style="font-size:10px;color:rgba(255,255,255,0.25);background:none;border:none;cursor:pointer;letter-spacing:1px;text-decoration:underline">Restablecer credenciales</button>
@@ -1311,20 +1317,8 @@ function getCreds() {
   return { user:'admin', pass:'crd2025' };
 }
 
-function doLogin() {
-  const u = document.getElementById('login-user').value.trim();
-  const p = document.getElementById('login-pass').value;
-  const creds = getCreds();
-  if (u === creds.user && p === creds.pass) {
-    S.set('crd_session', Date.now());
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('app').classList.add('visible');
-    init();
-  } else {
-    const err=document.getElementById('login-error'); if(err){err.style.display='block'; err.textContent='Usuario o contraseña incorrectos. Usuario: admin / Contraseña: crd2025';}
-    document.getElementById('login-pass').value='';
-  }
-}
+function doLogin() { requestOTP(); }
+
 // login listeners — wrapped so DOM is ready
 (function() {
   function attachLoginListeners() {
@@ -3191,6 +3185,76 @@ function openCloudinaryWidget() {
   }
   cloudinaryWidget.open();
 }
+
+// ── OTP LOGIN ──
+const ADMIN_EMAIL = 'cristian.romero.digital@gmail.com';
+const EMAILJS_SVC = 'service_35rtklk';
+const EMAILJS_PK = 'odUJtdh1Z0U27ZkaN';
+let _otpCode = null;
+let _otpExpiry = null;
+
+function generateOTP() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+async function requestOTP() {
+  const errEl = document.getElementById('login-error');
+  const btn = document.getElementById('otp-request-btn');
+  btn.textContent = 'Enviando...';
+  btn.disabled = true;
+
+  _otpCode = generateOTP();
+  _otpExpiry = Date.now() + 10 * 60 * 1000; // 10 min
+
+  try {
+    if(typeof emailjs === 'undefined') emailjs.init({ publicKey: EMAILJS_PK });
+    await emailjs.send(EMAILJS_SVC, 'template_bdpe4yq', {
+      name: 'Admin',
+      email: ADMIN_EMAIL,
+      message: 'Tu código de acceso al admin es: ' + _otpCode + '\n\nVence en 10 minutos.',
+      service: 'Código de acceso',
+      event_date: new Date().toLocaleString('es-AR'),
+      phone: '',
+      time: new Date().toLocaleString('es-AR')
+    });
+    document.getElementById('login-step1').style.display = 'none';
+    document.getElementById('login-step2').style.display = 'block';
+    // code sent
+    document.getElementById('login-otp').focus();
+  } catch(e) {
+    if(errEl) errEl.textContent = 'Error al enviar. Intentá de nuevo.';
+    console.error('EmailJS error:', e);
+  }
+
+  btn.textContent = 'Enviar código';
+  btn.disabled = false;
+}
+
+function verifyOTP() {
+  const input = document.getElementById('login-otp');
+  const errEl = document.getElementById('login-error2');
+  const code = input ? input.value.trim() : '';
+
+  if(!_otpCode) { if(errEl) errEl.textContent = 'Pedí un código primero'; return; }
+  if(Date.now() > _otpExpiry) { if(errEl) errEl.textContent = 'El código expiró. Pedí uno nuevo.'; _otpCode=null; return; }
+  if(code !== _otpCode) { if(errEl) errEl.textContent = 'Código incorrecto'; return; }
+
+  // Valid — log in
+  _otpCode = null;
+  localStorage.setItem('crd_session', Date.now());
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('content').style.display = 'flex';
+  showPage('dashboard');
+  toast('Bienvenido ✓');
+}
+
+// Allow Enter key on OTP input
+document.addEventListener('DOMContentLoaded', () => {
+  const otpInput = document.getElementById('login-otp');
+  if(otpInput) otpInput.addEventListener('keydown', e => { if(e.key==='Enter') verifyOTP(); });
+  const emailInput = document.getElementById('login-email');
+  if(emailInput) emailInput.addEventListener('keydown', e => { if(e.key==='Enter') requestOTP(); });
+});
 
 // Check session on load
 window.addEventListener('DOMContentLoaded', () => {
