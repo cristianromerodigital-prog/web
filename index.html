@@ -318,10 +318,8 @@ nav.scrolled { box-shadow: 0 4px 40px rgba(0,0,0,0.5); }
 .portfolio-item {
   position:relative; background:var(--paper3); overflow:hidden;
   cursor:pointer; break-inside:avoid; margin-bottom:2px; display:block;
-  opacity:0; transform:translateY(20px);
-  transition:opacity 0.6s ease, transform 0.6s ease;
+  opacity:1; transform:none;
 }
-.portfolio-item.in-view { opacity:1; transform:translateY(0); }
 .portfolio-item img { width:100%; height:auto; display:block; filter:saturate(0.15) brightness(0.9); transition:filter 0.5s ease, transform 0.5s ease; }
 .portfolio-item:hover img { filter:saturate(1) brightness(1); transform:scale(1.02); }
 .portfolio-item-overlay {
@@ -1325,7 +1323,7 @@ function renderPortfolio() {
     </div>
   `).join('');
   grid.querySelectorAll('.portfolio-item').forEach((el, i) => {
-    setTimeout(() => el.classList.add('in-view'), i * 60);
+    el.classList.add('in-view');
     el.addEventListener('click', () => openLightbox(parseInt(el.dataset.idx)));
   });
 }
@@ -1515,6 +1513,8 @@ function applySitePhotos() {
 
 // ── PORTFOLIO SCROLL REVEAL — fotos se levantan del piso ──
 function initPortfolioReveal() {
+  // Items visible by default — no animation needed
+  return;
   const grid = document.getElementById('portfolio-grid');
   if (!grid) return;
   const revealObserver = new IntersectionObserver((entries) => {
