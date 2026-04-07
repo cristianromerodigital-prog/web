@@ -1509,6 +1509,23 @@ function applySitePhotos() {
 }
 
 // ── PORTFOLIO SCROLL REVEAL — fotos se levantan del piso ──
+// ── RE-RENDER PORTFOLIO WHEN SCROLLED INTO VIEW ──
+let portfolioRendered = false;
+const portfolioObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting && !portfolioRendered) {
+      const items = S.get('crd_portfolio') || [];
+      if(items.length > 0) {
+        portfolioRendered = true;
+        renderPortfolio();
+      }
+    }
+  });
+}, { threshold: 0.1 });
+
+const portfolioSection = document.getElementById('portfolio');
+if(portfolioSection) portfolioObserver.observe(portfolioSection);
+
 function initPortfolioReveal() {
   const grid = document.getElementById('portfolio-grid');
   if (!grid) return;
