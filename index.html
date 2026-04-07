@@ -794,6 +794,7 @@ body::before {
   <div class="portfolio-grid reveal" id="portfolio-grid">
     <!-- Populated by JS from localStorage -->
   </div>
+  <div id="portfolio-loading" style="text-align:center;padding:80px;color:var(--gray);font-size:13px;letter-spacing:2px;">Cargando portfolio...</div>
   <div id="portfolio-empty" style="display:none;text-align:center;padding:80px;color:var(--gray);font-size:14px;letter-spacing:2px;">
     <p>Próximamente — subí tus fotos desde el <a href="admin.html" style="color:var(--cyan)">panel de administración</a></p>
   </div>
@@ -1132,10 +1133,10 @@ const CF_KEYS = ["crd_portfolio", "crd_testimonials", "crd_posts", "crd_settings
 async function loadFromCloud() {
   try {
     await Promise.all(CF_KEYS.map(async key => {
-      const res = await fetch(CF_URL + '/' + key + '?t=' + Date.now()); // bypass cache
+      const res = await fetch(CF_URL + '/' + key + '?t=' + Date.now());
       const text = await res.text();
       if (text && text !== 'null') {
-        localStorage.setItem(key, text); // always overwrite with cloud data
+        localStorage.setItem(key, text);
       }
     }));
   } catch(e) {
@@ -1298,6 +1299,8 @@ function shuffleArray(arr) {
 function renderPortfolio() {
   const grid = document.getElementById('portfolio-grid');
   const empty = document.getElementById('portfolio-empty');
+  const loading = document.getElementById('portfolio-loading');
+  if(loading) loading.style.display = 'none';
   let items = S.get('crd_portfolio') || [];
   items = shuffleArray([...items]);
   const filtered = currentFilter === 'all' ? items : items.filter(i => i.category === currentFilter);
@@ -1509,23 +1512,6 @@ function applySitePhotos() {
 }
 
 // ── PORTFOLIO SCROLL REVEAL — fotos se levantan del piso ──
-// ── RE-RENDER PORTFOLIO WHEN SCROLLED INTO VIEW ──
-let portfolioRendered = false;
-const portfolioObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if(entry.isIntersecting && !portfolioRendered) {
-      const items = S.get('crd_portfolio') || [];
-      if(items.length > 0) {
-        portfolioRendered = true;
-        renderPortfolio();
-      }
-    }
-  });
-}, { threshold: 0.1 });
-
-const portfolioSection = document.getElementById('portfolio');
-if(portfolioSection) portfolioObserver.observe(portfolioSection);
-
 function initPortfolioReveal() {
   const grid = document.getElementById('portfolio-grid');
   if (!grid) return;
