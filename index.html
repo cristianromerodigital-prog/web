@@ -325,8 +325,7 @@ nav.scrolled { box-shadow: 0 4px 40px rgba(0,0,0,0.5); }
 .portfolio-item img { width:100%; height:auto; display:block; filter:saturate(0.15) brightness(0.9); transition:filter 0.5s ease, transform 0.5s ease; }
 .portfolio-item:hover img { filter:saturate(1) brightness(1); transform:scale(1.02); }
 .portfolio-item-overlay {
-  position:absolute; inset:0; background:linear-gradient(to top,rgba(8,8,16,0.85) 0%,transparent 50%);
-  opacity:0; transition:opacity var(--trans); display:flex; align-items:flex-end; padding:24px;
+  display:none;
 }
 .portfolio-item:hover .portfolio-item-overlay { opacity:1; }
 .portfolio-item-info { }
@@ -1288,10 +1287,19 @@ function renderPortfolioFilters() {
   } catch(e) {}
 }
 
+function shuffleArray(arr) {
+  for(let i = arr.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
+
 function renderPortfolio() {
   const grid = document.getElementById('portfolio-grid');
   const empty = document.getElementById('portfolio-empty');
-  const items = S.get('crd_portfolio') || [];
+  let items = S.get('crd_portfolio') || [];
+  items = shuffleArray([...items]);
   const filtered = currentFilter === 'all' ? items : items.filter(i => i.category === currentFilter);
   portfolioItems = filtered;
   lightboxItems = filtered.filter(i => i.url);
