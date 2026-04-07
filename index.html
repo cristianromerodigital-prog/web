@@ -314,16 +314,16 @@ nav.scrolled { box-shadow: 0 4px 40px rgba(0,0,0,0.5); }
 }
 .filter-btn:last-child { border-right:none; }
 .filter-btn.active, .filter-btn:hover { color:#ffffff; background:var(--ink); }
-.portfolio-grid { columns:4; column-gap:2px; }
+.portfolio-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:2px; }
 .portfolio-item {
   position:relative; background:var(--paper3); overflow:hidden;
-  cursor:pointer; break-inside:avoid; margin-bottom:2px; display:block;
-  opacity:0; transform:translateY(20px);
-  transition:opacity 0.6s ease, transform 0.6s ease;
+  cursor:pointer; display:block; aspect-ratio:3/4;
+  opacity:0; transform:translateY(48px);
+  transition:opacity 0.8s cubic-bezier(0.2,0.8,0.3,1), transform 0.8s cubic-bezier(0.2,0.8,0.3,1);
 }
 .portfolio-item.in-view { opacity:1; transform:translateY(0); }
-.portfolio-item img { width:100%; height:auto; display:block; filter:saturate(0.15) brightness(0.9); transition:filter 0.5s ease, transform 0.5s ease; }
-.portfolio-item:hover img { filter:saturate(1) brightness(1); transform:scale(1.02); }
+.portfolio-item img { width:100%; height:100%; object-fit:cover; display:block; filter:saturate(0.2) brightness(0.88); transition:filter 0.6s ease, transform 0.6s ease; }
+.portfolio-item:hover img { filter:saturate(1) brightness(1.01); transform:scale(1.025); }
 .portfolio-item-overlay {
   position:absolute; inset:0; background:linear-gradient(to top,rgba(8,8,16,0.85) 0%,transparent 50%);
   opacity:0; transition:opacity var(--trans); display:flex; align-items:flex-end; padding:24px;
@@ -513,7 +513,7 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 @media(max-width:1024px) {
   .about,.social-section,.contact { grid-template-columns:1fr; padding:80px 40px; gap:60px; }
   .services-grid, .pricing-grid, .blog-grid, .testimonials-grid { grid-template-columns:1fr; }
-  .portfolio-grid { columns:3; column-gap:2px; }
+  .portfolio-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:2px; }
   .portfolio-item.wide { column-span:all; }
   .footer-grid { grid-template-columns:1fr 1fr; gap:40px; }
 }
@@ -524,7 +524,7 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
   .hamburger { display:flex; }
   .hero { grid-template-columns:1fr; padding:140px 24px 80px; }
   .portfolio-section,.services,.pricing,.testimonials,.blog-section,.clients-section { padding:80px 24px; }
-  .portfolio-grid { columns:2; column-gap:2px; }
+  .portfolio-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:2px; }
   .portfolio-item.wide { column-span:unset; }
   .countdown-bar { padding:20px; gap:20px; }
   .footer-grid { grid-template-columns:1fr; }
@@ -1128,7 +1128,7 @@ const SITE_CONFIG = {
 
 // ── CLOUDFLARE SYNC — load data from cloud ──
 const CF_URL = 'https://web.cristian-romero-digital.workers.dev';
-const CF_KEYS = ["crd_portfolio", "crd_testimonials", "crd_posts", "crd_settings", "crd_content", "crd_site_photos", "crd_hero_video_url", "crd_categories"];
+const CF_KEYS = ["crd_portfolio", "crd_testimonials", "crd_posts", "crd_settings", "crd_content", "crd_site_photos", "crd_hero_video_url"];
 
 async function loadFromCloud() {
   try {
@@ -1174,7 +1174,6 @@ function initDefaults() {
 initDefaults();
 // Load from cloud then render
 loadFromCloud().then(() => {
-  renderPortfolioFilters();
   renderPortfolio();
   renderTestimonials();
   renderBlog();
@@ -1184,7 +1183,6 @@ loadFromCloud().then(() => {
   applyContent();
   initPortfolioReveal();
 }).catch(() => {
-  renderPortfolioFilters();
   renderPortfolio();
   renderTestimonials();
   renderBlog();
@@ -1265,28 +1263,6 @@ let portfolioItems = [];
 let lightboxItems = [];
 let currentFilter = 'all';
 let lightboxIndex = 0;
-
-function renderPortfolioFilters() {
-  try {
-    const cats = JSON.parse(localStorage.getItem('crd_categories'));
-    if(!cats || !cats.length) return;
-    const enabled = cats.filter(c => c.enabled);
-    if(!enabled.length) return;
-    const container = document.querySelector('.portfolio-filters');
-    if(!container) return;
-    container.innerHTML = '<button class="filter-btn active" data-filter="all">Todos</button>' +
-      enabled.map(c => `<button class="filter-btn" data-filter="${c.key}">${c.name}</button>`).join('');
-    // Re-attach filter events
-    container.querySelectorAll('.filter-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        container.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentFilter = btn.dataset.filter;
-        renderPortfolio();
-      });
-    });
-  } catch(e) {}
-}
 
 function renderPortfolio() {
   const grid = document.getElementById('portfolio-grid');
