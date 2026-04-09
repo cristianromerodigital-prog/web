@@ -651,45 +651,7 @@ body::before {
 }
 .pricing-features li.star::before { content:'✓'; color:var(--gold); }
 
-/* =========================
-   MOBILE → ocultar cursor
-   ========================= */
-@media (max-width: 767px) {
-  body {
-    cursor: none;
-  }
-
-  a, button, input, textarea {
-    cursor: none !important;
-  }
-}
-
-
-/* =========================
-   CENTRAR BOTONES (WEB)
-   ========================= */
-@media (min-width: 768px) {
-
-  /* Filtros portfolio */
-  .filters,
-  .portfolio-filters {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  /* Botones paquetes */
-  .paquetes,
-  .paquetes-botones {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
-}  
-  
+ 
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
