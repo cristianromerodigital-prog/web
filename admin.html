@@ -244,6 +244,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
 </style>
 <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
 
@@ -258,7 +259,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     <div class="login-group">
       <label class="login-label">Usuario</label>
       <div id="login-step1">
-      <p style="font-size:12px;color:var(--gray2);text-align:center;margin-bottom:24px;letter-spacing:1px;line-height:1.8">Hacé clic para recibir un código de acceso en tu casilla registrada</p>
+      <p style="font-size:12px;color:var(--gray2);text-align:center;margin-bottom:24px;letter-spacing:1px;line-height:1.8">Hacé clic para recibir un código de acceso en tu casilla de email</p>
       <div id="login-error" class="login-error"></div>
       <button class="login-btn" onclick="requestOTP()" id="otp-request-btn">Enviar código</button>
     </div>
@@ -1319,13 +1320,29 @@ function getCreds() {
 
 function doLogin() { requestOTP(); }
 
+function verifyOTP() {
+  const input = document.getElementById('login-otp');
+  const errEl = document.getElementById('login-error2');
+  const code = input ? input.value.trim() : '';
+  if(!_otpCode) { if(errEl) errEl.textContent = 'Pedí un código primero'; return; }
+  if(Date.now() > _otpExpiry) { if(errEl) errEl.textContent = 'El código expiró. Pedí uno nuevo.'; _otpCode=null; return; }
+  if(code !== _otpCode) { if(errEl) errEl.textContent = 'Código incorrecto'; return; }
+  _otpCode = null;
+  localStorage.setItem('crd_session', Date.now());
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+  init();
+  showPage('dashboard');
+  toast('Bienvenido ✓');
+}
+
 // login listeners — wrapped so DOM is ready
 (function() {
   function attachLoginListeners() {
     const lp = document.getElementById('login-pass');
     const lu = document.getElementById('login-user');
     if (lp) lp.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
-    if (lu) lu.addEventListener('keydown', e => { if(e.key==='Enter') { const lp2=document.getElementById('login-pass'); if(lp2) lp2.focus(); }});
+    if (lu) lu.addEventListener('keydown', e => { if(e.key==='Enter') { const otp=document.getElementById('login-otp'); if(otp) otp.focus(); }});
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', attachLoginListeners);
@@ -1338,8 +1355,7 @@ function resetCredentials() {
   if (confirm('¿Restablecer usuario y contraseña a los valores por defecto?\n\nUsuario: admin\nContraseña: crd2025')) {
     localStorage.removeItem('crd_admin_creds');
     localStorage.removeItem('crd_session');
-    document.getElementById('login-user').value = 'admin';
-    document.getElementById('login-pass').value = '';
+    // OTP login — no user/pass fields to clear
     document.getElementById('login-error').style.display = 'none';
     alert('Credenciales restablecidas.\nUsuario: admin\nContraseña: crd2025');
   }
@@ -1349,7 +1365,7 @@ function doLogout() {
   S.set('crd_session', null);
   document.getElementById('app').classList.remove('visible');
   document.getElementById('login-screen').style.display='flex';
-  document.getElementById('login-pass').value='';
+  (document.getElementById('login-pass')||{}).value='';
   document.getElementById('login-error').style.display='none';
 }
 
@@ -3216,7 +3232,7 @@ async function requestOTP() {
   _otpExpiry = Date.now() + 10 * 60 * 1000; // 10 min
 
   try {
-    if(typeof emailjs === 'undefined') emailjs.init({ publicKey: EMAILJS_PK });
+    emailjs.init({ publicKey: EMAILJS_PK });
     await emailjs.send(EMAILJS_SVC, 'template_bdpe4yq', {
       name: 'Admin',
       email: ADMIN_EMAIL,
@@ -3239,30 +3255,12 @@ async function requestOTP() {
   btn.disabled = false;
 }
 
-function verifyOTP() {
-  const input = document.getElementById('login-otp');
-  const errEl = document.getElementById('login-error2');
-  const code = input ? input.value.trim() : '';
 
-  if(!_otpCode) { if(errEl) errEl.textContent = 'Pedí un código primero'; return; }
-  if(Date.now() > _otpExpiry) { if(errEl) errEl.textContent = 'El código expiró. Pedí uno nuevo.'; _otpCode=null; return; }
-  if(code !== _otpCode) { if(errEl) errEl.textContent = 'Código incorrecto'; return; }
-
-  // Valid — log in
-  _otpCode = null;
-  localStorage.setItem('crd_session', Date.now());
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('content').style.display = 'flex';
-  showPage('dashboard');
-  toast('Bienvenido ✓');
-}
 
 // Allow Enter key on OTP input
 document.addEventListener('DOMContentLoaded', () => {
   const otpInput = document.getElementById('login-otp');
   if(otpInput) otpInput.addEventListener('keydown', e => { if(e.key==='Enter') verifyOTP(); });
-  const emailInput = document.getElementById('login-email');
-  if(emailInput) emailInput.addEventListener('keydown', e => { if(e.key==='Enter') requestOTP(); });
 });
 
 // Check session on load
