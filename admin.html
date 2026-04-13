@@ -259,7 +259,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     <div class="login-group">
       <label class="login-label">Usuario</label>
       <div id="login-step1">
-      <p style="font-size:12px;color:var(--gray2);text-align:center;margin-bottom:24px;letter-spacing:1px;line-height:1.8">Hacé clic para recibir un código de acceso en tu casilla registrada</p>
+      <p style="font-size:12px;color:var(--gray2);text-align:center;margin-bottom:24px;letter-spacing:1px;line-height:1.8">Hacé clic para recibir un código de acceso en tu casilla de email</p>
       <div id="login-error" class="login-error"></div>
       <button class="login-btn" onclick="requestOTP()" id="otp-request-btn">Enviar código</button>
     </div>
@@ -1319,6 +1319,21 @@ function getCreds() {
 }
 
 function doLogin() { requestOTP(); }
+
+function verifyOTP() {
+  const input = document.getElementById('login-otp');
+  const errEl = document.getElementById('login-error2');
+  const code = input ? input.value.trim() : '';
+  if(!_otpCode) { if(errEl) errEl.textContent = 'Pedí un código primero'; return; }
+  if(Date.now() > _otpExpiry) { if(errEl) errEl.textContent = 'El código expiró. Pedí uno nuevo.'; _otpCode=null; return; }
+  if(code !== _otpCode) { if(errEl) errEl.textContent = 'Código incorrecto'; return; }
+  _otpCode = null;
+  localStorage.setItem('crd_session', Date.now());
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('content').style.display = 'flex';
+  showPage('dashboard');
+  toast('Bienvenido ✓');
+}
 
 // login listeners — wrapped so DOM is ready
 (function() {
@@ -3240,30 +3255,12 @@ async function requestOTP() {
   btn.disabled = false;
 }
 
-function verifyOTP() {
-  const input = document.getElementById('login-otp');
-  const errEl = document.getElementById('login-error2');
-  const code = input ? input.value.trim() : '';
 
-  if(!_otpCode) { if(errEl) errEl.textContent = 'Pedí un código primero'; return; }
-  if(Date.now() > _otpExpiry) { if(errEl) errEl.textContent = 'El código expiró. Pedí uno nuevo.'; _otpCode=null; return; }
-  if(code !== _otpCode) { if(errEl) errEl.textContent = 'Código incorrecto'; return; }
-
-  // Valid — log in
-  _otpCode = null;
-  localStorage.setItem('crd_session', Date.now());
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('content').style.display = 'flex';
-  showPage('dashboard');
-  toast('Bienvenido ✓');
-}
 
 // Allow Enter key on OTP input
 document.addEventListener('DOMContentLoaded', () => {
   const otpInput = document.getElementById('login-otp');
   if(otpInput) otpInput.addEventListener('keydown', e => { if(e.key==='Enter') verifyOTP(); });
-  const emailInput = document.getElementById('login-email');
-  if(emailInput) emailInput.addEventListener('keydown', e => { if(e.key==='Enter') requestOTP(); });
 });
 
 // Check session on load
