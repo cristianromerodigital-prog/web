@@ -3216,7 +3216,7 @@ async function requestOTP() {
   _otpExpiry = Date.now() + 10 * 60 * 1000; // 10 min
 
   try {
-    if(typeof emailjs !== 'undefined') emailjs.init({ publicKey: EMAILJS_PK });
+    if(typeof emailjs === 'undefined') emailjs.init({ publicKey: EMAILJS_PK });
     await emailjs.send(EMAILJS_SVC, 'template_bdpe4yq', {
       name: 'Admin',
       email: ADMIN_EMAIL,
