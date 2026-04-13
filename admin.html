@@ -1330,8 +1330,8 @@ function verifyOTP() {
   _otpCode = null;
   localStorage.setItem('crd_session', Date.now());
   document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('content').style.display = 'flex';
-  showPage('dashboard');
+  document.getElementById('app').classList.add('visible');
+  init();
   toast('Bienvenido ✓');
 }
 
@@ -1341,7 +1341,7 @@ function verifyOTP() {
     const lp = document.getElementById('login-pass');
     const lu = document.getElementById('login-user');
     if (lp) lp.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
-    if (lu) lu.addEventListener('keydown', e => { if(e.key==='Enter') { const lp2=document.getElementById('login-pass'); if(lp2) lp2.focus(); }});
+    if (lu) lu.addEventListener('keydown', e => { if(e.key==='Enter') { const otp=document.getElementById('login-otp'); if(otp) otp.focus(); }});
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', attachLoginListeners);
@@ -1354,8 +1354,7 @@ function resetCredentials() {
   if (confirm('¿Restablecer usuario y contraseña a los valores por defecto?\n\nUsuario: admin\nContraseña: crd2025')) {
     localStorage.removeItem('crd_admin_creds');
     localStorage.removeItem('crd_session');
-    document.getElementById('login-user').value = 'admin';
-    document.getElementById('login-pass').value = '';
+    // OTP login — no user/pass fields to clear
     document.getElementById('login-error').style.display = 'none';
     alert('Credenciales restablecidas.\nUsuario: admin\nContraseña: crd2025');
   }
@@ -1365,7 +1364,7 @@ function doLogout() {
   S.set('crd_session', null);
   document.getElementById('app').classList.remove('visible');
   document.getElementById('login-screen').style.display='flex';
-  document.getElementById('login-pass').value='';
+  (document.getElementById('login-pass')||{}).value='';
   document.getElementById('login-error').style.display='none';
 }
 
