@@ -244,7 +244,6 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
 </style>
 <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
 
@@ -258,9 +257,12 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     <div class="login-sub">Panel de Administración</div>
     <div class="login-group">
       <label class="login-label">Usuario</label>
-      <input type="text" class="login-input" id="login-user" placeholder="Usuario" autocomplete="username">
-    <input type="password" class="login-input" id="login-pass" placeholder="Contraseña" autocomplete="current-password">
-    <div id="login-error" class="login-error"></div>
+      <input type="text" class="login-input" id="login-user" placeholder="admin" autocomplete="username">
+    </div>
+    <div class="login-group">
+      <label class="login-label">Contraseña</label>
+      <input type="password" class="login-input" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+    </div>
     <button class="login-btn" onclick="doLogin()">Ingresar</button>
     <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
     <div style="margin-top:20px;text-align:center">
@@ -839,11 +841,11 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           <div class="settings-section">
             <div class="settings-section-title">Datos de contacto</div>
             <div class="form-row">
-              <div class="form-group"><label class="form-label">Email de contacto</label><input class="form-input" id="cnt-email" placeholder="cristian.romero.digital@gmail.com" type="email"></div>
+              <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="cnt-email" placeholder="hola@cristian.com" type="email"></div>
               <div class="form-group"><label class="form-label">Teléfono / WhatsApp</label><input class="form-input" id="cnt-phone" placeholder="+54 11 XXXX-XXXX"></div>
             </div>
             <div class="form-row">
-              <div class="form-group"><label class="form-label">Ubicación (topbar)</label><input class="form-input" id="cnt-location" placeholder="Buenos Aires, Argentina"></div>
+              <div class="form-group"><label class="form-label">Ubicación</label><input class="form-input" id="cnt-location" placeholder="Buenos Aires, Argentina"></div>
               <div class="form-group"><label class="form-label">Número WhatsApp (para botón flotante)</label><input class="form-input" id="cnt-wa-number" placeholder="5491100000000"></div>
             </div>
           </div>
@@ -1310,20 +1312,19 @@ function getCreds() {
 }
 
 function doLogin() {
-  const user = (document.getElementById('login-user')||{}).value || '';
-  const pass = (document.getElementById('login-pass')||{}).value || '';
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
   const creds = getCreds();
-  const errEl = document.getElementById('login-error');
-  if(user === creds.user && pass === creds.pass) {
-    localStorage.setItem('crd_session', Date.now());
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('content').style.display = 'flex';
-    showPage('dashboard');
+  if (u === creds.user && p === creds.pass) {
+    S.set('crd_session', Date.now());
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').classList.add('visible');
+    init();
   } else {
-    if(errEl) errEl.textContent = 'Usuario o contraseña incorrectos';
+    const err=document.getElementById('login-error'); if(err){err.style.display='block'; err.textContent='Usuario o contraseña incorrectos. Usuario: admin / Contraseña: crd2025';}
+    document.getElementById('login-pass').value='';
   }
 }
-
 // login listeners — wrapped so DOM is ready
 (function() {
   function attachLoginListeners() {
@@ -2458,18 +2459,9 @@ function loadContentPage() {
 
   // CONTACT
   const ct = c.contact || {};
-  const contactMap = {
-    'contact-eyebrow': 'eyebrow',
-    'contact-title': 'title',
-    'contact-desc': 'desc',
-    'email': 'email',
-    'phone': 'phone',
-    'location': 'location',
-    'wa-number': 'wa_number'
-  };
-  Object.entries(contactMap).forEach(([id, key]) => {
-    const el = document.getElementById('cnt-'+id);
-    if(el) el.value = ct[key] || '';
+  ['eyebrow','title','desc','email','phone','location','wa-number'].forEach(k => {
+    const el = document.getElementById('cnt-'+k);
+    if(el) el.value = ct[k.replace('-','_')] || ct[k] || '';
   });
 
   // SOCIAL
@@ -3199,76 +3191,6 @@ function openCloudinaryWidget() {
   }
   cloudinaryWidget.open();
 }
-
-// ── OTP LOGIN ──
-const ADMIN_EMAIL = 'cristian.romero.digital@gmail.com';
-const EMAILJS_SVC = 'service_35rtklk';
-const EMAILJS_PK = 'odUJtdh1Z0U27ZkaN';
-let _otpCode = null;
-let _otpExpiry = null;
-
-function generateOTP() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
-async function requestOTP() {
-  const errEl = document.getElementById('login-error');
-  const btn = document.getElementById('otp-request-btn');
-  btn.textContent = 'Enviando...';
-  btn.disabled = true;
-
-  _otpCode = generateOTP();
-  _otpExpiry = Date.now() + 10 * 60 * 1000; // 10 min
-
-  try {
-    emailjs.init({ publicKey: EMAILJS_PK });
-    await emailjs.send(EMAILJS_SVC, 'template_bdpe4yq', {
-      name: 'Admin',
-      email: ADMIN_EMAIL,
-      message: 'Tu código de acceso al admin es: ' + _otpCode + '\n\nVence en 10 minutos.',
-      service: 'Código de acceso',
-      event_date: new Date().toLocaleString('es-AR'),
-      phone: '',
-      time: new Date().toLocaleString('es-AR')
-    });
-    document.getElementById('login-step1').style.display = 'none';
-    document.getElementById('login-step2').style.display = 'block';
-    // code sent
-    document.getElementById('login-otp').focus();
-  } catch(e) {
-    if(errEl) errEl.textContent = 'Error al enviar. Intentá de nuevo.';
-    console.error('EmailJS error:', e);
-  }
-
-  btn.textContent = 'Enviar código';
-  btn.disabled = false;
-}
-
-function verifyOTP() {
-  const input = document.getElementById('login-otp');
-  const errEl = document.getElementById('login-error2');
-  const code = input ? input.value.trim() : '';
-
-  if(!_otpCode) { if(errEl) errEl.textContent = 'Pedí un código primero'; return; }
-  if(Date.now() > _otpExpiry) { if(errEl) errEl.textContent = 'El código expiró. Pedí uno nuevo.'; _otpCode=null; return; }
-  if(code !== _otpCode) { if(errEl) errEl.textContent = 'Código incorrecto'; return; }
-
-  // Valid — log in
-  _otpCode = null;
-  localStorage.setItem('crd_session', Date.now());
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('content').style.display = 'flex';
-  showPage('dashboard');
-  toast('Bienvenido ✓');
-}
-
-// Allow Enter key on OTP input
-document.addEventListener('DOMContentLoaded', () => {
-  const lp = document.getElementById('login-pass');
-  if(lp) lp.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
-  const lu = document.getElementById('login-user');
-  if(lu) lu.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
-});
 
 // Check session on load
 window.addEventListener('DOMContentLoaded', () => {
