@@ -847,11 +847,11 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           <div class="settings-section">
             <div class="settings-section-title">Datos de contacto</div>
             <div class="form-row">
-              <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="cnt-email" placeholder="hola@cristian.com" type="email"></div>
+              <div class="form-group"><label class="form-label">Email de contacto</label><input class="form-input" id="cnt-email" placeholder="cristian.romero.digital@gmail.com" type="email"></div>
               <div class="form-group"><label class="form-label">Teléfono / WhatsApp</label><input class="form-input" id="cnt-phone" placeholder="+54 11 XXXX-XXXX"></div>
             </div>
             <div class="form-row">
-              <div class="form-group"><label class="form-label">Ubicación</label><input class="form-input" id="cnt-location" placeholder="Buenos Aires, Argentina"></div>
+              <div class="form-group"><label class="form-label">Ubicación (topbar)</label><input class="form-input" id="cnt-location" placeholder="Buenos Aires, Argentina"></div>
               <div class="form-group"><label class="form-label">Número WhatsApp (para botón flotante)</label><input class="form-input" id="cnt-wa-number" placeholder="5491100000000"></div>
             </div>
           </div>
@@ -2453,9 +2453,18 @@ function loadContentPage() {
 
   // CONTACT
   const ct = c.contact || {};
-  ['eyebrow','title','desc','email','phone','location','wa-number'].forEach(k => {
-    const el = document.getElementById('cnt-'+k);
-    if(el) el.value = ct[k.replace('-','_')] || ct[k] || '';
+  const contactMap = {
+    'contact-eyebrow': 'eyebrow',
+    'contact-title': 'title',
+    'contact-desc': 'desc',
+    'email': 'email',
+    'phone': 'phone',
+    'location': 'location',
+    'wa-number': 'wa_number'
+  };
+  Object.entries(contactMap).forEach(([id, key]) => {
+    const el = document.getElementById('cnt-'+id);
+    if(el) el.value = ct[key] || '';
   });
 
   // SOCIAL
