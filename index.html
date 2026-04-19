@@ -1752,26 +1752,14 @@ function applyHeroVideo() {
 </script>
 
 <script>
-(function(){
-  var logo = localStorage.getItem('crd_site_logo');
-  if (!logo) return;
-  // Validar que no sea una blob URL temporal (solo válida en la sesión original)
-  if (logo.startsWith('blob:')) {
-    localStorage.removeItem('crd_site_logo');
-    return;
-  }
-  ['preloader-logo-img','navbar-logo-img','footer-logo-img'].forEach(function(id){
-    var el = document.getElementById(id);
-    if (!el) return;
-    var testImg = new Image();
-    testImg.onload = function() { el.src = logo; };
-    testImg.onerror = function() {
-      // Logo inválido → limpiarlo para no volver a intentarlo
-      localStorage.removeItem('crd_site_logo');
-    };
-    testImg.src = logo;
-  });
-})();
+document.addEventListener('DOMContentLoaded', function(){
+  try {
+    var logo = localStorage.getItem('crd_site_logo');
+    if (!logo || logo.indexOf('blob:') === 0) return;
+    ['preloader-logo-img','navbar-logo-img','footer-logo-img'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) el.src = logo;
+    });
+  } catch(e) { /* si falla, queda el logo hardcodeado */ }
+});
 </script>
-</body>
-</html>
