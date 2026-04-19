@@ -1762,19 +1762,6 @@ function applyHeroVideo() {
 </script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function(){
-  try {
-    var logo = localStorage.getItem('crd_site_logo');
-    if (!logo || logo.indexOf('blob:') === 0) return;
-    ['preloader-logo-img','navbar-logo-img','footer-logo-img'].forEach(function(id){
-      var el = document.getElementById(id);
-      if (el) el.src = logo;
-    });
-  } catch(e) { /* si falla, queda el logo hardcodeado */ }
-});
-</script>
-
-<script>
 (function () {
   function applyStoredLogo() {
     try {
