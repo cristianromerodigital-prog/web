@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invitación</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --gold:#c9a84c;
+  --gold2:#e8c97a;
+  --black:#0c0c0c;
+  --black2:#141414;
+  --white:#f5f0e8;
+  --gray:#888;
+  --gray2:#aaa;
+}
+html{scroll-behavior:smooth}
+body{background:var(--black);color:var(--white);font-family:'Montserrat',sans-serif;font-weight:300}
+
+/* NAV */
+#nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 32px;display:flex;justify-content:center;gap:28px;background:linear-gradient(to bottom,rgba(12,12,12,0.9),transparent);transition:background 0.3s}
+#nav a{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(245,240,232,0.6);text-decoration:none;transition:color 0.2s}
+#nav a:hover{color:var(--gold)}
+
+/* HERO */
+#hero{position:relative;height:100vh;min-height:600px;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden}
+#hero-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+#hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(12,12,12,0.3) 0%,rgba(12,12,12,0.5) 60%,rgba(12,12,12,0.85) 100%);z-index:1}
+#hero-content{position:relative;z-index:2;padding:0 24px}
+.hero-eyebrow{font-size:10px;letter-spacing:6px;text-transform:uppercase;color:var(--gold);margin-bottom:24px;opacity:0.9}
+.hero-names{font-family:'Cormorant Garamond',serif;font-size:clamp(52px,10vw,100px);font-weight:300;line-height:1;letter-spacing:-1px;margin-bottom:16px}
+.hero-names em{font-style:italic;color:var(--gold2)}
+.hero-ampersand{color:var(--gold);font-weight:300;padding:0 8px}
+.hero-date{font-size:13px;letter-spacing:4px;text-transform:uppercase;color:var(--gray2);margin-top:20px}
+#countdown{display:flex;gap:32px;justify-content:center;margin-top:36px}
+.cd-unit{text-align:center}
+.cd-num{font-family:'Cormorant Garamond',serif;font-size:40px;font-weight:300;color:var(--gold);display:block;line-height:1}
+.cd-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gray);margin-top:4px;display:block}
+.hero-scroll{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--gray);font-size:9px;letter-spacing:3px;text-transform:uppercase;animation:float 2s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(6px)}}
+.hero-scroll svg{width:20px;height:20px;color:var(--gold)}
+
+/* SECTIONS */
+section{padding:100px 24px;max-width:780px;margin:0 auto}
+.sec-label{font-size:9px;letter-spacing:5px;text-transform:uppercase;color:var(--gold);margin-bottom:20px;display:block}
+.sec-title{font-family:'Cormorant Garamond',serif;font-size:clamp(36px,6vw,58px);font-weight:300;line-height:1.1;margin-bottom:24px}
+.sec-title em{font-style:italic;color:var(--gold2)}
+.sec-body{font-size:14px;line-height:1.9;color:var(--gray2)}
+.divider{width:60px;height:1px;background:var(--gold);opacity:0.4;margin:40px auto}
+.divider-full{width:100%;height:1px;background:linear-gradient(to right,transparent,rgba(201,168,76,0.3),transparent);margin:0}
+
+/* EVENTO */
+#evento{text-align:center;border-top:none}
+.evento-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:48px;border:1px solid rgba(201,168,76,0.15)}
+.evento-item{padding:40px 32px;background:rgba(255,255,255,0.02);text-align:center;border-right:1px solid rgba(201,168,76,0.1)}
+.evento-item:last-child{border-right:none}
+.evento-icon{color:var(--gold);margin-bottom:16px}
+.evento-icon svg{width:28px;height:28px}
+.evento-label{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--gray);margin-bottom:8px;display:block}
+.evento-hora{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:var(--white);margin-bottom:6px}
+.evento-lugar{font-size:12px;color:var(--gray2);line-height:1.6}
+@media(max-width:600px){.evento-grid{grid-template-columns:1fr}.evento-item{border-right:none;border-bottom:1px solid rgba(201,168,76,0.1)}.evento-item:last-child{border-bottom:none}}
+
+/* LUGAR */
+#lugar{text-align:center}
+.maps-embed{width:100%;height:320px;border:1px solid rgba(201,168,76,0.15);margin:40px 0 28px;filter:grayscale(80%) contrast(1.1);display:block}
+.btn-maps{display:inline-flex;align-items:center;gap:10px;padding:14px 32px;border:1px solid var(--gold);color:var(--gold);font-size:11px;letter-spacing:3px;text-transform:uppercase;text-decoration:none;transition:all 0.2s}
+.btn-maps:hover{background:var(--gold);color:var(--black)}
+.btn-maps svg{width:16px;height:16px}
+
+/* DRESSCODE */
+#dresscode{text-align:center}
+.dresscode-badge{display:inline-block;padding:12px 32px;border:1px solid rgba(201,168,76,0.3);font-size:18px;letter-spacing:3px;text-transform:uppercase;font-family:'Cormorant Garamond',serif;font-weight:300;margin:24px 0;color:var(--gold2)}
+.dresscode-nota{font-size:12px;color:var(--gray);letter-spacing:1px;margin-top:8px}
+
+/* REGALO */
+#regalo{text-align:center;background:rgba(201,168,76,0.03);border:1px solid rgba(201,168,76,0.1);margin:0 auto;padding:80px 40px}
+.regalo-alias{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:300;color:var(--gold2);margin:24px 0 8px;letter-spacing:1px}
+.regalo-bank{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gray);margin-bottom:4px}
+.regalo-titular{font-size:13px;color:var(--gray2);margin-bottom:24px}
+.btn-copy{background:none;border:1px solid rgba(201,168,76,0.4);color:var(--gold);padding:10px 24px;font-size:10px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all 0.2s;font-family:'Montserrat',sans-serif}
+.btn-copy:hover{background:var(--gold);color:var(--black)}
+.regalo-cbu{margin-top:24px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.05)}
+.regalo-cbu-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gray);margin-bottom:6px;display:block}
+.regalo-cbu-val{font-size:13px;color:var(--gray2);letter-spacing:1px}
+
+/* RSVP */
+#rsvp{max-width:640px}
+.rsvp-form{margin-top:48px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.form-group{margin-bottom:16px}
+.form-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gray);margin-bottom:8px;display:block}
+.form-input, .form-select, .form-textarea{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:var(--white);padding:12px 16px;font-size:13px;font-family:'Montserrat',sans-serif;font-weight:300;outline:none;transition:border 0.2s;-webkit-appearance:none}
+.form-input:focus, .form-select:focus, .form-textarea:focus{border-color:var(--gold)}
+.form-select option{background:#1a1a1a;color:var(--white)}
+.form-textarea{min-height:80px;resize:vertical}
+.check-group{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+.check-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gray2);cursor:pointer}
+.check-item input{accent-color:var(--gold);width:15px;height:15px}
+.btn-rsvp{width:100%;padding:16px;background:var(--gold);color:var(--black);border:none;font-size:11px;letter-spacing:4px;text-transform:uppercase;font-family:'Montserrat',sans-serif;font-weight:500;cursor:pointer;transition:background 0.2s;margin-top:8px}
+.btn-rsvp:hover{background:var(--gold2)}
+.btn-rsvp:disabled{opacity:0.5;cursor:not-allowed}
+#rsvp-success{display:none;text-align:center;padding:48px 0}
+#rsvp-success svg{width:48px;height:48px;color:var(--gold);margin-bottom:16px}
+#rsvp-success p{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:var(--white)}
+#rsvp-success small{font-size:12px;color:var(--gray);margin-top:8px;display:block}
+@media(max-width:600px){.form-row{grid-template-columns:1fr}}
+
+/* SPOTIFY */
+#spotify{text-align:center}
+.spotify-embed{width:100%;border-radius:0;border:1px solid rgba(201,168,76,0.15);margin:40px 0 28px;display:block}
+.btn-spotify{display:inline-flex;align-items:center;gap:10px;padding:14px 32px;background:#1db954;color:#000;font-size:11px;letter-spacing:3px;text-transform:uppercase;text-decoration:none;font-family:'Montserrat',sans-serif;font-weight:500;transition:opacity 0.2s}
+.btn-spotify:hover{opacity:0.85}
+.btn-spotify svg{width:18px;height:18px}
+
+/* FOOTER */
+footer{padding:60px 24px;text-align:center;border-top:1px solid rgba(255,255,255,0.05)}
+footer p{font-size:11px;color:var(--gray);letter-spacing:2px;text-transform:uppercase}
+footer small{font-size:10px;color:rgba(255,255,255,0.15);margin-top:8px;display:block}
+
+/* TOAST */
+#toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--black);padding:10px 24px;font-size:11px;letter-spacing:2px;text-transform:uppercase;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none}
+#toast.show{opacity:1}
+
+/* PLACEHOLDER */
+#placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:40px}
+#placeholder svg{width:60px;height:60px;color:var(--gold);opacity:0.4;margin-bottom:24px}
+#placeholder h2{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;margin-bottom:12px}
+#placeholder p{font-size:13px;color:var(--gray);max-width:400px;line-height:1.8}
+</style>
+</head>
+<body>
+
+<div id="placeholder" style="display:none">
+  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+  <h2>Invitación no encontrada</h2>
+  <p>El enlace de esta invitación no es válido o ha expirado. Pedile al organizador que te reenvíe el link correcto.</p>
+</div>
+
+<div id="invite-app" style="display:none">
+
+<nav id="nav">
+  <a href="#evento">Evento</a>
+  <a href="#lugar">Lugar</a>
+  <a href="#dresscode">Dresscode</a>
+  <a href="#regalo">Regalo</a>
+  <a href="#rsvp">Confirmación</a>
+  <a href="#spotify">Playlist</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div id="hero-media-wrap"></div>
+  <div id="hero-overlay"></div>
+  <div id="hero-content">
+    <div class="hero-eyebrow" id="hero-eyebrow"></div>
+    <div class="hero-names" id="hero-names"></div>
+    <div class="hero-date" id="hero-date"></div>
+    <div id="countdown"></div>
+  </div>
+  <div class="hero-scroll">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"/></svg>
+    Deslizá
+  </div>
+</section>
+
+<div class="divider-full"></div>
+
+<!-- PRESENTACIÓN -->
+<section id="evento" style="text-align:center">
+  <span class="sec-label" id="ev-label"></span>
+  <h2 class="sec-title" id="ev-title"></h2>
+  <p class="sec-body" id="ev-body" style="max-width:560px;margin:0 auto"></p>
+  <div class="evento-grid" id="ev-grid"></div>
+</section>
+
+<div class="divider-full"></div>
+
+<!-- LUGAR -->
+<section id="lugar">
+  <span class="sec-label">¿Dónde festejamos?</span>
+  <h2 class="sec-title">El <em>lugar</em></h2>
+  <p class="sec-body" id="lugar-nombre"></p>
+  <p class="sec-body" id="lugar-dir" style="margin-top:6px;font-size:12px;opacity:0.7"></p>
+  <div id="maps-embed-wrap"></div>
+  <a id="btn-maps" class="btn-maps" target="_blank" rel="noopener">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    Abrir en Google Maps
+  </a>
+</section>
+
+<div class="divider-full"></div>
+
+<!-- DRESSCODE -->
+<section id="dresscode">
+  <span class="sec-label">Vestimenta</span>
+  <h2 class="sec-title"><em>Dresscode</em></h2>
+  <div class="dresscode-badge" id="dresscode-val"></div>
+  <p class="dresscode-nota" id="dresscode-nota"></p>
+</section>
+
+<div class="divider-full"></div>
+
+<!-- REGALO -->
+<section id="regalo" style="max-width:780px;border-radius:0">
+  <span class="sec-label">Si querés hacernos un regalo</span>
+  <h2 class="sec-title">Transferencia</h2>
+  <p class="sec-body" style="margin-bottom:0">También podés festejarte con nosotros — con eso nos alcanza y sobra. Pero si insistís, acá está el dato:</p>
+  <div id="regalo-alias-wrap">
+    <div class="regalo-alias" id="regalo-alias"></div>
+    <div class="regalo-bank" id="regalo-bank"></div>
+    <div class="regalo-titular" id="regalo-titular"></div>
+    <button class="btn-copy" onclick="copyAlias()">Copiar alias</button>
+  </div>
+  <div id="regalo-cbu-wrap" class="regalo-cbu" style="display:none">
+    <span class="regalo-cbu-label">CBU</span>
+    <div class="regalo-cbu-val" id="regalo-cbu"></div>
+    <button class="btn-copy" style="margin-top:12px" onclick="copyCBU()">Copiar CBU</button>
+  </div>
+</section>
+
+<div class="divider-full"></div>
+
+<!-- RSVP -->
+<section id="rsvp">
+  <span class="sec-label">Confirmá tu asistencia</span>
+  <h2 class="sec-title">¿<em>Venís</em>?</h2>
+  <p class="sec-body">Por favor confirmá antes del <span id="rsvp-fecha-limite" style="color:var(--gold2)"></span>.</p>
+
+  <div id="rsvp-form-wrap" class="rsvp-form">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Nombre</label>
+        <input class="form-input" id="rsvp-nombre" placeholder="Tu nombre" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Apellido</label>
+        <input class="form-input" id="rsvp-apellido" placeholder="Tu apellido" required>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">¿Confirmás asistencia?</label>
+      <select class="form-select" id="rsvp-asistencia">
+        <option value="">— Seleccioná —</option>
+        <option value="si">Sí, voy a estar</option>
+        <option value="no">No voy a poder ir</option>
+        <option value="quizas">Todavía no sé</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">¿Traés acompañante?</label>
+      <select class="form-select" id="rsvp-acompanante">
+        <option value="no">No, voy solo/a</option>
+        <option value="si">Sí, vengo con acompañante</option>
+        <option value="2">Con 2 acompañantes</option>
+        <option value="3">Con 3 o más acompañantes</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Restricciones alimentarias</label>
+      <div class="check-group">
+        <label class="check-item"><input type="checkbox" id="rsvp-celiaco"> Celíaco/a</label>
+        <label class="check-item"><input type="checkbox" id="rsvp-vegetariano"> Vegetariano/a</label>
+        <label class="check-item"><input type="checkbox" id="rsvp-vegano"> Vegano/a</label>
+        <label class="check-item"><input type="checkbox" id="rsvp-alergia"> Otra alergia</label>
+      </div>
+    </div>
+    <div class="form-group" id="rsvp-alergia-detail-wrap" style="display:none">
+      <label class="form-label">¿Cuál alergia?</label>
+      <input class="form-input" id="rsvp-alergia-detail" placeholder="Describí tu alergia">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Mensaje (opcional)</label>
+      <textarea class="form-textarea" id="rsvp-mensaje" placeholder="¿Querés decirnos algo?"></textarea>
+    </div>
+    <button class="btn-rsvp" id="rsvp-btn" onclick="submitRSVP()">Confirmar asistencia</button>
+    <p id="rsvp-error" style="display:none;color:#e55;font-size:12px;margin-top:12px;text-align:center"></p>
+  </div>
+  <div id="rsvp-success">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <p>¡Gracias por confirmar!</p>
+    <small>Ya recibimos tu respuesta. ¡Nos vemos pronto!</small>
+  </div>
+</section>
+
+<div class="divider-full"></div>
+
+<!-- SPOTIFY -->
+<section id="spotify">
+  <span class="sec-label">La música del momento</span>
+  <h2 class="sec-title">La <em>playlist</em></h2>
+  <p class="sec-body" style="margin:0 auto;max-width:480px">¿Querés que suene tu canción favorita? La playlist es colaborativa — agregá los temas que quieras.</p>
+  <div id="spotify-embed-wrap"></div>
+  <a id="btn-spotify" class="btn-spotify" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+    Agregar canción a la playlist
+  </a>
+</section>
+
+<footer>
+  <p id="footer-names"></p>
+  <small>Invitación digital · Cristian Romero Digital</small>
+</footer>
+
+</div><!-- /invite-app -->
+
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+let cfg = null;
+
+function parseConfig() {
+  const params = new URLSearchParams(location.search);
+  const raw = params.get('c');
+  if (!raw) return null;
+  try {
+    return JSON.parse(atob(decodeURIComponent(raw)));
+  } catch(e) {
+    return null;
+  }
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+function copyAlias() {
+  if (!cfg) return;
+  navigator.clipboard.writeText(cfg.alias_mp || '').then(() => toast('¡Alias copiado!'));
+}
+
+function copyCBU() {
+  if (!cfg) return;
+  navigator.clipboard.writeText(cfg.cbu || '').then(() => toast('¡CBU copiado!'));
+}
+
+function startCountdown(isoDate) {
+  const target = new Date(isoDate + 'T00:00:00');
+  const wrap = document.getElementById('countdown');
+  function update() {
+    const now = new Date();
+    const diff = target - now;
+    if (diff <= 0) { wrap.innerHTML = '<span style="font-family:Cormorant Garamond,serif;font-size:18px;letter-spacing:3px;color:var(--gold)">¡Hoy es el gran día!</span>'; return; }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    wrap.innerHTML = [
+      ['días', d], ['horas', h], ['min', m], ['seg', s]
+    ].map(([l, n]) => `<div class="cd-unit"><span class="cd-num">${String(n).padStart(2,'0')}</span><span class="cd-label">${l}</span></div>`).join('');
+  }
+  update();
+  setInterval(update, 1000);
+}
+
+function formatFechaLimite(iso) {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-');
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return `${parseInt(d)} de ${meses[parseInt(m)-1]} de ${y}`;
+}
+
+function renderHero(c) {
+  document.title = c.titulo || (c.novios ? `Invitación — ${c.novios}` : 'Invitación');
+  document.getElementById('hero-eyebrow').textContent = c.titulo || '¡Nos casamos!';
+  const names = c.novios || '';
+  const parts = names.split('&');
+  if (parts.length === 2) {
+    document.getElementById('hero-names').innerHTML = `${parts[0].trim()} <span class="hero-ampersand">&</span> ${parts[1].trim()}`;
+  } else {
+    document.getElementById('hero-names').textContent = names;
+  }
+  document.getElementById('hero-date').textContent = c.fecha_display || '';
+
+  const wrap = document.getElementById('hero-media-wrap');
+  if (c.media_url) {
+    if (c.media_type === 'video') {
+      wrap.innerHTML = `<video id="hero-media" autoplay muted loop playsinline><source src="${c.media_url}"></video>`;
+    } else {
+      wrap.innerHTML = `<img id="hero-media" src="${c.media_url}" alt="">`;
+    }
+  } else {
+    document.getElementById('hero-overlay').style.background = 'rgba(12,12,12,0.6)';
+  }
+
+  if (c.fecha_iso) startCountdown(c.fecha_iso);
+  else document.getElementById('countdown').style.display = 'none';
+
+  document.getElementById('footer-names').textContent = c.novios || '';
+}
+
+function renderEvento(c) {
+  document.getElementById('ev-label').textContent = c.titulo || '¡Nos casamos!';
+  document.getElementById('ev-title').innerHTML = c.subtitulo_html || `Con inmensa alegría los invitamos a celebrar nuestro <em>casamiento</em>`;
+  document.getElementById('ev-body').textContent = c.presentacion || '';
+  const items = [];
+  if (c.ceremonia_hora) items.push({ icon: 'church', label: 'Ceremonia', hora: c.ceremonia_hora, lugar: c.ceremonia_lugar || '' });
+  if (c.recepcion_hora) items.push({ icon: 'party', label: 'Recepción', hora: c.recepcion_hora, lugar: c.recepcion_lugar || '' });
+  const grid = document.getElementById('ev-grid');
+  if (items.length) {
+    grid.style.marginTop = '48px';
+    grid.innerHTML = items.map(it => `
+      <div class="evento-item">
+        <div class="evento-icon">${it.icon === 'church' ? svgChurch() : svgParty()}</div>
+        <span class="evento-label">${it.label}</span>
+        <div class="evento-hora">${it.hora}</div>
+        <div class="evento-lugar">${it.lugar}</div>
+      </div>`).join('');
+  } else {
+    grid.style.display = 'none';
+  }
+}
+
+function renderLugar(c) {
+  document.getElementById('lugar-nombre').textContent = c.lugar_nombre || '';
+  document.getElementById('lugar-dir').textContent = c.lugar_direccion || '';
+  const mapsBtn = document.getElementById('btn-maps');
+  if (c.lugar_maps) {
+    mapsBtn.href = c.lugar_maps;
+  } else {
+    mapsBtn.style.display = 'none';
+  }
+  const embedWrap = document.getElementById('maps-embed-wrap');
+  if (c.lugar_maps_embed) {
+    embedWrap.innerHTML = `<iframe class="maps-embed" src="${c.lugar_maps_embed}" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" frameborder="0"></iframe>`;
+  } else if (c.lugar_nombre && c.lugar_direccion) {
+    const q = encodeURIComponent((c.lugar_nombre + ' ' + c.lugar_direccion).trim());
+    embedWrap.innerHTML = `<iframe class="maps-embed" src="https://maps.google.com/maps?q=${q}&output=embed" allowfullscreen loading="lazy" frameborder="0"></iframe>`;
+  }
+}
+
+function renderDresscode(c) {
+  document.getElementById('dresscode-val').textContent = c.dresscode || 'Formal';
+  const nota = document.getElementById('dresscode-nota');
+  if (c.dresscode_nota) nota.textContent = c.dresscode_nota;
+  else nota.style.display = 'none';
+}
+
+function renderRegalo(c) {
+  const sec = document.getElementById('regalo');
+  if (!c.alias_mp && !c.cbu) { sec.style.display = 'none'; return; }
+  if (c.alias_mp) {
+    document.getElementById('regalo-alias').textContent = c.alias_mp;
+    document.getElementById('regalo-bank').textContent = c.alias_banco || 'Mercado Pago';
+    document.getElementById('regalo-titular').textContent = c.alias_titular ? `Titular: ${c.alias_titular}` : '';
+  } else {
+    document.getElementById('regalo-alias-wrap').style.display = 'none';
+  }
+  if (c.cbu) {
+    document.getElementById('regalo-cbu-wrap').style.display = 'block';
+    document.getElementById('regalo-cbu').textContent = c.cbu;
+  }
+}
+
+function renderRSVP(c) {
+  const sec = document.getElementById('rsvp');
+  if (!c.rsvp_activo) { sec.style.display = 'none'; return; }
+  const fl = document.getElementById('rsvp-fecha-limite');
+  fl.textContent = formatFechaLimite(c.rsvp_limite) || '';
+  document.getElementById('rsvp-alergia').addEventListener('change', function() {
+    document.getElementById('rsvp-alergia-detail-wrap').style.display = this.checked ? 'block' : 'none';
+  });
+}
+
+function renderSpotify(c) {
+  const sec = document.getElementById('spotify');
+  if (!c.spotify_url) { sec.style.display = 'none'; sec.previousElementSibling.style.display = 'none'; return; }
+  document.getElementById('btn-spotify').href = c.spotify_url;
+  const embedWrap = document.getElementById('spotify-embed-wrap');
+  const embedUrl = c.spotify_url.replace('open.spotify.com/', 'open.spotify.com/embed/');
+  embedWrap.innerHTML = `<iframe class="spotify-embed" src="${embedUrl}" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>`;
+}
+
+function renderNav(c) {
+  const nav = document.getElementById('nav');
+  const hide = [];
+  if (!c.rsvp_activo) hide.push('rsvp');
+  if (!c.spotify_url) hide.push('spotify');
+  if (!c.alias_mp && !c.cbu) hide.push('regalo');
+  nav.querySelectorAll('a').forEach(a => {
+    const id = a.getAttribute('href').replace('#', '');
+    if (hide.includes(id)) a.style.display = 'none';
+  });
+}
+
+async function submitRSVP() {
+  const nombre = document.getElementById('rsvp-nombre').value.trim();
+  const apellido = document.getElementById('rsvp-apellido').value.trim();
+  const asistencia = document.getElementById('rsvp-asistencia').value;
+  const errorEl = document.getElementById('rsvp-error');
+  errorEl.style.display = 'none';
+  if (!nombre || !apellido) { errorEl.textContent = 'Por favor ingresá nombre y apellido.'; errorEl.style.display = 'block'; return; }
+  if (!asistencia) { errorEl.textContent = 'Por favor confirmá si vas a asistir.'; errorEl.style.display = 'block'; return; }
+  const btn = document.getElementById('rsvp-btn');
+  btn.disabled = true; btn.textContent = 'Enviando...';
+  const restricciones = [];
+  if (document.getElementById('rsvp-celiaco').checked) restricciones.push('Celíaco/a');
+  if (document.getElementById('rsvp-vegetariano').checked) restricciones.push('Vegetariano/a');
+  if (document.getElementById('rsvp-vegano').checked) restricciones.push('Vegano/a');
+  if (document.getElementById('rsvp-alergia').checked) restricciones.push('Alergia: ' + (document.getElementById('rsvp-alergia-detail').value || 'sin especificar'));
+  const data = {
+    evento: cfg.titulo || cfg.novios || 'Invitación',
+    nombre,
+    apellido,
+    asistencia: { si: 'Sí, confirma asistencia', no: 'No puede asistir', quizas: 'Todavía no sabe' }[asistencia] || asistencia,
+    acompanante: { no: 'No', si: '1 acompañante', '2': '2 acompañantes', '3': '3 o más acompañantes' }[document.getElementById('rsvp-acompanante').value] || '',
+    restricciones: restricciones.length ? restricciones.join(', ') : 'Ninguna',
+    mensaje: document.getElementById('rsvp-mensaje').value.trim() || ''
+  };
+  const tasks = [];
+  if (cfg.gsheet_url) {
+    tasks.push(fetch(cfg.gsheet_url, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).catch(() => {}));
+  }
+  if (cfg.emailjs_service && cfg.emailjs_template && cfg.emailjs_key) {
+    emailjs.init({ publicKey: cfg.emailjs_key });
+    tasks.push(emailjs.send(cfg.emailjs_service, cfg.emailjs_template, data).catch(() => {}));
+  }
+  try {
+    await Promise.all(tasks);
+    document.getElementById('rsvp-form-wrap').style.display = 'none';
+    document.getElementById('rsvp-success').style.display = 'block';
+  } catch(e) {
+    errorEl.textContent = 'Hubo un error al enviar. Intentá de nuevo.';
+    errorEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Confirmar asistencia';
+  }
+}
+
+function svgChurch() { return `<svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10v11M20 10v11M8 21v-4a4 4 0 018 0v4"/></svg>`; }
+function svgParty() { return `<svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M5 3v4M3 5h4M6 17v4M4 19h4M13 3l-4 14 5-5 4 6-1-15z"/></svg>`; }
+
+function init() {
+  if (!cfg) cfg = parseConfig();
+  if (!cfg) {
+    document.getElementById('placeholder').style.display = 'flex';
+    return;
+  }
+  document.getElementById('invite-app').style.display = 'block';
+  if (cfg.color_acento) document.documentElement.style.setProperty('--gold', cfg.color_acento);
+  renderHero(cfg);
+  renderEvento(cfg);
+  renderLugar(cfg);
+  renderDresscode(cfg);
+  renderRegalo(cfg);
+  renderRSVP(cfg);
+  renderSpotify(cfg);
+  renderNav(cfg);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
