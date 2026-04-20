@@ -3517,7 +3517,7 @@ let invCloudinaryWidget = null;
 function getInvites() {
   try { return JSON.parse(localStorage.getItem(INV_KEY) || '[]'); } catch(e) { return []; }
 }
-function saveInvites(list) { localStorage.setItem(INV_KEY, JSON.stringify(list)); }
+function saveInvites(list) { S.set(INV_KEY, list); }
 
 function toSlug(str) {
   return str.toLowerCase()
