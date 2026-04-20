@@ -3495,7 +3495,7 @@ function saveInvBaseUrl(val) { localStorage.setItem('crd_inv_base', val.trim());
 function getInvBaseUrl() {
   const saved = (localStorage.getItem('crd_inv_base') || '').trim();
   if (saved) return saved;
-  return location.href.replace(/admin\.html.*$/, 'invite.html');
+  return location.href.replace(/[^/]*\.html.*$/, 'invite.html');
 }
 
 function genInviteUrl(cfg) {
