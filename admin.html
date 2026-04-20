@@ -3518,7 +3518,9 @@ function getInvBaseUrl() {
 }
 
 async function genInviteUrl(inv) {
-  const slug = inv.slug || toSlug(inv.config.novios || 'invitacion');
+  const nombre = toSlug(inv.config.novios || inv.config.titulo || 'invitacion');
+  const fecha = toSlug(inv.config.fecha_display || '');
+  const slug = inv.slug || (fecha ? nombre + '-' + fecha : nombre + '-' + String(inv.id).slice(-4));
   const base = getInvBaseUrl();
   try {
     await fetch(CF_URL + '/invite/' + slug, {
@@ -3544,7 +3546,9 @@ function renderInvitesPage() {
   }
   const tipos = { casamiento:'Casamiento', quinces:'15 Años', save_the_date:'Save the Date', otro:'Evento' };
   wrap.innerHTML = list.map(inv => {
-    const slug = inv.slug || toSlug(inv.config.novios || 'invitacion');
+    const nombre = toSlug(inv.config.novios || inv.config.titulo || 'invitacion');
+    const fecha = toSlug(inv.config.fecha_display || '');
+    const slug = inv.slug || (fecha ? nombre + '-' + fecha : nombre + '-' + String(inv.id).slice(-4));
     const base = getInvBaseUrl();
     const url = base + '?i=' + slug;
     return `<div class="inv-card">
