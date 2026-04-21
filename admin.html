@@ -574,13 +574,18 @@ tr:hover td{background:rgba(255,255,255,0.02);}
             <!-- BÁSICO -->
             <div class="inv-modal-section">
               <div class="inv-modal-section-title">Tipo y Datos Básicos</div>
-              <div class="form-group">
-                <label class="form-label">Tipo de invitación</label>
+              <!-- Selector principal: Invitación vs Save the Date -->
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:24px;border:1px solid rgba(255,255,255,0.08)">
+                <button id="inv-mode-inv" onclick="invSetMode('invitacion')" style="padding:18px;background:var(--gold);color:var(--black);border:none;font-size:10px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;font-family:'Montserrat',sans-serif;font-weight:500;transition:all 0.2s">INVITACIÓN</button>
+                <button id="inv-mode-std" onclick="invSetMode('save_the_date')" style="padding:18px;background:none;color:var(--gray2);border:none;border-left:1px solid rgba(255,255,255,0.08);font-size:10px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;font-family:'Montserrat',sans-serif;font-weight:400;transition:all 0.2s">SAVE THE DATE</button>
+              </div>
+              <div class="form-group" id="inv-tipo-wrap">
+                <label class="form-label">Tipo de evento</label>
                 <select class="form-input" id="inv-tipo" onchange="invTipoChange()">
                   <option value="casamiento">Casamiento</option>
                   <option value="quinces">15 Años</option>
                   <option value="cumpleanos">Cumpleaños</option>
-                  <option value="save_the_date">Save the Date</option>
+                  <option value="save_the_date" style="display:none">Save the Date</option>
                   <option value="otro">Otro evento</option>
                 </select>
               </div>
@@ -3761,8 +3766,9 @@ function openInviteModal(id) {
     slugEl.value = inv.slug || '';
     slugEl.dataset.manual = inv.slug ? '1' : '';
     invPreviewMedia(c.media_url, c.media_type);
-    invTipoChange();
+    invSetMode(c.tipo === 'save_the_date' ? 'save_the_date' : 'invitacion');
   } else {
+    invSetMode('invitacion');
     document.getElementById('inv-id').value = '';
     ['inv-novios','inv-titulo','inv-subtitulo','inv-fecha-display','inv-presentacion','inv-media-url',
      'inv-ceremonia-hora','inv-ceremonia-lugar','inv-ceremonia-dir','inv-recepcion-hora','inv-fin-fiesta-hora','inv-recepcion-lugar',
@@ -3976,6 +3982,25 @@ function selectInvMedia(url, type) {
   invPreviewMedia(url, type);
   document.getElementById('inv-cloudinary-browser').style.display = 'none';
   toast('Media seleccionada ✓');
+}
+
+function invSetMode(mode) {
+  const btnInv = document.getElementById('inv-mode-inv');
+  const btnStd = document.getElementById('inv-mode-std');
+  const tipoWrap = document.getElementById('inv-tipo-wrap');
+  const tipoSel = document.getElementById('inv-tipo');
+  if (mode === 'save_the_date') {
+    btnStd.style.background = 'var(--gold)'; btnStd.style.color = 'var(--black)'; btnStd.style.fontWeight = '500';
+    btnInv.style.background = 'none'; btnInv.style.color = 'var(--gray2)'; btnInv.style.fontWeight = '400';
+    tipoWrap.style.display = 'none';
+    tipoSel.value = 'save_the_date';
+  } else {
+    btnInv.style.background = 'var(--gold)'; btnInv.style.color = 'var(--black)'; btnInv.style.fontWeight = '500';
+    btnStd.style.background = 'none'; btnStd.style.color = 'var(--gray2)'; btnStd.style.fontWeight = '400';
+    tipoWrap.style.display = '';
+    if (tipoSel.value === 'save_the_date') tipoSel.value = 'casamiento';
+  }
+  invTipoChange();
 }
 
 function invTipoChange() {

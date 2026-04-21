@@ -476,7 +476,7 @@ function formatFechaLimite(iso) {
 
 function renderHero(c) {
   document.title = c.titulo || (c.novios ? `Invitación — ${c.novios}` : 'Invitación');
-  document.getElementById('hero-eyebrow').textContent = c.titulo || '¡Nos casamos!';
+  document.getElementById('hero-eyebrow').textContent = c.tipo === 'save_the_date' ? (c.titulo || 'Save The Date') : (c.titulo || '¡Nos casamos!');
   const names = c.novios || '';
   const parts = names.split('&');
   if (parts.length === 2) {
@@ -573,7 +573,7 @@ function renderDresscode(c) {
 
 function renderRegalo(c) {
   const sec = document.getElementById('regalo');
-  if (!c.alias_mp && !c.cbu) { sec.style.display = 'none'; return; }
+  if (c.tipo === 'save_the_date' || (!c.alias_mp && !c.cbu)) { sec.style.display = 'none'; return; }
   if (c.alias_mp) {
     document.getElementById('regalo-alias').textContent = c.alias_mp;
     document.getElementById('regalo-bank').textContent = c.alias_banco || 'Mercado Pago';
@@ -589,7 +589,7 @@ function renderRegalo(c) {
 
 function renderRSVP(c) {
   const sec = document.getElementById('rsvp');
-  if (!c.rsvp_activo) { sec.style.display = 'none'; return; }
+  if (c.tipo === 'save_the_date' || !c.rsvp_activo) { sec.style.display = 'none'; return; }
   const fl = document.getElementById('rsvp-fecha-limite');
   fl.textContent = formatFechaLimite(c.rsvp_limite) || '';
   document.getElementById('rsvp-alergia').addEventListener('change', function() {
@@ -609,9 +609,9 @@ function renderSpotify(c) {
 function renderNav(c) {
   const nav = document.getElementById('nav');
   const hide = [];
-  if (!c.rsvp_activo) hide.push('rsvp');
+  if (!c.rsvp_activo || c.tipo === 'save_the_date') hide.push('rsvp');
   if (!c.spotify_url) hide.push('spotify');
-  if (!c.alias_mp && !c.cbu) hide.push('regalo');
+  if ((!c.alias_mp && !c.cbu) || c.tipo === 'save_the_date') hide.push('regalo');
   nav.querySelectorAll('a').forEach(a => {
     const id = a.getAttribute('href').replace('#', '');
     if (hide.includes(id)) a.style.display = 'none';
