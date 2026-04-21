@@ -514,7 +514,8 @@ function renderEvento(c) {
   const subtDefault = SUBTITULOS_DEFAULT[c.tipo] || SUBTITULOS_DEFAULT.casamiento;
   const subtRaw = c.subtitulo_html || '';
   const subtFinal = subtRaw ? subtRaw.replace(/\*([^*]+)\*/g, '<em>$1</em>') : subtDefault;
-  document.getElementById('ev-label').textContent = c.titulo || '¡Nos casamos!';
+  const EV_LABELS = { casamiento:'El gran día', quinces:'La celebración', cumpleanos:'La celebración', save_the_date:'Guardá la fecha', otro:'El evento' };
+  document.getElementById('ev-label').textContent = EV_LABELS[c.tipo] || 'El gran día';
   document.getElementById('ev-title').innerHTML = subtFinal;
   document.getElementById('ev-body').textContent = c.presentacion || '';
   const esBoda = !c.tipo || c.tipo === 'casamiento' || c.tipo === 'save_the_date';
