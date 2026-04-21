@@ -673,10 +673,14 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                   <label class="form-label" id="inv-recepcion-hora-label">Horario — Recepción / Fiesta</label>
                   <input class="form-input" id="inv-recepcion-hora" placeholder="21:00">
                 </div>
-                <div class="form-group" id="inv-recepcion-lugar-wrap">
-                  <label class="form-label">Lugar — Recepción / Fiesta</label>
-                  <input class="form-input" id="inv-recepcion-lugar" placeholder="Salón El Gran Espejo">
+                <div class="form-group">
+                  <label class="form-label">Horario — Fin de fiesta</label>
+                  <input class="form-input" id="inv-fin-fiesta-hora" placeholder="03:00">
                 </div>
+              </div>
+              <div class="form-group" id="inv-recepcion-lugar-wrap" style="display:none">
+                <label class="form-label">Lugar — Recepción / Fiesta</label>
+                <input class="form-input" id="inv-recepcion-lugar" placeholder="Salón El Gran Espejo">
               </div>
               <small id="inv-lugar-hint" style="display:none;color:var(--gray);font-size:10px;margin-top:4px">El lugar del evento se completa en la sección "Lugar del Evento" abajo.</small>
             </div>
@@ -3667,6 +3671,7 @@ function openInviteModal(id) {
     document.getElementById('inv-ceremonia-hora').value = c.ceremonia_hora || '';
     document.getElementById('inv-ceremonia-lugar').value = c.ceremonia_lugar || '';
     document.getElementById('inv-recepcion-hora').value = c.recepcion_hora || '';
+    document.getElementById('inv-fin-fiesta-hora').value = c.fin_fiesta_hora || '';
     document.getElementById('inv-recepcion-lugar').value = c.recepcion_lugar || '';
     document.getElementById('inv-lugar-nombre').value = c.lugar_nombre || '';
     document.getElementById('inv-lugar-dir').value = c.lugar_direccion || '';
@@ -3692,7 +3697,7 @@ function openInviteModal(id) {
   } else {
     document.getElementById('inv-id').value = '';
     ['inv-novios','inv-titulo','inv-subtitulo','inv-fecha-display','inv-presentacion','inv-media-url',
-     'inv-ceremonia-hora','inv-ceremonia-lugar','inv-recepcion-hora','inv-recepcion-lugar',
+     'inv-ceremonia-hora','inv-ceremonia-lugar','inv-recepcion-hora','inv-fin-fiesta-hora','inv-recepcion-lugar',
      'inv-lugar-nombre','inv-lugar-dir','inv-lugar-maps','inv-dresscode','inv-dresscode-nota',
      'inv-alias','inv-alias-banco','inv-alias-titular','inv-cbu','inv-rsvp-limite',
      'inv-gsheet-url','inv-emailjs-template','inv-spotify','inv-slug'].forEach(id => {
@@ -3732,6 +3737,7 @@ function readInviteForm() {
       ceremonia_hora: document.getElementById('inv-ceremonia-hora').value.trim(),
       ceremonia_lugar: document.getElementById('inv-ceremonia-lugar').value.trim(),
       recepcion_hora: document.getElementById('inv-recepcion-hora').value.trim(),
+      fin_fiesta_hora: document.getElementById('inv-fin-fiesta-hora').value.trim(),
       recepcion_lugar: document.getElementById('inv-recepcion-lugar').value.trim(),
       lugar_nombre: document.getElementById('inv-lugar-nombre').value.trim(),
       lugar_direccion: document.getElementById('inv-lugar-dir').value.trim(),

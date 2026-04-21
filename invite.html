@@ -227,8 +227,7 @@ footer small{font-size:10px;color:rgba(255,255,255,0.15);margin-top:8px;display:
 <!-- LUGAR -->
 <section id="lugar">
   <span class="sec-label">¿Dónde festejamos?</span>
-  <h2 class="sec-title">El <em>lugar</em></h2>
-  <p class="sec-body" id="lugar-nombre"></p>
+  <h2 class="sec-title" id="lugar-nombre"></h2>
   <p class="sec-body" id="lugar-dir" style="margin-top:6px;font-size:12px;opacity:0.7"></p>
   <div id="maps-embed-wrap"></div>
   <a id="btn-maps" class="btn-maps" target="_blank" rel="noopener">
@@ -505,18 +504,22 @@ function renderEvento(c) {
   document.getElementById('ev-title').innerHTML = subtFinal;
   document.getElementById('ev-body').textContent = c.presentacion || '';
   const esBoda = !c.tipo || c.tipo === 'casamiento' || c.tipo === 'save_the_date';
+  const fmtHs = h => { if (!h) return ''; const t = h.trim(); return /hs\.?\s*$/i.test(t) ? t : t + ' hs.'; };
+  const svgClock = () => `<svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
   const items = [];
-  if (esBoda && c.ceremonia_hora) items.push({ icon: 'church', label: 'Ceremonia', hora: c.ceremonia_hora, lugar: c.ceremonia_lugar || '' });
-  if (c.recepcion_hora) items.push({ icon: 'party', label: esBoda ? 'Recepción' : 'Evento', hora: c.recepcion_hora, lugar: esBoda ? (c.recepcion_lugar || '') : (c.lugar_nombre || '') });
+  if (esBoda && c.ceremonia_hora) items.push({ icon: 'church', label: 'Ceremonia', hora: fmtHs(c.ceremonia_hora) });
+  if (c.recepcion_hora) items.push({ icon: 'party', label: esBoda ? 'Recepción' : 'Evento', hora: fmtHs(c.recepcion_hora) });
+  if (c.fin_fiesta_hora) items.push({ icon: 'clock', label: 'Fin de fiesta', hora: fmtHs(c.fin_fiesta_hora) });
   const grid = document.getElementById('ev-grid');
   if (items.length) {
     grid.style.marginTop = '48px';
+    grid.style.gridTemplateColumns = items.length === 3 ? '1fr 1fr 1fr' : items.length === 1 ? 'minmax(0,320px)' : '1fr 1fr';
+    if (items.length === 1) { grid.style.justifyContent = 'center'; }
     grid.innerHTML = items.map(it => `
       <div class="evento-item">
-        <div class="evento-icon">${it.icon === 'church' ? svgChurch() : svgParty()}</div>
+        <div class="evento-icon">${it.icon === 'church' ? svgChurch() : it.icon === 'clock' ? svgClock() : svgParty()}</div>
         <span class="evento-label">${it.label}</span>
         <div class="evento-hora">${it.hora}</div>
-        <div class="evento-lugar">${it.lugar}</div>
       </div>`).join('');
   } else {
     grid.style.display = 'none';
