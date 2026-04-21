@@ -162,30 +162,19 @@ footer small{font-size:10px;color:rgba(255,255,255,0.15);margin-top:8px;display:
 .theme-champagne .divider-full{background:linear-gradient(to right,transparent,rgba(196,149,106,0.3),transparent)}
 
 /* EFECTO AERO */
-.estilo-aero body{background:
-  radial-gradient(ellipse 70% 55% at 15% 20%,rgba(90,50,170,0.45) 0%,transparent 65%),
-  radial-gradient(ellipse 60% 45% at 85% 65%,rgba(0,155,175,0.35) 0%,transparent 65%),
-  radial-gradient(ellipse 55% 40% at 50% 95%,rgba(160,70,50,0.25) 0%,transparent 60%),
-  #0c0c0c}
-.estilo-aero #nav{background:rgba(12,12,12,0.45)!important;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
-.estilo-aero section,.estilo-aero #regalo,.estilo-aero footer{background:rgba(12,12,12,0.5)!important;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
-.estilo-aero .evento-item{background:rgba(255,255,255,0.06)!important;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-.theme-blanco.estilo-aero body{background:
-  radial-gradient(ellipse 70% 55% at 15% 20%,rgba(139,105,20,0.25) 0%,transparent 65%),
-  radial-gradient(ellipse 60% 45% at 85% 65%,rgba(80,140,190,0.2) 0%,transparent 65%),
-  radial-gradient(ellipse 55% 40% at 50% 95%,rgba(200,170,90,0.22) 0%,transparent 60%),
-  #f5f5f2}
-.theme-blanco.estilo-aero #nav{background:rgba(245,245,242,0.5)!important;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
-.theme-blanco.estilo-aero section,.theme-blanco.estilo-aero #regalo,.theme-blanco.estilo-aero footer{background:rgba(255,255,255,0.55)!important;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
-.theme-blanco.estilo-aero .evento-item{background:rgba(255,255,255,0.65)!important}
-.theme-champagne.estilo-aero body{background:
-  radial-gradient(ellipse 70% 55% at 15% 20%,rgba(196,149,106,0.4) 0%,transparent 65%),
-  radial-gradient(ellipse 60% 45% at 85% 65%,rgba(140,100,60,0.3) 0%,transparent 65%),
-  radial-gradient(ellipse 55% 40% at 50% 95%,rgba(220,185,130,0.35) 0%,transparent 60%),
-  #f5ede0}
-.theme-champagne.estilo-aero #nav{background:rgba(245,237,224,0.5)!important;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
-.theme-champagne.estilo-aero section,.theme-champagne.estilo-aero #regalo,.theme-champagne.estilo-aero footer{background:rgba(245,237,224,0.55)!important;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
-.theme-champagne.estilo-aero .evento-item{background:rgba(245,237,224,0.65)!important}
+.estilo-aero #nav{backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.estilo-aero section,.estilo-aero #regalo{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.estilo-aero .evento-item{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);background:rgba(255,255,255,0.05)}
+.theme-blanco.estilo-aero #nav{background:rgba(245,245,242,0.55);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.theme-blanco.estilo-aero section,.theme-blanco.estilo-aero #regalo{background:rgba(255,255,255,0.55)}
+.theme-blanco.estilo-aero .evento-item{background:rgba(255,255,255,0.6)}
+.theme-champagne.estilo-aero #nav{background:rgba(245,237,224,0.55);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.theme-champagne.estilo-aero section,.theme-champagne.estilo-aero #regalo{background:rgba(245,237,224,0.55)}
+.theme-champagne.estilo-aero .evento-item{background:rgba(245,237,224,0.6)}
+/* LOGO FOOTER */
+#footer-logo{display:none;margin:0 auto 16px;max-height:48px;max-width:160px;object-fit:contain;filter:brightness(0) invert(1)}
+.theme-blanco #footer-logo{filter:brightness(0)}
+.theme-champagne #footer-logo{filter:brightness(0) sepia(1) saturate(0.6)}
 </style>
 </head>
 <body>
@@ -370,6 +359,45 @@ footer small{font-size:10px;color:rgba(255,255,255,0.15);margin-top:8px;display:
 <script>
 let cfg = null;
 const CF_URL_INV = 'https://web.cristian-romero-digital.workers.dev';
+
+// ── PARTÍCULAS AERO ──
+let _aeroRAF = null, _aeroCanvas = null;
+function startAeroParticles() {
+  if (_aeroCanvas) return;
+  const cv = document.createElement('canvas');
+  cv.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0';
+  document.body.insertBefore(cv, document.body.firstChild);
+  _aeroCanvas = cv;
+  const ctx = cv.getContext('2d');
+  let W, H;
+  const resize = () => { W = cv.width = innerWidth; H = cv.height = innerHeight; };
+  resize();
+  window.addEventListener('resize', resize);
+  const N = 75;
+  const pts = Array.from({length: N}, () => ({
+    x: Math.random() * innerWidth,
+    y: Math.random() * innerHeight,
+    r: Math.random() * 1.2 + 0.3,
+    vy: Math.random() * 0.35 + 0.12,
+    vx: (Math.random() - 0.5) * 0.15,
+    op: Math.random() * 0.45 + 0.1
+  }));
+  function isDark() { const cl = document.documentElement.classList; return !cl.contains('theme-blanco') && !cl.contains('theme-champagne'); }
+  function tick() {
+    ctx.clearRect(0, 0, W, H);
+    const dark = isDark();
+    pts.forEach(p => {
+      p.y -= p.vy; p.x += p.vx;
+      if (p.y < -4) { p.y = H + 4; p.x = Math.random() * W; }
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, 6.283);
+      ctx.fillStyle = dark ? `rgba(255,255,255,${p.op})` : `rgba(0,0,0,${p.op * 0.6})`;
+      ctx.fill();
+    });
+    _aeroRAF = requestAnimationFrame(tick);
+  }
+  tick();
+}
 
 async function parseConfig() {
   const params = new URLSearchParams(location.search);
@@ -625,7 +653,7 @@ async function init() {
   }
   document.getElementById('invite-app').style.display = 'block';
   if (cfg.color_esquema && cfg.color_esquema !== 'negro') document.documentElement.classList.add('theme-' + cfg.color_esquema);
-  if (cfg.estilo_aero) document.documentElement.classList.add('estilo-aero');
+  if (cfg.estilo_aero) { document.documentElement.classList.add('estilo-aero'); startAeroParticles(); }
   if (cfg.color_acento) document.documentElement.style.setProperty('--gold', cfg.color_acento);
   renderHero(cfg);
   renderEvento(cfg);
