@@ -663,9 +663,13 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                     <input class="form-input" id="inv-ceremonia-hora" placeholder="18:00">
                   </div>
                   <div class="form-group">
-                    <label class="form-label">Lugar — Ceremonia</label>
+                    <label class="form-label">Nombre — Ceremonia</label>
                     <input class="form-input" id="inv-ceremonia-lugar" placeholder="Iglesia San José">
                   </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Dirección — Ceremonia</label>
+                  <input class="form-input" id="inv-ceremonia-dir" placeholder="Av. Rivadavia 1234, CABA">
                 </div>
               </div>
               <div class="inv-form-2col">
@@ -3733,6 +3737,7 @@ function openInviteModal(id) {
     document.getElementById('inv-media-type').value = c.media_type || 'image';
     document.getElementById('inv-ceremonia-hora').value = c.ceremonia_hora || '';
     document.getElementById('inv-ceremonia-lugar').value = c.ceremonia_lugar || '';
+    document.getElementById('inv-ceremonia-dir').value = c.ceremonia_direccion || '';
     document.getElementById('inv-recepcion-hora').value = c.recepcion_hora || '';
     document.getElementById('inv-fin-fiesta-hora').value = c.fin_fiesta_hora || '';
     document.getElementById('inv-recepcion-lugar').value = c.recepcion_lugar || '';
@@ -3760,7 +3765,7 @@ function openInviteModal(id) {
   } else {
     document.getElementById('inv-id').value = '';
     ['inv-novios','inv-titulo','inv-subtitulo','inv-fecha-display','inv-presentacion','inv-media-url',
-     'inv-ceremonia-hora','inv-ceremonia-lugar','inv-recepcion-hora','inv-fin-fiesta-hora','inv-recepcion-lugar',
+     'inv-ceremonia-hora','inv-ceremonia-lugar','inv-ceremonia-dir','inv-recepcion-hora','inv-fin-fiesta-hora','inv-recepcion-lugar',
      'inv-lugar-nombre','inv-lugar-dir','inv-lugar-maps','inv-dresscode','inv-dresscode-nota',
      'inv-alias','inv-alias-banco','inv-alias-titular','inv-cbu','inv-rsvp-limite',
      'inv-gsheet-url','inv-emailjs-template','inv-spotify','inv-slug'].forEach(id => {
@@ -3799,6 +3804,7 @@ function readInviteForm() {
       media_type: document.getElementById('inv-media-type').value,
       ceremonia_hora: document.getElementById('inv-ceremonia-hora').value.trim(),
       ceremonia_lugar: document.getElementById('inv-ceremonia-lugar').value.trim(),
+      ceremonia_direccion: document.getElementById('inv-ceremonia-dir').value.trim(),
       recepcion_hora: document.getElementById('inv-recepcion-hora').value.trim(),
       fin_fiesta_hora: document.getElementById('inv-fin-fiesta-hora').value.trim(),
       recepcion_lugar: document.getElementById('inv-recepcion-lugar').value.trim(),
@@ -4009,6 +4015,7 @@ function openInvCloudinary() {
     multiple: false,
     maxFiles: 1,
     resourceType: type === 'video' ? 'video' : 'image',
+    maxFileSize: type === 'video' ? 52428800 : 10485760,
     folder: 'invitaciones',
     sources: ['local'],
     language: 'es',
