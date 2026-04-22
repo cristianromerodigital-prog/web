@@ -69,6 +69,9 @@ input,textarea,select{font-family:'DM Sans',sans-serif;}
 .sidebar-user{font-size:12px;color:var(--gray2);}
 .logout-btn{font-size:11px;color:var(--gray);background:none;border:none;transition:color 0.2s;letter-spacing:1px;}
 .logout-btn:hover{color:var(--red);}
+.ct-tipo-btn{padding:16px 10px;border:1px solid rgba(255,255,255,0.07);background:var(--black3);color:var(--gray2);cursor:pointer;text-align:center;transition:all 0.2s;border-radius:4px;}
+.ct-tipo-btn:hover{border-color:var(--gold);color:var(--white);}
+.ct-tipo-btn.active{border-color:var(--gold);background:rgba(201,168,76,0.05);color:var(--gold);}
 
 /* ── MAIN ── */
 .main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh;}
@@ -328,6 +331,11 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       <div class="sidebar-item" onclick="showPage('invites')">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
         Invitaciones
+      </div>
+      <div class="nav-section-label">Negocios</div>
+      <div class="sidebar-item" onclick="showPage('contratos')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Contratos
       </div>
       <div class="nav-section-label">Sistema</div>
       <div class="sidebar-item" onclick="showPage('content')">
@@ -1610,6 +1618,13 @@ tr:hover td{background:rgba(255,255,255,0.02);}
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- PAGE: CONTRATOS                                       -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div style="display:none" id="page-contratos-placeholder">
+  <!-- injected by JS on first load to keep initial HTML lean -->
+</div>
+
 <script>
 
 // ── CLOUDFLARE SYNC ──
@@ -1733,7 +1748,7 @@ function showPage(id) {
   document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   document.querySelector(`[onclick="showPage('${id}')"]`).classList.add('active');
-  const titles = { dashboard:'Dashboard', portfolio:'Portfolio', blog:'Blog', photos:'Fotos del Sitio', video:'Video Hero', content:'Contenido', messages:'Mensajes', testimonials:'Testimonios', settings:'Configuración', invites:'Invitaciones' };
+  const titles = { dashboard:'Dashboard', portfolio:'Portfolio', blog:'Blog', photos:'Fotos del Sitio', video:'Video Hero', content:'Contenido', messages:'Mensajes', testimonials:'Testimonios', settings:'Configuración', invites:'Invitaciones', contratos:'Contratos' };
   document.getElementById('page-title').textContent = titles[id] || id;
   currentPage = id;
   if (id === 'portfolio') renderPortfolioAdmin();
@@ -1746,6 +1761,7 @@ function showPage(id) {
   if (id === 'video') loadVideoPage();
   if (id === 'content') { loadContentPage(); setTimeout(loadDestinations, 100); }
   if (id === 'invites') renderInvitesPage();
+  if (id === 'contratos') initContratosPage();
 }
 
 // ── MODAL ──
@@ -4146,6 +4162,435 @@ function uploadInvMediaXHR(file, type) {
   };
   xhr.onerror = () => { txt.textContent = 'Error de red'; txt.style.color = '#e55'; };
   xhr.send(fd);
+}
+
+// Check session on load
+window.addEventListener('DOMContentLoaded', () => {
+  try {
+    const sess = S.get('crd_session');
+    if (sess && (Date.now() - sess) < 8*60*60*1000) {
+      document.getElementById('login-screen').style.display='none';
+      document.getElementById('app').classList.add('visible');
+      init();
+    }
+  } catch(e) { console.log('Session check error:', e); }
+});
+
+// ══════════════════════════════════════════════════════════════
+// CONTRATOS — Sistema de generación automática via Apps Script
+// ══════════════════════════════════════════════════════════════
+let ctTipo = null;
+let ctSvcData = [];
+let ctPageInited = false;
+const CT_CFG_KEY = 'crd_contratos_cfg';
+
+function initContratosPage() {
+  if (!ctPageInited) {
+    _ctBuildPage();
+    ctPageInited = true;
+  }
+  const saved = S.get(CT_CFG_KEY);
+  if (saved && saved.url) document.getElementById('ct-apps-url').value = saved.url;
+  document.getElementById('ct-dia-firma').valueAsDate = new Date();
+  if (ctSvcData.length === 0 && ctGetUrl()) ctCargarServicios();
+}
+
+function _ctBuildPage() {
+  // Inyecta el page div en el DOM (lazy para no pesar el HTML inicial)
+  const main = document.querySelector('.content');
+  const div  = document.createElement('div');
+  div.className = 'page';
+  div.id        = 'page-contratos';
+  div.innerHTML = `
+    <div class="section-header">
+      <div>
+        <h2 class="section-h">Contratos</h2>
+        <p style="font-size:11px;color:var(--gray);letter-spacing:1px;margin-top:4px">Generación automática · Google Drive</p>
+      </div>
+    </div>
+
+    <div class="settings-section" style="margin-bottom:20px">
+      <div class="settings-section-title" style="cursor:pointer;user-select:none" onclick="ctToggleCfg()">
+        ⚙ Configuración del sistema &nbsp;<span id="ct-cfg-arrow" style="font-size:10px;color:var(--gray)">▼</span>
+      </div>
+      <div id="ct-cfg-body" style="display:none;margin-top:14px">
+        <div class="form-group">
+          <label class="form-label">URL del Web App (Apps Script)</label>
+          <input class="form-input" id="ct-apps-url" placeholder="https://script.google.com/macros/s/AKfy.../exec">
+        </div>
+        <button class="btn-sm btn-sec" style="margin-top:8px" onclick="ctSaveCfg()">Guardar URL</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px">
+      <div class="ct-tipo-btn" data-tipo="BODA" onclick="ctSelTipo('BODA')">
+        <div style="font-size:1.5rem;margin-bottom:6px">💍</div>
+        <div style="font-size:10px;letter-spacing:2.5px;text-transform:uppercase;font-weight:600">Boda</div>
+      </div>
+      <div class="ct-tipo-btn" data-tipo="XV" onclick="ctSelTipo('XV')">
+        <div style="font-size:1.5rem;margin-bottom:6px">🌟</div>
+        <div style="font-size:10px;letter-spacing:2.5px;text-transform:uppercase;font-weight:600">XV Años</div>
+      </div>
+      <div class="ct-tipo-btn" data-tipo="CUMPLE" onclick="ctSelTipo('CUMPLE')">
+        <div style="font-size:1.5rem;margin-bottom:6px">🎂</div>
+        <div style="font-size:10px;letter-spacing:2.5px;text-transform:uppercase;font-weight:600">Cumpleaños</div>
+      </div>
+    </div>
+
+    <div id="ct-num-preview" style="display:none;text-align:center;margin-bottom:20px">
+      <span style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray)">Próximo N°:</span>
+      <span id="ct-num-val" style="font-size:20px;font-weight:600;color:var(--gold);margin-left:10px"></span>
+    </div>
+
+    <div id="ct-form-area" style="display:none">
+
+      <div class="settings-section" style="margin-bottom:16px">
+        <div class="settings-section-title">Datos del documento</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+          <div class="form-group"><label class="form-label">Ciudad de firma</label><input class="form-input" id="ct-ciudad" value="Morón, Provincia de Buenos Aires"></div>
+          <div class="form-group"><label class="form-label">Fecha del documento</label><input class="form-input" type="date" id="ct-dia-firma"></div>
+        </div>
+      </div>
+
+      <!-- BODA -->
+      <div id="ct-boda-fields" style="display:none">
+        <div class="settings-section" style="margin-bottom:16px">
+          <div class="settings-section-title">Novia</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+            <div class="form-group"><label class="form-label">Nombre y Apellido</label><input class="form-input" id="ct-b-novia-nombre"></div>
+            <div class="form-group"><label class="form-label">DNI</label><input class="form-input" id="ct-b-novia-dni"></div>
+            <div class="form-group"><label class="form-label">Teléfono</label><input class="form-input" id="ct-b-novia-tel"></div>
+            <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="ct-b-novia-email"></div>
+          </div>
+        </div>
+        <div class="settings-section" style="margin-bottom:16px">
+          <div class="settings-section-title">Novio</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+            <div class="form-group"><label class="form-label">Nombre y Apellido</label><input class="form-input" id="ct-b-novio-nombre"></div>
+            <div class="form-group"><label class="form-label">DNI</label><input class="form-input" id="ct-b-novio-dni"></div>
+            <div class="form-group"><label class="form-label">Domicilio</label><input class="form-input" id="ct-b-novio-dom"></div>
+            <div class="form-group"><label class="form-label">Teléfono</label><input class="form-input" id="ct-b-novio-tel"></div>
+            <div class="form-group" style="grid-column:1/-1"><label class="form-label">Email</label><input class="form-input" id="ct-b-novio-email"></div>
+          </div>
+        </div>
+        <div class="settings-section" style="margin-bottom:16px">
+          <div class="settings-section-title">Datos del evento</div>
+          <div style="margin-top:12px">
+            <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;font-size:12px;color:var(--gray2)"><input type="checkbox" id="ct-b-tiene-civil" onchange="ctToggleEvento('civil',this.checked)" style="accent-color:var(--gold)"> Incluir Ceremonia Civil</label>
+            <div id="ct-sub-civil" style="display:none;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);padding:12px;margin-bottom:12px">
+              <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:10px">Ceremonia Civil</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+                <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" type="date" id="ct-b-civil-fecha"></div>
+                <div class="form-group"><label class="form-label">Horario</label><input class="form-input" id="ct-b-civil-hora" placeholder="10:50"></div>
+                <div class="form-group"><label class="form-label">Dirección</label><input class="form-input" id="ct-b-civil-dir"></div>
+              </div>
+            </div>
+            <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;font-size:12px;color:var(--gray2)"><input type="checkbox" id="ct-b-tiene-reli" onchange="ctToggleEvento('reli',this.checked)" style="accent-color:var(--gold)"> Incluir Ceremonia Religiosa</label>
+            <div id="ct-sub-reli" style="display:none;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);padding:12px;margin-bottom:12px">
+              <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:10px">Ceremonia Religiosa</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+                <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" type="date" id="ct-b-reli-fecha"></div>
+                <div class="form-group"><label class="form-label">Horario</label><input class="form-input" id="ct-b-reli-hora" placeholder="17:30"></div>
+                <div class="form-group"><label class="form-label">Dirección</label><input class="form-input" id="ct-b-reli-dir"></div>
+              </div>
+            </div>
+            <div style="background:rgba(201,168,76,0.03);border:1px solid rgba(201,168,76,0.15);padding:12px;margin-bottom:12px">
+              <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:10px">Fiesta (requerido)</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+                <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" type="date" id="ct-b-fiesta-fecha"></div>
+                <div class="form-group"><label class="form-label">Hora inicio estimada</label><input class="form-input" id="ct-b-fiesta-hora" placeholder="19:30"></div>
+                <div class="form-group"><label class="form-label">Nombre del Salón</label><input class="form-input" id="ct-b-fiesta-salon"></div>
+                <div class="form-group" style="grid-column:1/-1"><label class="form-label">Dirección del Salón</label><input class="form-input" id="ct-b-fiesta-dir"></div>
+              </div>
+            </div>
+            <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);padding:12px">
+              <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:10px">Contacto familiar / responsable</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+                <div class="form-group"><label class="form-label">Nombre y Apellido</label><input class="form-input" id="ct-b-contacto-nombre"></div>
+                <div class="form-group"><label class="form-label">Relación</label><input class="form-input" id="ct-b-contacto-rel" placeholder="hermana de la novia"></div>
+                <div class="form-group"><label class="form-label">Teléfono</label><input class="form-input" id="ct-b-contacto-tel"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="settings-section" style="margin-bottom:16px">
+          <div class="settings-section-title">Nombre del paquete</div>
+          <div class="form-group" style="margin-top:12px"><input class="form-input" id="ct-b-paquete" value="EXPERIENCIA BASE"></div>
+        </div>
+      </div>
+
+      <!-- XV -->
+      <div id="ct-xv-fields" style="display:none">
+        <div class="settings-section" style="margin-bottom:16px">
+          <div class="settings-section-title">Quinceañera</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+            <div class="form-group"><label class="form-label">Nombre completo</label><input class="form-input" id="ct-x-quince-nombre"></div>
+            <div class="form-group"><label class="form-label">Fecha de nacimiento</label><input class="form-input" type="date" id="ct-x-quince-nac"></div>
+          </div>
+        </div>
+        <div class="settings-section" style="margin-bottom:16px">
+          <div class="settings-section-title">Cliente (quien contrata)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+            <div class="form-group"><label class="form-label">Nombre y Apellido</label><input class="form-input" id="ct-x-cliente-nombre"></div>
+            <div class="form-group"><label class="form-label">DNI</label><input class="form-input" id="ct-x-cliente-dni"></div>
+            <div class="form-group"><label class="form-label">Teléfono</label><input class="form-input" id="ct-x-cliente-tel"></div>
+            <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="ct-x-cliente-email"></div>
+          </div>
+        </div>
+        <div class="settings-section" style="margin-bottom:16px">
+          <div class="settings-section-title">Datos del evento</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px">
+            <div class="form-group"><label class="form-label">Fecha del evento</label><input class="form-input" type="date" id="ct-x-fecha"></div>
+            <div class="form-group"><label class="form-label">Hora inicio</label><input class="form-input" id="ct-x-hora-inicio" placeholder="21:30"></div>
+            <div class="form-group"><label class="form-label">Hora fin</label><input class="form-input" id="ct-x-hora-fin" placeholder="5:30"></div>
+            <div class="form-group"><label class="form-label">Nombre del Salón</label><input class="form-input" id="ct-x-salon"></div>
+            <div class="form-group" style="grid-column:2/-1"><label class="form-label">Dirección del Salón</label><input class="form-input" id="ct-x-dir"></div>
+            <div class="form-group"><label class="form-label">Invitados aproximados</label><input class="form-input" type="number" id="ct-x-invitados" placeholder="100"></div>
+          </div>
+        </div>
+        <div class="settings-section" style="margin-bottom:16px">
+          <div class="settings-section-title">Plan de pago</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+            <div class="form-group"><label class="form-label">Cantidad de cuotas</label><input class="form-input" type="number" id="ct-x-cuotas" value="1" min="1" max="36" oninput="ctCalcTotal()"></div>
+            <div class="form-group" id="ct-cuota-val-box" style="display:none"><label class="form-label">Valor por cuota</label><input class="form-input" id="ct-cuota-val" readonly style="color:var(--green)"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CUMPLEAÑOS -->
+      <div id="ct-cumple-fields" style="display:none">
+        <div class="settings-section" style="margin-bottom:16px">
+          <div class="settings-section-title">Cliente / Festejado</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+            <div class="form-group"><label class="form-label">Nombre y Apellido</label><input class="form-input" id="ct-c-nombre"></div>
+            <div class="form-group"><label class="form-label">DNI</label><input class="form-input" id="ct-c-dni"></div>
+            <div class="form-group"><label class="form-label">Teléfono</label><input class="form-input" id="ct-c-tel"></div>
+            <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="ct-c-email"></div>
+          </div>
+        </div>
+        <div class="settings-section" style="margin-bottom:16px">
+          <div class="settings-section-title">Datos del evento</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px">
+            <div class="form-group"><label class="form-label">Fecha del evento</label><input class="form-input" type="date" id="ct-c-fecha"></div>
+            <div class="form-group"><label class="form-label">Hora inicio</label><input class="form-input" id="ct-c-hora-inicio" placeholder="20:00"></div>
+            <div class="form-group"><label class="form-label">Hora fin</label><input class="form-input" id="ct-c-hora-fin" placeholder="4:00"></div>
+            <div class="form-group"><label class="form-label">Nombre del Salón</label><input class="form-input" id="ct-c-salon"></div>
+            <div class="form-group" style="grid-column:2/-1"><label class="form-label">Dirección del Salón</label><input class="form-input" id="ct-c-dir"></div>
+            <div class="form-group"><label class="form-label">Invitados aproximados</label><input class="form-input" type="number" id="ct-c-invitados"></div>
+          </div>
+        </div>
+        <div class="settings-section" style="margin-bottom:16px">
+          <div class="settings-section-title">Plan de pago</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+            <div class="form-group"><label class="form-label">Cantidad de cuotas</label><input class="form-input" type="number" id="ct-c-cuotas" value="1" min="1" max="36" oninput="ctCalcTotal()"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SERVICIOS -->
+      <div class="settings-section" style="margin-bottom:16px">
+        <div class="settings-section-title">Servicios contratados</div>
+        <div id="ct-svc-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;max-height:300px;overflow-y:auto;padding-right:4px">
+          <div style="color:var(--gray);font-size:12px;grid-column:1/-1">Cargando servicios...</div>
+        </div>
+      </div>
+
+      <!-- PRECIO -->
+      <div class="settings-section" style="margin-bottom:16px">
+        <div class="settings-section-title">Precio total</div>
+        <div style="margin-top:12px">
+          <div class="form-group" style="margin-bottom:12px">
+            <label class="form-label">Monto total (podés modificarlo)</label>
+            <input class="form-input" type="number" id="ct-precio" placeholder="0" oninput="ctCalcTotal()">
+          </div>
+          <div style="background:rgba(201,168,76,0.05);border:1px solid rgba(201,168,76,0.2);padding:14px;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray)">Total del contrato</span>
+            <span id="ct-total-display" style="font-size:22px;font-weight:600;color:var(--gold)">$0</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-add" id="ct-btn-gen" onclick="ctGenerar()" style="width:100%;padding:16px;font-size:11px;letter-spacing:3px">
+        GENERAR CONTRATO
+      </button>
+      <div id="ct-spinner" style="display:none;text-align:center;padding:20px;color:var(--gray);font-size:11px;letter-spacing:2px">
+        Generando contrato · esto puede tardar 20–30 segundos...
+      </div>
+      <div id="ct-result" style="display:none;margin-top:20px;padding:20px;background:rgba(37,211,102,0.05);border:1px solid rgba(37,211,102,0.2)">
+        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:8px">Contrato generado</div>
+        <div id="ct-res-num" style="font-size:26px;font-weight:600;color:var(--white);margin-bottom:14px"></div>
+        <div id="ct-res-links"></div>
+      </div>
+    </div>
+  `;
+  // Registrar el div como .page en el content area
+  document.querySelector('.content').appendChild(div);
+}
+
+function ctToggleCfg() {
+  const body   = document.getElementById('ct-cfg-body');
+  const arrow  = document.getElementById('ct-cfg-arrow');
+  const open   = body.style.display === 'none';
+  body.style.display = open ? 'block' : 'none';
+  arrow.textContent  = open ? '▲' : '▼';
+}
+
+function ctSaveCfg() {
+  const url = document.getElementById('ct-apps-url').value.trim();
+  if (!url) { toast('Ingresá la URL del Apps Script', 'error'); return; }
+  S.set(CT_CFG_KEY, { url });
+  toast('URL guardada');
+  ctToggleCfg();
+  ctCargarServicios();
+}
+
+function ctGetUrl() {
+  const saved = S.get(CT_CFG_KEY);
+  return saved ? saved.url : '';
+}
+
+function ctCargarServicios() {
+  const url = ctGetUrl();
+  if (!url) return;
+  const grid = document.getElementById('ct-svc-grid');
+  if (!grid) return;
+  grid.innerHTML = '<div style="color:var(--gray);font-size:12px;grid-column:1/-1">Cargando...</div>';
+  fetch(url + '?action=getServicios')
+    .then(r => r.json())
+    .then(data => ctRenderServicios(data))
+    .catch(() => {
+      grid.innerHTML = '<div style="color:var(--red);font-size:12px;grid-column:1/-1">Error cargando servicios. Verificá la URL en Configuración.</div>';
+    });
+}
+
+function ctRenderServicios(data) {
+  ctSvcData = data;
+  const grid = document.getElementById('ct-svc-grid');
+  grid.innerHTML = '';
+  data.forEach(s => {
+    const d = document.createElement('div');
+    d.style.cssText = 'display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:border-color 0.15s';
+    d.innerHTML = `<input type="checkbox" id="ct-svc-${s.id}" value="${s.id}" style="accent-color:var(--gold);margin-top:2px;flex-shrink:0" onchange="ctCalcTotal()"><div><div style="font-size:11px;color:var(--gray2);line-height:1.4">[${s.id}] ${s.descripcion}</div>${s.pesos > 0 ? `<div style="font-size:10px;color:var(--green);margin-top:2px">${ctFmt(s.pesos)}</div>` : ''}</div>`;
+    d.onclick = e => { if (e.target.tagName !== 'INPUT') { const cb = d.querySelector('input'); cb.checked = !cb.checked; ctCalcTotal(); } };
+    d.onmouseenter = () => d.style.borderColor = 'rgba(201,168,76,0.3)';
+    d.onmouseleave = () => d.style.borderColor = 'rgba(255,255,255,0.05)';
+    grid.appendChild(d);
+  });
+}
+
+function ctSelTipo(tipo) {
+  ctTipo = tipo;
+  document.querySelectorAll('.ct-tipo-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.ct-tipo-btn[data-tipo="${tipo}"]`).classList.add('active');
+  ['boda','xv','cumple'].forEach(t => {
+    const el = document.getElementById(`ct-${t}-fields`);
+    if (el) el.style.display = 'none';
+  });
+  document.getElementById(`ct-${tipo.toLowerCase()}-fields`).style.display = 'block';
+  document.getElementById('ct-form-area').style.display = 'block';
+  document.getElementById('ct-result').style.display = 'none';
+  const cuotaBox = document.getElementById('ct-cuota-val-box');
+  if (cuotaBox) cuotaBox.style.display = (tipo === 'XV') ? 'block' : 'none';
+  const url = ctGetUrl();
+  if (url) {
+    fetch(`${url}?action=nextNumber&tipo=${tipo}`)
+      .then(r => r.json())
+      .then(n => {
+        document.getElementById('ct-num-val').textContent = n;
+        document.getElementById('ct-num-preview').style.display = 'block';
+      }).catch(() => {});
+  }
+  ctCalcTotal();
+}
+
+function ctToggleEvento(tipo, visible) {
+  const el = document.getElementById('ct-sub-' + tipo);
+  if (el) el.style.display = visible ? 'block' : 'none';
+}
+
+function ctCalcTotal() {
+  let suma = 0;
+  ctSvcData.forEach(s => {
+    const cb = document.getElementById(`ct-svc-${s.id}`);
+    if (cb && cb.checked) suma += Number(s.pesos);
+  });
+  const manualEl = document.getElementById('ct-precio');
+  if (!manualEl) return;
+  const manual = manualEl.value;
+  const total  = manual ? Number(manual) : suma;
+  if (!manual && suma > 0) manualEl.value = suma;
+  const disp = document.getElementById('ct-total-display');
+  if (disp) disp.textContent = ctFmt(total || suma);
+  const cuotas = ctTipo === 'XV' ? Number(document.getElementById('ct-x-cuotas')?.value || 1)
+               : ctTipo === 'CUMPLE' ? Number(document.getElementById('ct-c-cuotas')?.value || 1) : 1;
+  const cuotaVal = document.getElementById('ct-cuota-val');
+  if (cuotaVal && cuotas > 1) cuotaVal.value = ctFmt(Math.round((total || suma) / cuotas));
+}
+
+function ctFmt(n) {
+  return '$' + Number(n).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
+function ctV(id) { return (document.getElementById(id)?.value || '').trim(); }
+
+function ctBuildData() {
+  const precio = Number(document.getElementById('ct-precio').value);
+  if (!precio) { toast('Ingresá el precio total', 'error'); return null; }
+  const svcSel = ctSvcData
+    .filter(s => document.getElementById(`ct-svc-${s.id}`)?.checked)
+    .map(s => ({ descripcion: s.descripcion, pesos: s.pesos }));
+  const base = { tipo: ctTipo, ciudad: ctV('ct-ciudad'), diaFirma: ctV('ct-dia-firma'), servicios: svcSel, precioTotal: precio };
+  if (ctTipo === 'BODA') return Object.assign(base, {
+    novia:     { nombre: ctV('ct-b-novia-nombre'), dni: ctV('ct-b-novia-dni'), telefono: ctV('ct-b-novia-tel'), email: ctV('ct-b-novia-email') },
+    novio:     { nombre: ctV('ct-b-novio-nombre'), dni: ctV('ct-b-novio-dni'), domicilio: ctV('ct-b-novio-dom'), telefono: ctV('ct-b-novio-tel'), email: ctV('ct-b-novio-email') },
+    civil:     document.getElementById('ct-b-tiene-civil')?.checked ? { fecha: ctV('ct-b-civil-fecha'), horario: ctV('ct-b-civil-hora'), direccion: ctV('ct-b-civil-dir') } : null,
+    religiosa: document.getElementById('ct-b-tiene-reli')?.checked ? { fecha: ctV('ct-b-reli-fecha'), horario: ctV('ct-b-reli-hora'), direccion: ctV('ct-b-reli-dir') } : null,
+    fiesta:    { fecha: ctV('ct-b-fiesta-fecha'), horarioInicio: ctV('ct-b-fiesta-hora'), lugar: ctV('ct-b-fiesta-salon'), direccion: ctV('ct-b-fiesta-dir') },
+    contacto:  { nombre: ctV('ct-b-contacto-nombre'), relacion: ctV('ct-b-contacto-rel'), telefono: ctV('ct-b-contacto-tel') },
+    nombrePaquete: ctV('ct-b-paquete') || 'EXPERIENCIA BASE'
+  });
+  if (ctTipo === 'XV') return Object.assign(base, {
+    quinceanera: { nombre: ctV('ct-x-quince-nombre'), fechaNacimiento: ctV('ct-x-quince-nac') },
+    cliente:     { nombre: ctV('ct-x-cliente-nombre'), dni: ctV('ct-x-cliente-dni'), telefono: ctV('ct-x-cliente-tel'), email: ctV('ct-x-cliente-email') },
+    evento:      { fecha: ctV('ct-x-fecha'), horaInicio: ctV('ct-x-hora-inicio'), horaFin: ctV('ct-x-hora-fin'), salon: ctV('ct-x-salon'), direccion: ctV('ct-x-dir'), invitados: ctV('ct-x-invitados') },
+    cuotas:      Number(ctV('ct-x-cuotas')) || 1
+  });
+  if (ctTipo === 'CUMPLE') return Object.assign(base, {
+    cliente: { nombre: ctV('ct-c-nombre'), dni: ctV('ct-c-dni'), telefono: ctV('ct-c-tel'), email: ctV('ct-c-email') },
+    evento:  { fecha: ctV('ct-c-fecha'), horaInicio: ctV('ct-c-hora-inicio'), horaFin: ctV('ct-c-hora-fin'), salon: ctV('ct-c-salon'), direccion: ctV('ct-c-dir'), invitados: ctV('ct-c-invitados') },
+    cuotas:  Number(ctV('ct-c-cuotas')) || 1
+  });
+  return null;
+}
+
+async function ctGenerar() {
+  const data = ctBuildData();
+  if (!data) return;
+  const url = ctGetUrl();
+  if (!url) { toast('Configurá la URL del Apps Script primero', 'error'); return; }
+  document.getElementById('ct-btn-gen').disabled = true;
+  document.getElementById('ct-spinner').style.display = 'block';
+  document.getElementById('ct-result').style.display = 'none';
+  try {
+    const res  = await fetch(url, { method: 'POST', body: JSON.stringify(data) });
+    const json = await res.json();
+    document.getElementById('ct-spinner').style.display = 'none';
+    document.getElementById('ct-btn-gen').disabled = false;
+    if (json.ok) {
+      document.getElementById('ct-res-num').textContent = 'Contrato N° ' + json.numero;
+      let links = `<a href="${json.docUrl}" target="_blank" style="display:inline-block;padding:9px 18px;background:var(--gold);color:var(--black);font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700;text-decoration:none;margin-right:8px;margin-bottom:6px">Abrir en Google Docs</a>`;
+      if (json.pdfUrl) links += `<a href="${json.pdfUrl}" target="_blank" style="display:inline-block;padding:9px 18px;background:rgba(224,85,85,0.15);color:var(--red);border:1px solid rgba(224,85,85,0.3);font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700;text-decoration:none">Descargar PDF</a>`;
+      document.getElementById('ct-res-links').innerHTML = links;
+      document.getElementById('ct-result').style.display = 'block';
+      toast('Contrato ' + json.numero + ' generado ✓');
+    } else {
+      toast('Error: ' + json.error, 'error');
+    }
+  } catch(e) {
+    document.getElementById('ct-spinner').style.display = 'none';
+    document.getElementById('ct-btn-gen').disabled = false;
+    toast('Error de conexión con Apps Script', 'error');
+  }
 }
 
 // Check session on load
