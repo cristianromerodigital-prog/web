@@ -1618,8 +1618,214 @@ tr:hover td{background:rgba(255,255,255,0.02);}
   </div>
 </div>
 
-<!-- PAGE: CONTRATOS (contenido inyectado lazy por _ctBuildPage) -->
-<div class="page" id="page-contratos"></div>
+<!-- PAGE: CONTRATOS -->
+<div class="page" id="page-contratos">
+  <div class="section-header">
+    <div>
+      <h2 class="section-h">Contratos</h2>
+      <p style="font-size:11px;color:var(--gray);letter-spacing:1px;margin-top:4px">Generación automática · Google Drive</p>
+    </div>
+  </div>
+  <div class="settings-section" style="margin-bottom:20px">
+    <div class="settings-section-title" style="cursor:pointer;user-select:none" onclick="ctToggleCfg()">
+      ⚙ Configuración del sistema <span id="ct-cfg-arrow" style="font-size:10px;color:var(--gray)">▼</span>
+    </div>
+    <div id="ct-cfg-body" style="display:none;margin-top:14px">
+      <div class="form-group">
+        <label class="form-label">URL del Web App (Apps Script)</label>
+        <input class="form-input" id="ct-apps-url" placeholder="https://script.google.com/macros/s/.../exec">
+      </div>
+      <button class="btn-sm btn-sec" style="margin-top:8px" onclick="ctSaveCfg()">Guardar URL</button>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px">
+    <div class="ct-tipo-btn" data-tipo="BODA" onclick="ctSelTipo('BODA')">
+      <div style="font-size:1.5rem;margin-bottom:6px">💍</div>
+      <div style="font-size:10px;letter-spacing:2.5px;text-transform:uppercase;font-weight:600">Boda</div>
+    </div>
+    <div class="ct-tipo-btn" data-tipo="XV" onclick="ctSelTipo('XV')">
+      <div style="font-size:1.5rem;margin-bottom:6px">🌟</div>
+      <div style="font-size:10px;letter-spacing:2.5px;text-transform:uppercase;font-weight:600">XV Años</div>
+    </div>
+    <div class="ct-tipo-btn" data-tipo="CUMPLE" onclick="ctSelTipo('CUMPLE')">
+      <div style="font-size:1.5rem;margin-bottom:6px">🎂</div>
+      <div style="font-size:10px;letter-spacing:2.5px;text-transform:uppercase;font-weight:600">Cumpleaños</div>
+    </div>
+  </div>
+  <div id="ct-num-preview" style="display:none;text-align:center;margin-bottom:20px">
+    <span style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray)">Próximo N°:</span>
+    <span id="ct-num-val" style="font-size:20px;font-weight:600;color:var(--gold);margin-left:10px"></span>
+  </div>
+  <div id="ct-form-area" style="display:none">
+    <div class="settings-section" style="margin-bottom:16px">
+      <div class="settings-section-title">Datos del documento</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+        <div class="form-group"><label class="form-label">Ciudad de firma</label><input class="form-input" id="ct-ciudad" value="Morón, Provincia de Buenos Aires"></div>
+        <div class="form-group"><label class="form-label">Fecha del documento</label><input class="form-input" type="date" id="ct-dia-firma"></div>
+      </div>
+    </div>
+    <!-- BODA -->
+    <div id="ct-boda-fields" style="display:none">
+      <div class="settings-section" style="margin-bottom:16px">
+        <div class="settings-section-title">Novia</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+          <div class="form-group"><label class="form-label">Nombre y Apellido</label><input class="form-input" id="ct-b-novia-nombre"></div>
+          <div class="form-group"><label class="form-label">DNI</label><input class="form-input" id="ct-b-novia-dni"></div>
+          <div class="form-group"><label class="form-label">Teléfono</label><input class="form-input" id="ct-b-novia-tel"></div>
+          <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="ct-b-novia-email"></div>
+        </div>
+      </div>
+      <div class="settings-section" style="margin-bottom:16px">
+        <div class="settings-section-title">Novio</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+          <div class="form-group"><label class="form-label">Nombre y Apellido</label><input class="form-input" id="ct-b-novio-nombre"></div>
+          <div class="form-group"><label class="form-label">DNI</label><input class="form-input" id="ct-b-novio-dni"></div>
+          <div class="form-group"><label class="form-label">Domicilio</label><input class="form-input" id="ct-b-novio-dom"></div>
+          <div class="form-group"><label class="form-label">Teléfono</label><input class="form-input" id="ct-b-novio-tel"></div>
+          <div class="form-group" style="grid-column:1/-1"><label class="form-label">Email</label><input class="form-input" id="ct-b-novio-email"></div>
+        </div>
+      </div>
+      <div class="settings-section" style="margin-bottom:16px">
+        <div class="settings-section-title">Datos del evento</div>
+        <div style="margin-top:12px">
+          <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;font-size:12px;color:var(--gray2)"><input type="checkbox" id="ct-b-tiene-civil" onchange="ctToggleEvento('civil',this.checked)" style="accent-color:var(--gold)"> Incluir Ceremonia Civil</label>
+          <div id="ct-sub-civil" style="display:none;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);padding:12px;margin-bottom:12px">
+            <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:10px">Ceremonia Civil</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+              <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" type="date" id="ct-b-civil-fecha"></div>
+              <div class="form-group"><label class="form-label">Horario</label><input class="form-input" id="ct-b-civil-hora" placeholder="10:50"></div>
+              <div class="form-group"><label class="form-label">Dirección</label><input class="form-input" id="ct-b-civil-dir"></div>
+            </div>
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;font-size:12px;color:var(--gray2)"><input type="checkbox" id="ct-b-tiene-reli" onchange="ctToggleEvento('reli',this.checked)" style="accent-color:var(--gold)"> Incluir Ceremonia Religiosa</label>
+          <div id="ct-sub-reli" style="display:none;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);padding:12px;margin-bottom:12px">
+            <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:10px">Ceremonia Religiosa</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+              <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" type="date" id="ct-b-reli-fecha"></div>
+              <div class="form-group"><label class="form-label">Horario</label><input class="form-input" id="ct-b-reli-hora" placeholder="17:30"></div>
+              <div class="form-group"><label class="form-label">Dirección</label><input class="form-input" id="ct-b-reli-dir"></div>
+            </div>
+          </div>
+          <div style="background:rgba(201,168,76,0.03);border:1px solid rgba(201,168,76,0.15);padding:12px;margin-bottom:12px">
+            <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:10px">Fiesta (requerido)</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+              <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" type="date" id="ct-b-fiesta-fecha"></div>
+              <div class="form-group"><label class="form-label">Hora inicio estimada</label><input class="form-input" id="ct-b-fiesta-hora" placeholder="19:30"></div>
+              <div class="form-group"><label class="form-label">Nombre del Salón</label><input class="form-input" id="ct-b-fiesta-salon"></div>
+              <div class="form-group" style="grid-column:1/-1"><label class="form-label">Dirección del Salón</label><input class="form-input" id="ct-b-fiesta-dir"></div>
+            </div>
+          </div>
+          <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);padding:12px">
+            <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:10px">Contacto familiar / responsable</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+              <div class="form-group"><label class="form-label">Nombre y Apellido</label><input class="form-input" id="ct-b-contacto-nombre"></div>
+              <div class="form-group"><label class="form-label">Relación</label><input class="form-input" id="ct-b-contacto-rel" placeholder="hermana de la novia"></div>
+              <div class="form-group"><label class="form-label">Teléfono</label><input class="form-input" id="ct-b-contacto-tel"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section" style="margin-bottom:16px">
+        <div class="settings-section-title">Nombre del paquete</div>
+        <div class="form-group" style="margin-top:12px"><input class="form-input" id="ct-b-paquete" value="EXPERIENCIA BASE"></div>
+      </div>
+    </div>
+    <!-- XV -->
+    <div id="ct-xv-fields" style="display:none">
+      <div class="settings-section" style="margin-bottom:16px">
+        <div class="settings-section-title">Quinceañera</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+          <div class="form-group"><label class="form-label">Nombre completo</label><input class="form-input" id="ct-x-quince-nombre"></div>
+          <div class="form-group"><label class="form-label">Fecha de nacimiento</label><input class="form-input" type="date" id="ct-x-quince-nac"></div>
+        </div>
+      </div>
+      <div class="settings-section" style="margin-bottom:16px">
+        <div class="settings-section-title">Cliente (quien contrata)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+          <div class="form-group"><label class="form-label">Nombre y Apellido</label><input class="form-input" id="ct-x-cliente-nombre"></div>
+          <div class="form-group"><label class="form-label">DNI</label><input class="form-input" id="ct-x-cliente-dni"></div>
+          <div class="form-group"><label class="form-label">Teléfono</label><input class="form-input" id="ct-x-cliente-tel"></div>
+          <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="ct-x-cliente-email"></div>
+        </div>
+      </div>
+      <div class="settings-section" style="margin-bottom:16px">
+        <div class="settings-section-title">Datos del evento</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px">
+          <div class="form-group"><label class="form-label">Fecha del evento</label><input class="form-input" type="date" id="ct-x-fecha"></div>
+          <div class="form-group"><label class="form-label">Hora inicio</label><input class="form-input" id="ct-x-hora-inicio" placeholder="21:30"></div>
+          <div class="form-group"><label class="form-label">Hora fin</label><input class="form-input" id="ct-x-hora-fin" placeholder="5:30"></div>
+          <div class="form-group"><label class="form-label">Nombre del Salón</label><input class="form-input" id="ct-x-salon"></div>
+          <div class="form-group" style="grid-column:2/-1"><label class="form-label">Dirección del Salón</label><input class="form-input" id="ct-x-dir"></div>
+          <div class="form-group"><label class="form-label">Invitados aproximados</label><input class="form-input" type="number" id="ct-x-invitados" placeholder="100"></div>
+        </div>
+      </div>
+      <div class="settings-section" style="margin-bottom:16px">
+        <div class="settings-section-title">Plan de pago</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+          <div class="form-group"><label class="form-label">Cantidad de cuotas</label><input class="form-input" type="number" id="ct-x-cuotas" value="1" min="1" max="36" oninput="ctCalcTotal()"></div>
+          <div class="form-group" id="ct-cuota-val-box" style="display:none"><label class="form-label">Valor por cuota</label><input class="form-input" id="ct-cuota-val" readonly style="color:var(--green)"></div>
+        </div>
+      </div>
+    </div>
+    <!-- CUMPLEAÑOS -->
+    <div id="ct-cumple-fields" style="display:none">
+      <div class="settings-section" style="margin-bottom:16px">
+        <div class="settings-section-title">Cliente / Festejado</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+          <div class="form-group"><label class="form-label">Nombre y Apellido</label><input class="form-input" id="ct-c-nombre"></div>
+          <div class="form-group"><label class="form-label">DNI</label><input class="form-input" id="ct-c-dni"></div>
+          <div class="form-group"><label class="form-label">Teléfono</label><input class="form-input" id="ct-c-tel"></div>
+          <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="ct-c-email"></div>
+        </div>
+      </div>
+      <div class="settings-section" style="margin-bottom:16px">
+        <div class="settings-section-title">Datos del evento</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px">
+          <div class="form-group"><label class="form-label">Fecha del evento</label><input class="form-input" type="date" id="ct-c-fecha"></div>
+          <div class="form-group"><label class="form-label">Hora inicio</label><input class="form-input" id="ct-c-hora-inicio" placeholder="20:00"></div>
+          <div class="form-group"><label class="form-label">Hora fin</label><input class="form-input" id="ct-c-hora-fin" placeholder="4:00"></div>
+          <div class="form-group"><label class="form-label">Nombre del Salón</label><input class="form-input" id="ct-c-salon"></div>
+          <div class="form-group" style="grid-column:2/-1"><label class="form-label">Dirección del Salón</label><input class="form-input" id="ct-c-dir"></div>
+          <div class="form-group"><label class="form-label">Invitados aproximados</label><input class="form-input" type="number" id="ct-c-invitados"></div>
+        </div>
+      </div>
+      <div class="settings-section" style="margin-bottom:16px">
+        <div class="settings-section-title">Plan de pago</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+          <div class="form-group"><label class="form-label">Cantidad de cuotas</label><input class="form-input" type="number" id="ct-c-cuotas" value="1" min="1" max="36" oninput="ctCalcTotal()"></div>
+        </div>
+      </div>
+    </div>
+    <!-- SERVICIOS -->
+    <div class="settings-section" style="margin-bottom:16px">
+      <div class="settings-section-title">Servicios contratados</div>
+      <div id="ct-svc-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;max-height:300px;overflow-y:auto;padding-right:4px">
+        <div style="color:var(--gray);font-size:12px;grid-column:1/-1">Cargando servicios...</div>
+      </div>
+    </div>
+    <!-- PRECIO -->
+    <div class="settings-section" style="margin-bottom:16px">
+      <div class="settings-section-title">Precio total</div>
+      <div style="margin-top:12px">
+        <div class="form-group" style="margin-bottom:12px">
+          <label class="form-label">Monto total (podés modificarlo)</label>
+          <input class="form-input" type="number" id="ct-precio" placeholder="0" oninput="ctCalcTotal()">
+        </div>
+        <div style="background:rgba(201,168,76,0.05);border:1px solid rgba(201,168,76,0.2);padding:14px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray)">Total del contrato</span>
+          <span id="ct-total-display" style="font-size:22px;font-weight:600;color:var(--gold)">$0</span>
+        </div>
+      </div>
+    </div>
+    <button class="btn-add" id="ct-btn-gen" onclick="ctGenerar()" style="width:100%;padding:16px;font-size:11px;letter-spacing:3px">GENERAR CONTRATO</button>
+    <div id="ct-spinner" style="display:none;text-align:center;padding:20px;color:var(--gray);font-size:11px;letter-spacing:2px">Generando contrato · esto puede tardar 20–30 segundos...</div>
+    <div id="ct-result" style="display:none;margin-top:20px;padding:20px;background:rgba(37,211,102,0.05);border:1px solid rgba(37,211,102,0.2)">
+      <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:8px">Contrato generado</div>
+      <div id="ct-res-num" style="font-size:26px;font-weight:600;color:var(--white);margin-bottom:14px"></div>
+      <div id="ct-res-links"></div>
+    </div>
+  </div>
+</div>
 
 <script>
 
@@ -4178,21 +4384,16 @@ window.addEventListener('DOMContentLoaded', () => {
 // ══════════════════════════════════════════════════════════════
 let ctTipo = null;
 let ctSvcData = [];
-let ctPageInited = false;
 const CT_CFG_KEY = 'crd_contratos_cfg';
 
 function initContratosPage() {
-  if (!ctPageInited) {
-    _ctBuildPage();
-    ctPageInited = true;
-  }
   const saved = S.get(CT_CFG_KEY);
   if (saved && saved.url) document.getElementById('ct-apps-url').value = saved.url;
   document.getElementById('ct-dia-firma').valueAsDate = new Date();
   if (ctSvcData.length === 0 && ctGetUrl()) ctCargarServicios();
 }
 
-function _ctBuildPage() {
+function _ctBuildPage_UNUSED() {
   document.getElementById('page-contratos').innerHTML = `
     <div class="section-header">
       <div>
@@ -4415,7 +4616,6 @@ function _ctBuildPage() {
       </div>
     </div>
   `;
-  window.scrollTo(0, 0);
 }
 
 function ctToggleCfg() {
