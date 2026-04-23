@@ -4693,7 +4693,7 @@ function ctCargarServicios() {
   const grid = document.getElementById('ct-svc-grid');
   if (!grid) return;
   grid.innerHTML = '<div style="color:var(--gray);font-size:12px;grid-column:1/-1">Cargando...</div>';
-  fetch(url + '?action=getServicios')
+  fetch(url + '?action=getServicios', { redirect: 'follow' })
     .then(r => r.json())
     .then(data => ctRenderServicios(data))
     .catch(err => {
@@ -4729,7 +4729,7 @@ function ctSelTipo(tipo) {
   if (cuotaBox) cuotaBox.style.display = (tipo === 'XV') ? 'block' : 'none';
   const url = ctGetUrl();
   if (url) {
-    fetch(`${url}?action=nextNumber&tipo=${tipo}`)
+    fetch(`${url}?action=nextNumber&tipo=${tipo}`, { redirect: 'follow' })
       .then(r => r.json())
       .then(n => {
         document.getElementById('ct-num-val').textContent = n;
@@ -4913,7 +4913,7 @@ async function ctRefreshSolicitudes() {
   const url = ctGetUrl();
   if (!url) { document.getElementById('ct-sol-list').innerHTML = '<div style="color:var(--gray);font-size:12px">Configurá la URL del Apps Script primero.</div>'; return; }
   try {
-    const res  = await fetch(url + '?action=getSolicitudes');
+    const res  = await fetch(url + '?action=getSolicitudes', { redirect: 'follow' });
     const data = await res.json();
     ctRenderSolicitudes(data);
   } catch(e) {
@@ -5014,7 +5014,7 @@ async function ctLoadHistorial() {
   const url = ctGetUrl();
   if (!url) { document.getElementById('ct-hist-list').innerHTML = '<div style="color:var(--gray);font-size:12px">Configurá la URL del Apps Script primero.</div>'; return; }
   try {
-    const res  = await fetch(url + '?action=getContratos');
+    const res  = await fetch(url + '?action=getContratos', { redirect: 'follow' });
     const data = await res.json();
     ctHistLoaded = true;
     ctHistData   = data;
