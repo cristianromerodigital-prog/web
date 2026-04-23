@@ -1548,6 +1548,10 @@ tr:hover td{background:rgba(255,255,255,0.02);}
             <span style="font-size:11px;color:var(--gold)">📋 Borrador guardado — datos del cliente cargados</span>
             <button onclick="ctClearDraft()" style="font-size:9px;color:var(--gray);background:none;border:none;cursor:pointer;letter-spacing:1px">✕ Limpiar</button>
           </div>
+          <div id="ct-edit-banner" style="display:none;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.3);padding:10px 14px;margin-bottom:10px;justify-content:space-between;align-items:center">
+            <span style="font-size:11px;color:var(--gold);letter-spacing:1px">Editando contrato <strong id="ct-edit-num"></strong></span>
+            <button onclick="ctCancelEdit()" style="background:none;border:none;color:var(--gray);font-size:11px;cursor:pointer;text-decoration:underline">Cancelar edición</button>
+          </div>
           <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:stretch">
             <button class="btn-add" id="ct-btn-gen" onclick="ctGenerar()" style="padding:16px;font-size:11px;letter-spacing:3px">GENERAR CONTRATO</button>
             <button onclick="ctClearDraft()" style="padding:16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:var(--gray);font-size:10px;letter-spacing:1.5px;cursor:pointer">Limpiar</button>
@@ -4692,8 +4696,9 @@ function ctCargarServicios() {
   fetch(url + '?action=getServicios')
     .then(r => r.json())
     .then(data => ctRenderServicios(data))
-    .catch(() => {
-      grid.innerHTML = '<div style="color:var(--red);font-size:12px;grid-column:1/-1">Error cargando servicios. Verificá la URL en Configuración.</div>';
+    .catch(err => {
+      console.error('[ctCargarServicios]', err);
+      grid.innerHTML = `<div style="color:var(--red);font-size:12px;grid-column:1/-1">Error cargando servicios: ${err.message || err}. Verificá la URL y que el Apps Script esté desplegado.</div>`;
     });
 }
 
