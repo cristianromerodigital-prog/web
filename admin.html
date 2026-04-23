@@ -4642,6 +4642,10 @@ function _ctBuildPage_UNUSED() {
         </div>
       </div>
 
+      <div id="ct-edit-banner" style="display:none;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.3);padding:10px 14px;margin-bottom:10px;display:none;justify-content:space-between;align-items:center">
+        <span style="font-size:11px;color:var(--gold);letter-spacing:1px">Editando contrato <strong id="ct-edit-num"></strong></span>
+        <button onclick="ctCancelEdit()" style="background:none;border:none;color:var(--gray);font-size:11px;cursor:pointer;text-decoration:underline">Cancelar edición</button>
+      </div>
       <button class="btn-add" id="ct-btn-gen" onclick="ctGenerar()" style="width:100%;padding:16px;font-size:11px;letter-spacing:3px">
         GENERAR CONTRATO
       </button>
@@ -4699,11 +4703,8 @@ function ctRenderServicios(data) {
   grid.innerHTML = '';
   data.forEach(s => {
     const d = document.createElement('div');
-    d.style.cssText = 'display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:border-color 0.15s';
-    d.innerHTML = `<input type="checkbox" id="ct-svc-${s.id}" value="${s.id}" style="accent-color:var(--gold);margin-top:2px;flex-shrink:0" onchange="ctCalcTotal()"><div><div style="font-size:11px;color:var(--gray2);line-height:1.4">[${s.id}] ${s.descripcion}</div>${s.pesos > 0 ? `<div style="font-size:10px;color:var(--green);margin-top:2px">${ctFmt(s.pesos)}</div>` : ''}</div>`;
-    d.onclick = e => { if (e.target.tagName !== 'INPUT') { const cb = d.querySelector('input'); cb.checked = !cb.checked; ctCalcTotal(); } };
-    d.onmouseenter = () => d.style.borderColor = 'rgba(201,168,76,0.3)';
-    d.onmouseleave = () => d.style.borderColor = 'rgba(255,255,255,0.05)';
+    d.style.cssText = 'display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05)';
+    d.innerHTML = `<input type="checkbox" id="ct-svc-${s.id}" value="${s.id}" style="accent-color:#666;margin-top:2px;flex-shrink:0;pointer-events:none;opacity:0.5"><div><div style="font-size:11px;color:var(--gray2);line-height:1.4">[${s.id}] ${s.descripcion}</div>${s.pesos > 0 ? `<div style="font-size:10px;color:var(--green);margin-top:2px">${ctFmt(s.pesos)}</div>` : ''}</div>`;
     grid.appendChild(d);
   });
 }
@@ -4804,6 +4805,10 @@ function ctBuildData() {
 async function ctGenerar() {
   const data = ctBuildData();
   if (!data) return;
+  if (ctEditingNumero) {
+    data.editMode = true;
+    data.numero   = ctEditingNumero;
+  }
   const url = ctGetUrl();
   if (!url) { toast('Configurá la URL del Apps Script primero', 'error'); return; }
   document.getElementById('ct-btn-gen').disabled = true;
@@ -4820,7 +4825,8 @@ async function ctGenerar() {
       if (json.pdfUrl) links += `<a href="${json.pdfUrl}" target="_blank" style="display:inline-block;padding:9px 18px;background:rgba(224,85,85,0.15);color:var(--red);border:1px solid rgba(224,85,85,0.3);font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700;text-decoration:none">Descargar PDF</a>`;
       document.getElementById('ct-res-links').innerHTML = links;
       document.getElementById('ct-result').style.display = 'block';
-      toast('Contrato ' + json.numero + ' generado ✓');
+      toast((ctEditingNumero ? 'Contrato ' + json.numero + ' actualizado ✓' : 'Contrato ' + json.numero + ' generado ✓'));
+      ctCancelEdit();
       ctClearDraft();
       ctHistLoaded = false; ctLoadHistorial();
     } else {
@@ -4986,8 +4992,9 @@ async function ctCargarSolicitud(sol) {
 }
 
 // ── HISTORIAL ──
-let ctHistLoaded = false;
-let ctHistData   = [];
+let ctHistLoaded    = false;
+let ctHistData      = [];
+let ctEditingNumero = null;
 
 function ctToggleHistorial() {
   const body  = document.getElementById('ct-hist-body');
@@ -5161,13 +5168,28 @@ function ctCargarContrato(idx) {
       ctCalcTotal();
     }
 
+    // Activar modo edición
+    ctEditingNumero = c.numero;
+    const banner = document.getElementById('ct-edit-banner');
+    if (banner) { banner.style.display = 'flex'; document.getElementById('ct-edit-num').textContent = c.numero; }
+    const btn = document.getElementById('ct-btn-gen');
+    if (btn) btn.textContent = 'GUARDAR CAMBIOS';
+
     const hasData = Object.keys(d).length > 2;
     toast(hasData
-      ? 'Contrato ' + c.numero + ' cargado — modificá lo que necesites'
-      : 'Contrato ' + c.numero + ' cargado (solo tipo y precio disponibles — datos completos solo en contratos nuevos)'
+      ? 'Contrato ' + c.numero + ' cargado — modificá y guardá los cambios'
+      : 'Contrato ' + c.numero + ' cargado (solo tipo y precio — datos completos disponibles en contratos nuevos)'
     );
     document.getElementById('ct-form-area').scrollIntoView({ behavior: 'smooth' });
   }, 50);
+}
+
+function ctCancelEdit() {
+  ctEditingNumero = null;
+  const banner = document.getElementById('ct-edit-banner');
+  if (banner) banner.style.display = 'none';
+  const btn = document.getElementById('ct-btn-gen');
+  if (btn) btn.textContent = 'GENERAR CONTRATO';
 }
 
 // Check session on load
