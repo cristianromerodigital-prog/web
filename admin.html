@@ -4983,6 +4983,7 @@ async function ctCargarSolicitud(sol) {
 
 // ── HISTORIAL ──
 let ctHistLoaded = false;
+let ctHistData   = [];
 
 function ctToggleHistorial() {
   const body  = document.getElementById('ct-hist-body');
@@ -5000,6 +5001,7 @@ async function ctLoadHistorial() {
     const res  = await fetch(url + '?action=getContratos');
     const data = await res.json();
     ctHistLoaded = true;
+    ctHistData   = data;
     ctRenderHistorial(data);
   } catch(e) {
     document.getElementById('ct-hist-list').innerHTML = '<div style="color:var(--red);font-size:12px">Error cargando historial.</div>';
@@ -5009,7 +5011,8 @@ async function ctLoadHistorial() {
 function ctRenderHistorial(data) {
   const el = document.getElementById('ct-hist-list');
   if (!data.length) { el.innerHTML = '<div style="color:var(--gray);font-size:12px">No hay contratos registrados.</div>'; return; }
-  const rows = data.slice().reverse().map(c => `
+  const reversed = data.slice().reverse();
+  const rows = reversed.map((c, i) => `
     <tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
       <td style="padding:8px 10px;font-size:12px;color:var(--gold);white-space:nowrap">${c.numero}</td>
       <td style="padding:8px 10px;font-size:11px;color:var(--gray);letter-spacing:1px">${c.tipo}</td>
@@ -5019,6 +5022,7 @@ function ctRenderHistorial(data) {
       <td style="padding:8px 10px;white-space:nowrap">
         ${c.docUrl ? `<a href="${c.docUrl}" target="_blank" style="font-size:10px;color:var(--gold);text-decoration:none;margin-right:8px">DOC</a>` : ''}
         ${c.pdfUrl ? `<a href="${c.pdfUrl}" target="_blank" style="font-size:10px;color:var(--red);text-decoration:none;margin-right:8px">PDF</a>` : ''}
+        <button onclick="ctCargarContrato(${data.length - 1 - i})" style="font-size:10px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:var(--gold);padding:3px 8px;cursor:pointer;margin-right:4px">Cargar</button>
         <button onclick="ctDeleteContrato('${c.numero}')" style="font-size:10px;background:rgba(224,85,85,0.1);border:1px solid rgba(224,85,85,0.3);color:var(--red);padding:3px 8px;cursor:pointer">Borrar</button>
       </td>
     </tr>`).join('');
@@ -5049,6 +5053,99 @@ async function ctDeleteContrato(numero) {
       toast('Error: ' + json.error, 'error');
     }
   } catch(e) { toast('Error de conexión', 'error'); }
+}
+
+function ctCargarContrato(idx) {
+  const c = ctHistData[idx];
+  if (!c) return;
+  const d = c.formData || {};
+  if (!d.tipo && !c.tipo) { toast('Este contrato no tiene datos guardados para cargar', 'error'); return; }
+  const tipo = d.tipo || c.tipo;
+  ctSelTipo(tipo);
+
+  function set(id, val) {
+    const el = document.getElementById(id);
+    if (!el || val == null) return;
+    if (el.type === 'checkbox') el.checked = !!val;
+    else el.value = val;
+  }
+
+  set('ct-ciudad',   d.ciudad);
+  set('ct-dia-firma', d.diaFirma);
+  set('ct-precio',   d.precioTotal || c.precio);
+
+  if (tipo === 'BODA') {
+    set('ct-b-novia-nombre',    d.novia?.nombre);
+    set('ct-b-novia-dni',       d.novia?.dni);
+    set('ct-b-novia-tel',       d.novia?.telefono);
+    set('ct-b-novia-email',     d.novia?.email);
+    set('ct-b-novio-nombre',    d.novio?.nombre);
+    set('ct-b-novio-dni',       d.novio?.dni);
+    set('ct-b-novio-dom',       d.novio?.domicilio);
+    set('ct-b-novio-tel',       d.novio?.telefono);
+    set('ct-b-novio-email',     d.novio?.email);
+    set('ct-b-fiesta-fecha',    d.fiesta?.fecha);
+    set('ct-b-fiesta-hora',     d.fiesta?.horarioInicio);
+    set('ct-b-fiesta-salon',    d.fiesta?.lugar);
+    set('ct-b-fiesta-dir',      d.fiesta?.direccion);
+    set('ct-b-contacto-nombre', d.contacto?.nombre);
+    set('ct-b-contacto-rel',    d.contacto?.relacion);
+    set('ct-b-contacto-tel',    d.contacto?.telefono);
+    set('ct-b-paquete',         d.nombrePaquete);
+    if (d.civil) {
+      set('ct-b-tiene-civil', true);
+      document.getElementById('ct-b-civil-fields')?.style && (document.getElementById('ct-b-civil-fields').style.display='block');
+      set('ct-b-civil-fecha', d.civil.fecha);
+      set('ct-b-civil-hora',  d.civil.horario);
+      set('ct-b-civil-dir',   d.civil.direccion);
+    }
+    if (d.religiosa) {
+      set('ct-b-tiene-reli', true);
+      document.getElementById('ct-b-reli-fields')?.style && (document.getElementById('ct-b-reli-fields').style.display='block');
+      set('ct-b-reli-fecha', d.religiosa.fecha);
+      set('ct-b-reli-hora',  d.religiosa.horario);
+      set('ct-b-reli-dir',   d.religiosa.direccion);
+    }
+  } else if (tipo === 'XV') {
+    set('ct-x-quince-nombre',  d.quinceanera?.nombre);
+    set('ct-x-quince-nac',     d.quinceanera?.fechaNacimiento);
+    set('ct-x-cliente-nombre', d.cliente?.nombre);
+    set('ct-x-cliente-dni',    d.cliente?.dni);
+    set('ct-x-cliente-tel',    d.cliente?.telefono);
+    set('ct-x-cliente-email',  d.cliente?.email);
+    set('ct-x-fecha',          d.evento?.fecha);
+    set('ct-x-hora-inicio',    d.evento?.horaInicio);
+    set('ct-x-hora-fin',       d.evento?.horaFin);
+    set('ct-x-salon',          d.evento?.salon);
+    set('ct-x-dir',            d.evento?.direccion);
+    set('ct-x-invitados',      d.evento?.invitados);
+    set('ct-x-cuotas',         d.cuotas);
+  } else if (tipo === 'CUMPLE') {
+    set('ct-c-nombre',      d.cliente?.nombre);
+    set('ct-c-dni',         d.cliente?.dni);
+    set('ct-c-tel',         d.cliente?.telefono);
+    set('ct-c-email',       d.cliente?.email);
+    set('ct-c-fecha',       d.evento?.fecha);
+    set('ct-c-hora-inicio', d.evento?.horaInicio);
+    set('ct-c-hora-fin',    d.evento?.horaFin);
+    set('ct-c-salon',       d.evento?.salon);
+    set('ct-c-dir',         d.evento?.direccion);
+    set('ct-c-invitados',   d.evento?.invitados);
+    set('ct-c-cuotas',      d.cuotas);
+  }
+
+  // Marcar servicios
+  if (d.servicios?.length) {
+    const nombres = d.servicios.map(s => s.descripcion.toLowerCase());
+    ctSvcData.forEach(s => {
+      const cb = document.getElementById(`ct-svc-${s.id}`);
+      if (cb) cb.checked = nombres.includes(s.descripcion.toLowerCase());
+    });
+  }
+
+  ctCalcTotal(true);
+  toast('Contrato ' + c.numero + ' cargado en el formulario');
+  document.getElementById('ct-form-area').scrollIntoView({ behavior: 'smooth' });
 }
 
 // Check session on load
