@@ -299,20 +299,10 @@ footer small a{color:inherit}
     </div>
     <div class="form-group">
       <label class="form-label">¿Confirmás asistencia?</label>
-      <select class="form-select" id="rsvp-asistencia">
+      <select class="form-select" id="rsvp-asistencia" required>
         <option value="">— Seleccioná —</option>
         <option value="si">Sí, voy a estar</option>
-        <option value="no">No voy a poder ir</option>
-        <option value="quizas">Todavía no sé</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label class="form-label">¿Traés acompañante?</label>
-      <select class="form-select" id="rsvp-acompanante">
-        <option value="no">No, voy solo/a</option>
-        <option value="si">Sí, vengo con acompañante</option>
-        <option value="2">Con 2 acompañantes</option>
-        <option value="3">Con 3 o más acompañantes</option>
+        <option value="no">No, no voy a ir</option>
       </select>
     </div>
     <div class="form-group">
@@ -332,7 +322,7 @@ footer small a{color:inherit}
       <label class="form-label">Mensaje (opcional)</label>
       <textarea class="form-textarea" id="rsvp-mensaje" placeholder="¿Querés decirnos algo?"></textarea>
     </div>
-    <button class="btn-rsvp" id="rsvp-btn" onclick="submitRSVP()">Confirmar asistencia</button>
+    <button class="btn-rsvp" id="rsvp-btn" onclick="submitRSVP()">Enviar</button>
     <p id="rsvp-error" style="display:none;color:#e55;font-size:12px;margin-top:12px;text-align:center"></p>
   </div>
   <div id="rsvp-success">
@@ -646,8 +636,7 @@ async function submitRSVP() {
     evento: cfg.titulo || cfg.novios || 'Invitación',
     nombre,
     apellido,
-    asistencia: { si: 'Sí, confirma asistencia', no: 'No puede asistir', quizas: 'Todavía no sabe' }[asistencia] || asistencia,
-    acompanante: { no: 'No', si: '1 acompañante', '2': '2 acompañantes', '3': '3 o más acompañantes' }[document.getElementById('rsvp-acompanante').value] || '',
+    asistencia: { si: 'Sí, confirma asistencia', no: 'No puede asistir' }[asistencia] || asistencia,
     restricciones: restricciones.length ? restricciones.join(', ') : 'Ninguna',
     mensaje: document.getElementById('rsvp-mensaje').value.trim() || ''
   };
@@ -670,7 +659,7 @@ async function submitRSVP() {
   } catch(e) {
     errorEl.textContent = 'Hubo un error al enviar. Intentá de nuevo.';
     errorEl.style.display = 'block';
-    btn.disabled = false; btn.textContent = 'Confirmar asistencia';
+    btn.disabled = false; btn.textContent = 'Enviar';
   }
 }
 
