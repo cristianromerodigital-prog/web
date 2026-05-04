@@ -244,6 +244,8 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 .cnt-pkg-card { background:var(--black3); border:1px solid rgba(255,255,255,0.06); padding:20px; margin-bottom:16px; }
 .cnt-pkg-title { font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--cyan); margin-bottom:14px; }
 .cnt-item-row { display:grid; grid-template-columns:24px 1fr 90px 28px; gap:8px; margin-bottom:6px; align-items:center; transition:border-top 0.1s; }
+#page-presupuesto .cnt-item-row { grid-template-columns:1fr 28px; gap:6px; }
+#page-presupuesto .cnt-item-row.pr-opc-row { display:flex; grid-template-columns:unset; flex-wrap:wrap; align-items:center; gap:8px; }
 /* INVITES */
 .inv-card{background:var(--black3);border:1px solid rgba(255,255,255,0.06);padding:20px;margin-bottom:12px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start}
 .inv-card-badge{display:inline-block;padding:3px 10px;font-size:9px;letter-spacing:2px;text-transform:uppercase;background:rgba(201,168,76,0.12);color:var(--gold);margin-bottom:8px}
@@ -4640,9 +4642,9 @@ function renderPresupuestoPack(idx, data) {
         </div>
         <div id="pr-pack-items">
           ${currentItems.map(item=>`
-            <div class="cnt-item-row" style="margin-bottom:5px">
+            <div class="cnt-item-row" style="margin-bottom:5px;grid-template-columns:1fr 28px">
               <input class="form-input" value="${item.replace(/"/g,'&quot;')}" style="font-size:12px">
-              <button onclick="this.closest('.cnt-item-row').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0 4px">&#x2715;</button>
+              <button onclick="this.closest('.cnt-item-row').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0 4px;text-align:center">&#x2715;</button>
             </div>`).join('')}
         </div>
         <button onclick="addPresupuestoItem()" class="btn-sm" style="margin-top:6px;font-size:10px">+ Agregar manualmente</button>
@@ -4676,9 +4678,9 @@ function renderPresupuestoIncludes(items) {
   const c = document.getElementById('pr-includes-list');
   if(!c) return;
   c.innerHTML = (items||[]).map(item => `
-    <div class="cnt-item-row" style="margin-bottom:5px">
+    <div class="cnt-item-row" style="margin-bottom:5px;grid-template-columns:1fr 28px">
       <input class="form-input" value="${item}" style="font-size:12px">
-      <button onclick="this.closest('.cnt-item-row').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0 4px">&#x2715;</button>
+      <button onclick="this.closest('.cnt-item-row').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0 4px;text-align:center">&#x2715;</button>
     </div>`).join('');
 }
 
@@ -4687,8 +4689,8 @@ function addPresupuestoInclude() {
   if(!c) return;
   const div = document.createElement('div');
   div.className = 'cnt-item-row';
-  div.style.marginBottom = '5px';
-  div.innerHTML = `<input class="form-input" value="" style="font-size:12px" placeholder="Nuevo item"><button onclick="this.closest('.cnt-item-row').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0 4px">&#x2715;</button>`;
+  div.style.cssText = 'margin-bottom:5px;display:grid;grid-template-columns:1fr 28px;gap:6px;align-items:center';
+  div.innerHTML = `<input class="form-input" value="" style="font-size:12px" placeholder="Nuevo item"><button onclick="this.closest('.cnt-item-row').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0 4px;text-align:center">&#x2715;</button>`;
   c.appendChild(div);
 }
 
