@@ -3921,8 +3921,14 @@ async function openCloudinaryBrowser() {
 }
 
 function addFromCloudinary(url, publicId) {
+  if(pendingPhotoCallback) {
+    const cb = pendingPhotoCallback;
+    pendingPhotoCallback = null;
+    cb(url);
+    document.getElementById('cloudinary-browser').style.display = 'none';
+    return;
+  }
   const items = S.get('crd_portfolio') || [];
-  // Check if already added
   if(items.find(i => i.cloudinaryId === publicId)) {
     toast('Esta foto ya está en el portfolio', 'error');
     return;
@@ -4710,7 +4716,7 @@ function uploadPresupuestoPhoto(type, idx) {
       renderPresupuestoPack(currentPresupuestoPack, data);
     }
   };
-  openPhotoUploader('__presupuesto__', label);
+  openCloudinaryBrowser();
 }
 
 function clearPresupuestoPhoto(type, idx) {
@@ -4738,7 +4744,7 @@ function savePresupuesto() {
   editableData['estilo-desc']  = document.getElementById('pr-estilo-desc').value.trim();
   S.set('crd_editable', editableData);
   // Opcionales
-  const opcRows = [...document.querySelectorAll('#pr-opc-list .cnt-item-row')];
+  const opcRows = [...document.querySelectorAll('#pr-opc-list .pr-opc-card')];
   const opcSaved = opcRows.map(row => ({
     name:  (row.querySelector('.pr-opc-name')||{value:''}).value.trim(),
     desc:  (row.querySelector('.pr-opc-desc')||{value:''}).value.trim(),
@@ -4781,11 +4787,13 @@ function renderOpcionalesAdmin() {
   const c = document.getElementById('pr-opc-list');
   if(!c) return;
   c.innerHTML = items.map(item => `
-    <div class="cnt-item-row" style="flex-wrap:wrap;align-items:flex-start;gap:8px;margin-bottom:8px">
-      <input class="form-input pr-opc-name" value="${(item.name||'').replace(/"/g,'&quot;')}" style="font-size:12px;min-width:160px;flex:2" placeholder="Nombre">
-      <input class="form-input pr-opc-desc" value="${(item.desc||'').replace(/"/g,'&quot;')}" style="font-size:12px;flex:3;min-width:180px" placeholder="Descripcion">
-      <input class="form-input pr-opc-price" value="${(item.price||'').replace(/"/g,'&quot;')}" style="font-size:12px;width:110px;flex-shrink:0" placeholder="$0 o consultar">
-      <button onclick="this.closest('.cnt-item-row').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:0 4px;align-self:center">&#x2715;</button>
+    <div class="pr-opc-card" style="margin-bottom:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);padding:10px 12px">
+      <div style="display:grid;grid-template-columns:1fr 120px 28px;gap:8px;align-items:center;margin-bottom:6px">
+        <input class="form-input pr-opc-name" value="${(item.name||'').replace(/"/g,'&quot;')}" style="font-size:12px" placeholder="Nombre del servicio">
+        <input class="form-input pr-opc-price" value="${(item.price||'').replace(/"/g,'&quot;')}" style="font-size:12px;text-align:right" placeholder="consultar">
+        <button onclick="this.closest('.pr-opc-card').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0;text-align:center">&#x2715;</button>
+      </div>
+      <input class="form-input pr-opc-desc" value="${(item.desc||'').replace(/"/g,'&quot;')}" style="font-size:11px;padding:8px 12px;color:rgba(255,255,255,0.5)" placeholder="Descripcion (opcional)">
     </div>`).join('');
 }
 
@@ -4793,9 +4801,9 @@ function addPresupuestoOpcional() {
   const c = document.getElementById('pr-opc-list');
   if(!c) return;
   const div = document.createElement('div');
-  div.className = 'cnt-item-row';
-  div.style.cssText = 'flex-wrap:wrap;align-items:flex-start;gap:8px;margin-bottom:8px';
-  div.innerHTML = `<input class="form-input pr-opc-name" value="" style="font-size:12px;min-width:160px;flex:2" placeholder="Nombre"><input class="form-input pr-opc-desc" value="" style="font-size:12px;flex:3;min-width:180px" placeholder="Descripcion"><input class="form-input pr-opc-price" value="" style="font-size:12px;width:110px;flex-shrink:0" placeholder="$0 o consultar"><button onclick="this.closest('.cnt-item-row').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:0 4px;align-self:center">&#x2715;</button>'`;
+  div.className = 'pr-opc-card';
+  div.style.cssText = 'margin-bottom:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);padding:10px 12px';
+  div.innerHTML = `<div style="display:grid;grid-template-columns:1fr 120px 28px;gap:8px;align-items:center;margin-bottom:6px"><input class="form-input pr-opc-name" value="" style="font-size:12px" placeholder="Nombre del servicio"><input class="form-input pr-opc-price" value="" style="font-size:12px;text-align:right" placeholder="consultar"><button onclick="this.closest('.pr-opc-card').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0;text-align:center">&#x2715;</button></div><input class="form-input pr-opc-desc" value="" style="font-size:11px;padding:8px 12px;color:rgba(255,255,255,0.5)" placeholder="Descripcion (opcional)">`;
   c.appendChild(div);
 }
 
