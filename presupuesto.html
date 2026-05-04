@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Presupuesto — Cristian Romero Digital</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gold:    #C8A84B;
+      --gold-lt: #E8D49A;
+      --dark:    #1A1A1A;
+      --gray:    #666;
+      --light:   #F8F5F0;
+      --border:  #DDD8CF;
+      --white:   #FFF;
+    }
+    body { background: #C8C4BF; font-family: 'Lato', sans-serif; color: var(--dark); -webkit-font-smoothing: antialiased; }
+
+    /* ── TOOLBAR ── */
+    #toolbar {
+      position: fixed; top: 16px; right: 16px; z-index: 9999;
+      display: flex; align-items: center; gap: 10px;
+    }
+    #toolbar .hint { font-size: 11px; color: rgba(255,255,255,0.7); letter-spacing: 0.04em; background: rgba(0,0,0,0.4); padding: 8px 14px; }
+    #toolbar button { background: var(--dark); color: var(--gold-lt); border: none; padding: 10px 20px; font-family: 'Lato', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; }
+    #toolbar button:hover { background: var(--gold); color: var(--dark); }
+
+    /* ── PAGE ── */
+    .page { width: 900px; margin: 24px auto; background: var(--white); box-shadow: 0 8px 40px rgba(0,0,0,0.2); overflow: hidden; position: relative; }
+    .gold-bar { height: 5px; background: linear-gradient(90deg, #7A5C0A, var(--gold), var(--gold-lt), var(--gold), #7A5C0A); }
+
+    /* ── IMAGE PLACEHOLDER ── */
+    .img-ph {
+      background: var(--light); border: 2px dashed var(--border);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 10px; color: #B0A89E; font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; cursor: pointer; transition: border-color .2s, background .2s; padding: 16px; text-align: center;
+    }
+    .img-ph:hover { border-color: var(--gold); background: #F2EDE3; }
+    .img-ph.loaded { border: none; padding: 0; cursor: default; }
+    .img-ph.loaded:hover { background: transparent; }
+    .img-ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .img-ph svg { opacity: 0.35; }
+
+    /* ── PAGE FOOTER BAR ── */
+    .page-bar { background: var(--dark); color: rgba(255,255,255,0.8); padding: 12px 60px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; letter-spacing: 0.06em; }
+    .page-bar .social { color: var(--gold-lt); font-weight: 700; }
+    .page-bar .validity { background: var(--gold); color: var(--dark); font-size: 9px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase; padding: 4px 14px; }
+
+    /* ── PORTADA ── */
+    .cover-body { min-height: 1000px; display: flex; flex-direction: column; }
+    .cover-top { padding: 44px 60px 30px; display: flex; justify-content: space-between; align-items: flex-start; }
+    .logo-wrap { width: 84px; height: 84px; display: flex; align-items: center; justify-content: center; }
+    .logo-img { width: 84px; height: 84px; object-fit: contain; display: none; }
+    .logo-fallback { width: 84px; height: 84px; border: 3px solid var(--dark); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 900; letter-spacing: -3px; }
+    .client-box { border: 1.5px solid var(--dark); padding: 16px 26px; min-width: 320px; }
+    .client-field { display: grid; grid-template-columns: 140px 1fr; align-items: baseline; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 12.5px; }
+    .client-field:last-child { border-bottom: none; }
+    .cf-label { font-weight: 700; letter-spacing: 0.03em; }
+    .cf-value { font-weight: 300; color: var(--gray); border-bottom: 1px dotted #CCC; min-width: 60px; outline: none; }
+    .cf-value:empty::before { content: attr(data-ph); color: #CCC; font-style: italic; }
+    .cover-gallery { flex: 1; display: grid; grid-template-columns: 3fr 2fr 2fr; grid-template-rows: 210px 210px; gap: 4px; padding: 0 60px; }
+    .cover-gallery .img-ph { border: none; }
+    .cover-gallery .img-ph.tall { grid-row: 1 / 3; }
+    .cover-bottom { padding: 40px 60px 32px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .welcome { font-family: 'Playfair Display', serif; font-size: 60px; font-weight: 900; line-height: .9; letter-spacing: -1px; }
+    .welcome-sub { font-size: 11px; font-weight: 300; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-top: 12px; }
+    .brand-block { text-align: right; }
+    .brand-block .b-main { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+    .brand-block .b-sub { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-top: 3px; }
+
+    /* ── PACK PAGES ── */
+    .pack-body { min-height: 1000px; padding: 0 60px 44px; display: flex; flex-direction: column; }
+    .pack-header { text-align: center; padding: 24px 0 18px; font-size: 10px; font-weight: 700; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); border-bottom: 1px solid var(--border); margin-bottom: 26px; position: relative; }
+    .pack-hdr-logo { position: absolute; right: 0; top: 50%; transform: translateY(-50%); height: 26px; width: auto; object-fit: contain; display: none; }
+    .pack-box { border: 1.5px solid var(--dark); flex: 1; display: grid; grid-template-columns: 300px 1fr; overflow: hidden; }
+    .photos-col { border-right: 1.5px solid var(--dark); display: grid; grid-template-rows: 2fr 1fr 1fr; }
+    .photos-col .img-ph { border: none; border-bottom: 1px solid var(--border); }
+    .photos-col .img-ph:last-child { border-bottom: none; }
+    .content-col { padding: 30px 34px 26px; display: flex; flex-direction: column; }
+    .pack-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 5px; }
+    .pack-name { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 900; text-transform: uppercase; line-height: 1.05; color: var(--dark); }
+    .name-divider { height: 2px; background: linear-gradient(90deg, var(--gold), var(--gold-lt), transparent); margin: 12px 0 18px; }
+    .svc { margin-bottom: 14px; }
+    .svc-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 7px; }
+    .svc-title { font-size: 11px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dark); display: flex; align-items: center; gap: 8px; }
+    .svc-title::before { content: ''; display: inline-block; width: 8px; height: 8px; background: var(--gold); transform: rotate(45deg); flex-shrink: 0; }
+    .svc-price { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--gold); }
+    .svc-list { list-style: none; padding: 0; }
+    .svc-list li { font-size: 12px; font-weight: 300; color: var(--gray); padding: 2px 0 2px 16px; position: relative; line-height: 1.4; }
+    .svc-list li::before { content: ''; position: absolute; left: 4px; top: 7px; width: 4px; height: 4px; background: var(--border); }
+    .svc-sep { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+    .total-block { margin-top: auto; padding-top: 16px; border-top: 2px solid var(--dark); display: flex; justify-content: space-between; align-items: flex-end; }
+    .total-lbl { font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gray); }
+    .total-val { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 900; line-height: 1; }
+    .pack-foot { margin-top: 22px; }
+    .includes-lbl { font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gray); margin-bottom: 10px; }
+    .includes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px 16px; }
+    .inc-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+    .inc-dot { width: 6px; height: 6px; background: var(--gold); transform: rotate(45deg); flex-shrink: 0; }
+    .obs { font-size: 11px; font-style: italic; color: var(--gray); margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+    .obs strong { font-style: normal; color: var(--dark); }
+
+    /* ── CONTACTO ── */
+    .contact-body { min-height: 1000px; padding: 0 60px 44px; display: flex; flex-direction: column; gap: 36px; }
+    .sec-title { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 900; text-transform: uppercase; }
+    .sec-sub { font-size: 11px; font-weight: 300; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-top: 5px; }
+    .pay-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+    .pay-card { border: 1px solid var(--border); padding: 24px 26px; }
+    .pay-card h3 { font-size: 10px; font-weight: 900; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 14px; }
+    .pay-card p { font-size: 13px; font-weight: 300; line-height: 1.8; }
+    .contact-row { display: flex; gap: 20px; }
+    .contact-card { flex: 1; border: 1px solid var(--border); padding: 22px 24px; display: flex; align-items: center; gap: 16px; }
+    .contact-icon { width: 42px; height: 42px; background: var(--dark); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .cd-label { font-size: 9px; font-weight: 900; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
+    .cd-value { font-size: 15px; font-weight: 700; }
+    .contact-closing { margin-top: auto; text-align: center; padding-top: 32px; border-top: 1px solid var(--border); }
+    .close-logo { width: 68px; height: 68px; object-fit: contain; margin-bottom: 14px; display: none; }
+    .close-name { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }
+    .close-sub { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-top: 4px; }
+    .close-note { font-size: 10px; color: var(--gray); margin-top: 14px; letter-spacing: 0.06em; }
+
+    /* ── SOBRE MÍ ── */
+    .sobre-body { min-height: 1000px; padding: 0 60px 44px; display: flex; flex-direction: column; }
+    .sobre-hdr { padding: 20px 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
+    .sobre-hdr-label { font-size: 10px; font-weight: 700; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); }
+    .sobre-hdr-logo { height: 34px; width: auto; object-fit: contain; display: none; }
+    .sobre-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 44px; }
+    .sobre-text { display: flex; flex-direction: column; }
+    .sobre-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+    .sobre-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 900; line-height: 1.15; margin-bottom: 16px; }
+    .sobre-divider { height: 2px; background: linear-gradient(90deg, var(--gold), var(--gold-lt), transparent); margin-bottom: 20px; }
+    .sobre-para { font-size: 13px; font-weight: 300; line-height: 1.85; color: var(--gray); margin-bottom: 14px; }
+    .sobre-photos { display: flex; flex-direction: column; gap: 4px; }
+    .sobre-photos .img-ph { flex: 1; min-height: 160px; border: none; }
+
+    /* ── MI ESTILO ── */
+    .estilo-body { min-height: 1000px; padding: 0 60px 44px; display: flex; flex-direction: column; }
+    .estilo-intro { padding: 24px 0; text-align: center; }
+    .estilo-intro-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; margin-bottom: 10px; }
+    .estilo-intro p { font-size: 13px; font-weight: 300; color: var(--gray); max-width: 500px; margin: 0 auto; line-height: 1.75; }
+    .estilo-gallery { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 4px; }
+    .estilo-gallery .img-ph { border: none; min-height: 180px; }
+    .estilo-gallery .span2 { grid-column: 1 / 3; }
+
+    /* ── OPCIONALES ── */
+    .opc-body { min-height: 1000px; padding: 0 60px 44px; display: flex; flex-direction: column; }
+    .opc-list { flex: 1; margin-top: 10px; }
+    .opc-row { display: grid; grid-template-columns: 1fr auto; gap: 20px; padding: 9px 0; border-bottom: 1px solid var(--border); align-items: baseline; }
+    .opc-name { font-size: 11px; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dark); display: flex; align-items: center; gap: 8px; }
+    .opc-name::before { content: ''; display: inline-block; width: 7px; height: 7px; background: var(--gold); transform: rotate(45deg); flex-shrink: 0; }
+    .opc-desc { font-size: 11px; font-weight: 300; color: var(--gray); margin-top: 3px; padding-left: 15px; line-height: 1.4; }
+    .opc-price-val { font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; white-space: nowrap; text-align: right; }
+    .opc-price-val.consultar { font-family: 'Lato', sans-serif; font-size: 11px; font-weight: 300; color: var(--gray); font-style: italic; }
+    .opc-foot { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); font-size: 11px; font-style: italic; color: var(--gray); }
+
+    /* ── PRINT ── */
+    @media print {
+      body { background: white; }
+      #toolbar { display: none; }
+      .page { width: 210mm; min-height: 297mm; margin: 0; box-shadow: none; page-break-after: always; }
+      .page:last-child { page-break-after: avoid; }
+      @page { margin: 0; size: A4; }
+      .cf-value { border-bottom: 1px dotted #999; }
+    }
+    @media (max-width: 940px) {
+      .page { width: 100%; margin: 0; }
+      .pack-box { grid-template-columns: 1fr; }
+      .photos-col { display: none; }
+      .cover-gallery { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="toolbar">
+  <span class="hint">Clic en los campos blancos para completar datos del cliente</span>
+  <button onclick="window.print()">Imprimir / PDF</button>
+</div>
+
+<!-- ═══ PORTADA ═══ -->
+<div class="page" id="page-portada">
+  <div class="gold-bar"></div>
+  <div class="cover-body">
+    <div class="cover-top">
+      <div class="logo-wrap">
+        <img class="logo-img" id="logo-cover" alt="Logo">
+        <div class="logo-fallback" id="logo-fallback-cover">CR</div>
+      </div>
+      <div class="client-box">
+        <div class="client-field">
+          <span class="cf-label">Cliente:</span>
+          <span class="cf-value" contenteditable="true" data-ph="Nombre del cliente"></span>
+        </div>
+        <div class="client-field">
+          <span class="cf-label">Fecha de evento:</span>
+          <span class="cf-value" contenteditable="true" data-ph="DD/MM/AAAA"></span>
+        </div>
+        <div class="client-field">
+          <span class="cf-label">Salón / Locación:</span>
+          <span class="cf-value" contenteditable="true" data-ph="Nombre del salón"></span>
+        </div>
+        <div class="client-field">
+          <span class="cf-label">Tipo de evento:</span>
+          <span class="cf-value" contenteditable="true" data-ph="Boda / Quinceañera / Cumpleaños"></span>
+        </div>
+      </div>
+    </div>
+    <div class="cover-gallery">
+      <div class="img-ph tall" id="cover-photo-0" data-slot="cover:0">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Clic para cargar foto
+      </div>
+      <div class="img-ph" id="cover-photo-1" data-slot="cover:1">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Clic para cargar foto
+      </div>
+      <div class="img-ph" id="cover-photo-2" data-slot="cover:2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Clic para cargar foto
+      </div>
+      <div class="img-ph" id="cover-photo-3" data-slot="cover:3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Clic para cargar foto
+      </div>
+      <div class="img-ph" id="cover-photo-4" data-slot="cover:4">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Clic para cargar foto
+      </div>
+    </div>
+    <div class="cover-bottom">
+      <div>
+        <div class="welcome">BIENVENIDOS</div>
+        <div class="welcome-sub">Fotografía &amp; Video de Eventos</div>
+      </div>
+      <div class="brand-block">
+        <div class="b-main">Cristian Romero</div>
+        <div class="b-sub">Digital</div>
+      </div>
+    </div>
+  </div>
+  <div class="page-bar">
+    <span class="social" id="footer-ig">@cristian.romero.digital</span>
+    <span class="validity" id="footer-validity-0">Válido por 15 días</span>
+    <span id="footer-phone-0">11 6255 7763</span>
+  </div>
+</div>
+
+<!-- ═══ SOBRE MÍ ═══ -->
+<div class="page" id="page-sobre">
+  <div class="gold-bar"></div>
+  <div class="sobre-body">
+    <div class="sobre-hdr">
+      <span class="sobre-hdr-label">Cristian Romero Digital</span>
+      <img class="sobre-hdr-logo" alt="Logo">
+    </div>
+    <div class="sobre-grid">
+      <div class="sobre-text">
+        <div class="sobre-eyebrow">Sobre mí</div>
+        <div class="sobre-title" contenteditable="true" data-persist="sobre-title">Fotografía social. Buenos Aires.</div>
+        <div class="sobre-divider"></div>
+        <p class="sobre-para" contenteditable="true" data-persist="sobre-p0">Soy fotógrafo especializado en eventos sociales: bodas, quinceañeras, cumpleaños y celebraciones familiares en Buenos Aires y alrededores. Me interesa la foto que no se puede repetir: la mirada al descuido, el abrazo que no se preparó, la emoción cuando nadie mira.</p>
+        <p class="sobre-para" contenteditable="true" data-persist="sobre-p1">Trabajo con equipos profesionales y entrego todo el material editado sin marcas de agua. Fotos limpias, bien trabajadas, que no tienen fecha de vencimiento.</p>
+        <p class="sobre-para" contenteditable="true" data-persist="sobre-p2">Antes de cada evento charlamos los detalles: qué momentos no pueden faltar, cómo es el espacio, qué esperás llevarte. Eso hace que el resultado sea tuyo, no genérico.</p>
+      </div>
+      <div class="sobre-photos">
+        <div class="img-ph" id="sobre-photo-0" data-slot="sobre:0">
+          <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Clic para cargar foto
+        </div>
+        <div class="img-ph" id="sobre-photo-1" data-slot="sobre:1">
+          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Clic para cargar foto
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="page-bar">
+    <span class="social">@cristian.romero.digital</span>
+    <span class="validity">Válido por 15 días</span>
+    <span>11 6255 7763</span>
+  </div>
+</div>
+
+<!-- ═══ MI ESTILO ═══ -->
+<div class="page" id="page-estilo">
+  <div class="gold-bar"></div>
+  <div class="estilo-body">
+    <div class="sobre-hdr">
+      <span class="sobre-hdr-label">Mi Estilo</span>
+      <img class="sobre-hdr-logo" alt="Logo">
+    </div>
+    <div class="estilo-intro">
+      <div class="pack-eyebrow" style="display:block;margin-bottom:8px">Mi Estilo</div>
+      <div class="estilo-intro-title" contenteditable="true" data-persist="estilo-title">Luz natural. Momentos reales. Resultados que duran.</div>
+      <p contenteditable="true" data-persist="estilo-desc">Me muevo entre la fotografía documental y el retrato de autor. Busco la emoción sin forzarla, la luz sin artificio, el encuadre que convierte lo cotidiano en algo hermoso. El resultado es un material que te va a emocionar la primera vez que lo ves y la décima.</p>
+    </div>
+    <div class="estilo-gallery">
+      <div class="img-ph span2" id="estilo-photo-0" data-slot="estilo:0">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Clic para cargar foto principal
+      </div>
+      <div class="img-ph" id="estilo-photo-1" data-slot="estilo:1">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Clic para cargar foto
+      </div>
+      <div class="img-ph" id="estilo-photo-2" data-slot="estilo:2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Clic para cargar foto
+      </div>
+    </div>
+  </div>
+  <div class="page-bar">
+    <span class="social">@cristian.romero.digital</span>
+    <span class="validity">Válido por 15 días</span>
+    <span>11 6255 7763</span>
+  </div>
+</div>
+
+<!-- ═══ PACK 01 ═══ -->
+<div class="page" id="page-pack-0">
+  <div class="gold-bar"></div>
+  <div class="pack-body">
+    <div class="pack-header"><img class="pack-hdr-logo" alt="Logo">Presupuesto</div>
+    <div class="pack-box">
+      <div class="photos-col">
+        <div class="img-ph" id="pack-photo-0-0" data-slot="pack:0:0"><svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Clic para cargar foto</div>
+        <div class="img-ph" id="pack-photo-0-1" data-slot="pack:0:1"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Clic para cargar foto</div>
+        <div class="img-ph" id="pack-photo-0-2" data-slot="pack:0:2"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Clic para cargar foto</div>
+      </div>
+      <div class="content-col">
+        <div class="pack-eyebrow" id="pack-eyebrow-0">01 — Pack</div>
+        <div class="pack-name" id="pack-name-0">Solo Fiesta</div>
+        <div class="name-divider"></div>
+        <div class="svc">
+          <div class="svc-head">
+            <span class="svc-title">Fotografía</span>
+            <span class="svc-price" id="foto-price-0">$380.000</span>
+          </div>
+          <ul class="svc-list" id="foto-items-0">
+            <li>Cobertura total del evento</li>
+            <li>Edición y entrega en la Nube</li>
+          </ul>
+        </div>
+        <hr class="svc-sep">
+        <div class="svc">
+          <div class="svc-head">
+            <span class="svc-title">Video</span>
+            <span class="svc-price" id="video-price-0">$380.000</span>
+          </div>
+          <ul class="svc-list" id="video-items-0">
+            <li>Cobertura total del evento</li>
+            <li>Resumen editado (20–30 min aprox.)</li>
+          </ul>
+        </div>
+        <div class="total-block">
+          <span class="total-lbl">Total del pack</span>
+          <span class="total-val" id="total-price-0">$760.000.-</span>
+        </div>
+      </div>
+    </div>
+    <div class="pack-foot">
+      <div class="includes-lbl">El servicio incluye</div>
+      <div class="includes-grid" id="includes-grid-0">
+        <div class="inc-item"><span class="inc-dot"></span>Equipos Profesionales</div>
+        <div class="inc-item"><span class="inc-dot"></span>Retoque sin marca de agua</div>
+        <div class="inc-item"><span class="inc-dot"></span>Fotografía ilimitada</div>
+        <div class="inc-item"><span class="inc-dot"></span>Video del evento editado</div>
+      </div>
+      <p class="obs" id="obs-0"><strong>Observaciones:</strong> Válido por 15 días desde la fecha de envío. Precios en pesos argentinos, no incluye IVA.</p>
+    </div>
+  </div>
+  <div class="page-bar">
+    <span class="social" id="footer-ig-1">@cristian.romero.digital</span>
+    <span class="validity" id="footer-validity-1">Válido por 15 días</span>
+    <span id="footer-phone-1">11 6255 7763</span>
+  </div>
+</div>
+
+<!-- ═══ PACK 02 ═══ -->
+<div class="page" id="page-pack-1">
+  <div class="gold-bar"></div>
+  <div class="pack-body">
+    <div class="pack-header"><img class="pack-hdr-logo" alt="Logo">Presupuesto</div>
+    <div class="pack-box">
+      <div class="photos-col">
+        <div class="img-ph" id="pack-photo-1-0" data-slot="pack:1:0"><svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Clic para cargar foto</div>
+        <div class="img-ph" id="pack-photo-1-1" data-slot="pack:1:1"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Clic para cargar foto</div>
+        <div class="img-ph" id="pack-photo-1-2" data-slot="pack:1:2"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Clic para cargar foto</div>
+      </div>
+      <div class="content-col">
+        <div class="pack-eyebrow" id="pack-eyebrow-1">02 — Pack</div>
+        <div class="pack-name" id="pack-name-1">Recuerdo Esencial</div>
+        <div class="name-divider"></div>
+        <div class="svc">
+          <div class="svc-head">
+            <span class="svc-title">Fotografía</span>
+            <span class="svc-price" id="foto-price-1">$580.000</span>
+          </div>
+          <ul class="svc-list" id="foto-items-1">
+            <li>Sesión de exteriores</li>
+            <li>Cobertura total del evento</li>
+            <li>1 pendrive + caja personalizada de regalo</li>
+          </ul>
+        </div>
+        <hr class="svc-sep">
+        <div class="svc">
+          <div class="svc-head">
+            <span class="svc-title">Video</span>
+            <span class="svc-price" id="video-price-1">$580.000</span>
+          </div>
+          <ul class="svc-list" id="video-items-1">
+            <li>Sesión de exteriores</li>
+            <li>Cobertura total del evento</li>
+            <li>Resumen editado (20–30 min aprox.)</li>
+          </ul>
+        </div>
+        <div class="total-block">
+          <span class="total-lbl">Total del pack</span>
+          <span class="total-val" id="total-price-1">$1.160.000.-</span>
+        </div>
+      </div>
+    </div>
+    <div class="pack-foot">
+      <div class="includes-lbl">El servicio incluye</div>
+      <div class="includes-grid" id="includes-grid-1">
+        <div class="inc-item"><span class="inc-dot"></span>Equipos Profesionales</div>
+        <div class="inc-item"><span class="inc-dot"></span>Retoque sin marca de agua</div>
+        <div class="inc-item"><span class="inc-dot"></span>Fotografía ilimitada</div>
+        <div class="inc-item"><span class="inc-dot"></span>Video del evento editado</div>
+      </div>
+      <p class="obs" id="obs-1"><strong>Observaciones:</strong> Válido por 15 días desde la fecha de envío. Precios en pesos argentinos, no incluye IVA.</p>
+    </div>
+  </div>
+  <div class="page-bar">
+    <span class="social" id="footer-ig-2">@cristian.romero.digital</span>
+    <span class="validity" id="footer-validity-2">Válido por 15 días</span>
+    <span id="footer-phone-2">11 6255 7763</span>
+  </div>
+</div>
+
+<!-- ═══ PACK 03 ═══ -->
+<div class="page" id="page-pack-2">
+  <div class="gold-bar"></div>
+  <div class="pack-body">
+    <div class="pack-header"><img class="pack-hdr-logo" alt="Logo">Presupuesto</div>
+    <div class="pack-box">
+      <div class="photos-col">
+        <div class="img-ph" id="pack-photo-2-0" data-slot="pack:2:0"><svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Clic para cargar foto</div>
+        <div class="img-ph" id="pack-photo-2-1" data-slot="pack:2:1"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Clic para cargar foto</div>
+        <div class="img-ph" id="pack-photo-2-2" data-slot="pack:2:2"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Clic para cargar foto</div>
+      </div>
+      <div class="content-col">
+        <div class="pack-eyebrow" id="pack-eyebrow-2">03 — Pack</div>
+        <div class="pack-name" id="pack-name-2">Experiencia Completa</div>
+        <div class="name-divider"></div>
+        <div class="svc">
+          <div class="svc-head">
+            <span class="svc-title">Fotografía</span>
+            <span class="svc-price" id="foto-price-2">$750.000</span>
+          </div>
+          <ul class="svc-list" id="foto-items-2">
+            <li>Sesión de exteriores</li>
+            <li>Cobertura total del evento</li>
+            <li>Fotos ilimitadas editadas en alta calidad</li>
+            <li>1 mural 50×70</li>
+            <li>Fotolibro 30×30 cm, 20 páginas</li>
+            <li>1 pendrive + caja personalizada</li>
+          </ul>
+        </div>
+        <hr class="svc-sep">
+        <div class="svc">
+          <div class="svc-head">
+            <span class="svc-title">Video</span>
+            <span class="svc-price" id="video-price-2">$750.000</span>
+          </div>
+          <ul class="svc-list" id="video-items-2">
+            <li>Sesión de exteriores</li>
+            <li>Cobertura total del evento</li>
+            <li>Video cronológico + clip de entrada</li>
+            <li>Resumen editado (20–30 min aprox.)</li>
+          </ul>
+        </div>
+        <div class="total-block">
+          <span class="total-lbl">Total del pack</span>
+          <span class="total-val" id="total-price-2">$1.300.000.-</span>
+        </div>
+      </div>
+    </div>
+    <div class="pack-foot">
+      <div class="includes-lbl">El servicio incluye</div>
+      <div class="includes-grid" id="includes-grid-2">
+        <div class="inc-item"><span class="inc-dot"></span>Equipos Profesionales</div>
+        <div class="inc-item"><span class="inc-dot"></span>Retoque sin marca de agua</div>
+        <div class="inc-item"><span class="inc-dot"></span>Fotografía ilimitada</div>
+        <div class="inc-item"><span class="inc-dot"></span>Video del evento editado</div>
+      </div>
+      <p class="obs" id="obs-2"><strong>Observaciones:</strong> Válido por 15 días desde la fecha de envío. Precios en pesos argentinos, no incluye IVA.</p>
+    </div>
+  </div>
+  <div class="page-bar">
+    <span class="social" id="footer-ig-3">@cristian.romero.digital</span>
+    <span class="validity" id="footer-validity-3">Válido por 15 días</span>
+    <span id="footer-phone-3">11 6255 7763</span>
+  </div>
+</div>
+
+<!-- ═══ PACK 04 ═══ -->
+<div class="page" id="page-pack-3">
+  <div class="gold-bar"></div>
+  <div class="pack-body">
+    <div class="pack-header"><img class="pack-hdr-logo" alt="Logo">Presupuesto</div>
+    <div class="pack-box">
+      <div class="photos-col">
+        <div class="img-ph" id="pack-photo-3-0" data-slot="pack:3:0"><svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Clic para cargar foto</div>
+        <div class="img-ph" id="pack-photo-3-1" data-slot="pack:3:1"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Clic para cargar foto</div>
+        <div class="img-ph" id="pack-photo-3-2" data-slot="pack:3:2"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Clic para cargar foto</div>
+      </div>
+      <div class="content-col">
+        <div class="pack-eyebrow" id="pack-eyebrow-3">04 — Pack</div>
+        <div class="pack-name" id="pack-name-3">Historia Personalizada</div>
+        <div class="name-divider"></div>
+        <div class="svc">
+          <div class="svc-head">
+            <span class="svc-title">Fotografía</span>
+            <span class="svc-price" id="foto-price-3">$875.000</span>
+          </div>
+          <ul class="svc-list" id="foto-items-3">
+            <li>Entrevistas y moodboard para exteriores personalizados</li>
+            <li>Sesión de exteriores personalizada</li>
+            <li>Cobertura total del evento</li>
+            <li>Producción personalizada (narrativa fotográfica)</li>
+            <li>Fotos ilimitadas editadas en alta calidad</li>
+            <li>1 pendrive + caja personalizada de regalo</li>
+          </ul>
+        </div>
+        <hr class="svc-sep">
+        <div class="svc">
+          <div class="svc-head">
+            <span class="svc-title">Video</span>
+            <span class="svc-price" id="video-price-3">$875.000</span>
+          </div>
+          <ul class="svc-list" id="video-items-3">
+            <li>Sesión de exteriores</li>
+            <li>Cobertura total del evento</li>
+            <li>Producción personalizada (30–40 min, con entrevistas y audio externo)</li>
+            <li>Resumen Evento Personalizado (30–40 min aprox.)</li>
+          </ul>
+        </div>
+        <div class="total-block">
+          <span class="total-lbl">Total del pack</span>
+          <span class="total-val" id="total-price-3">$1.750.000.-</span>
+        </div>
+      </div>
+    </div>
+    <div class="pack-foot">
+      <div class="includes-lbl">El servicio incluye</div>
+      <div class="includes-grid" id="includes-grid-3">
+        <div class="inc-item"><span class="inc-dot"></span>Equipos Profesionales</div>
+        <div class="inc-item"><span class="inc-dot"></span>Retoque sin marca de agua</div>
+        <div class="inc-item"><span class="inc-dot"></span>Fotografía ilimitada</div>
+        <div class="inc-item"><span class="inc-dot"></span>Video del evento editado</div>
+      </div>
+      <p class="obs" id="obs-3"><strong>Observaciones:</strong> Válido por 15 días desde la fecha de envío. Precios en pesos argentinos, no incluye IVA.</p>
+    </div>
+  </div>
+  <div class="page-bar">
+    <span class="social" id="footer-ig-4">@cristian.romero.digital</span>
+    <span class="validity" id="footer-validity-4">Válido por 15 días</span>
+    <span id="footer-phone-4">11 6255 7763</span>
+  </div>
+</div>
+
+<!-- ═══ OPCIONALES ═══ -->
+<div class="page" id="page-opcionales">
+  <div class="gold-bar"></div>
+  <div class="opc-body">
+    <div class="sobre-hdr">
+      <span class="sobre-hdr-label">Opcionales</span>
+      <img class="sobre-hdr-logo" alt="Logo">
+    </div>
+    <div class="pack-header" style="margin-bottom:0"><img class="pack-hdr-logo" alt="Logo">Servicios Opcionales</div>
+    <div class="opc-list">
+      <div class="opc-row">
+        <div><div class="opc-name">Fotos previa en suite</div><div class="opc-desc">Cobertura de detalles y preparativos previos al evento, 2hs.</div></div>
+        <div class="opc-price-val" contenteditable="true">$170.000.-</div>
+      </div>
+      <div class="opc-row">
+        <div><div class="opc-name">Video previa en suite</div><div class="opc-desc">Cobertura de detalles y preparativos previos al evento, 2hs.</div></div>
+        <div class="opc-price-val" contenteditable="true">$170.000.-</div>
+      </div>
+      <div class="opc-row">
+        <div><div class="opc-name">Segundo fotógrafo</div><div class="opc-desc">Material más espontáneo y artístico. Ideal para más de 120 invitados.</div></div>
+        <div class="opc-price-val" contenteditable="true">$600.000.-</div>
+      </div>
+      <div class="opc-row">
+        <div><div class="opc-name">Segundo videógrafo</div><div class="opc-desc">Video más ágil y dinámico con más variación de planos. Con Gimbal. Recomendado desde 100 invitados.</div></div>
+        <div class="opc-price-val" contenteditable="true">$660.000.-</div>
+      </div>
+      <div class="opc-row">
+        <div><div class="opc-name">Drone estabilizado exterior</div><div class="opc-desc">Tomas aéreas panorámicas de alto impacto, solo exterior.</div></div>
+        <div class="opc-price-val" contenteditable="true">$750.000.-</div>
+      </div>
+      <div class="opc-row">
+        <div><div class="opc-name">Drone FPV interior / exterior</div><div class="opc-desc">Tecnología avanzada, tomas aéreas de alto impacto. Convierte tu evento en una experiencia cinematográfica.</div></div>
+        <div class="opc-price-val" contenteditable="true">$990.000.-</div>
+      </div>
+      <div class="opc-row">
+        <div><div class="opc-name">Video clip cronológico</div><div class="opc-desc">Diferentes opciones de grabación y edición del evento.</div></div>
+        <div class="opc-price-val consultar" contenteditable="true">consultar</div>
+      </div>
+      <div class="opc-row">
+        <div><div class="opc-name">Producción de fotos en exterior</div><div class="opc-desc">Costo a definir según nivel de producción y locación. Más de 30 locaciones disponibles.</div></div>
+        <div class="opc-price-val consultar" contenteditable="true">consultar</div>
+      </div>
+      <div class="opc-row">
+        <div><div class="opc-name">Video backstage en exterior</div><div class="opc-desc">Grabación y edición de la producción de fotos en exterior para proyectar durante el evento.</div></div>
+        <div class="opc-price-val consultar" contenteditable="true">consultar</div>
+      </div>
+      <div class="opc-row">
+        <div><div class="opc-name">Video de entrada personalizado</div><div class="opc-desc">Grabado en estudio o exterior con técnica e iluminación avanzada y estética cinematográfica.</div></div>
+        <div class="opc-price-val consultar" contenteditable="true">consultar</div>
+      </div>
+      <div class="opc-row">
+        <div><div class="opc-name">Video coming soon</div><div class="opc-desc">Adelanto del evento en formato video.</div></div>
+        <div class="opc-price-val" contenteditable="true">$130.000.-</div>
+      </div>
+      <div class="opc-row">
+        <div><div class="opc-name">Video reportaje</div><div class="opc-desc">Recopilación de testimonios de personas cercanas a la protagonista.</div></div>
+        <div class="opc-price-val consultar" contenteditable="true">consultar</div>
+      </div>
+      <div class="opc-row">
+        <div><div class="opc-name">Libros / murales / gigantografías</div><div class="opc-desc">Diferentes tamaños y opciones de impresión y encuadernación.</div></div>
+        <div class="opc-price-val consultar" contenteditable="true">consultar</div>
+      </div>
+      <div class="opc-row">
+        <div><div class="opc-name">Cabina de fotos / espejo mágico</div><div class="opc-desc">Entretenimiento interactivo para tus invitados.</div></div>
+        <div class="opc-price-val consultar" contenteditable="true">consultar</div>
+      </div>
+      <div class="opc-row">
+        <div><div class="opc-name">Experiencia 360</div><div class="opc-desc">Video rotatorio 360° de alta tecnología.</div></div>
+        <div class="opc-price-val consultar" contenteditable="true">consultar</div>
+      </div>
+    </div>
+    <p class="opc-foot">Los precios de los opcionales se suman al pack contratado. Todos los precios en pesos argentinos, no incluyen IVA. Consultar disponibilidad.</p>
+  </div>
+  <div class="page-bar">
+    <span class="social">@cristian.romero.digital</span>
+    <span class="validity">Válido por 15 días</span>
+    <span>11 6255 7763</span>
+  </div>
+</div>
+
+<!-- ═══ CONTACTO / PAGO ═══ -->
+<div class="page" id="page-contacto">
+  <div class="gold-bar"></div>
+  <div class="contact-body">
+    <div class="sobre-hdr" style="margin-bottom:0">
+      <span class="sobre-hdr-label">Cristian Romero Digital</span>
+      <img class="sobre-hdr-logo" alt="Logo">
+    </div>
+    <div>
+      <div class="sec-title">Formas de Pago</div>
+      <div class="sec-sub">Reservá tu fecha hoy</div>
+    </div>
+    <div class="pay-grid">
+      <div class="pay-card">
+        <h3>¿Cómo reservar?</h3>
+        <p id="payment-how">Para reservar y bloquear la fecha se abona una seña. Podés hacerlo en efectivo, transferencia bancaria o Mercado Pago.</p>
+      </div>
+      <div class="pay-card">
+        <h3>¿Se puede congelar el precio?</h3>
+        <p id="payment-freeze">Sí. El monto abonado en concepto de seña queda congelado. El saldo restante se actualiza al momento del evento.</p>
+      </div>
+      <div class="pay-card">
+        <h3>Saldo final</h3>
+        <p id="payment-note">El total del presupuesto deberá estar abonado <strong>15 días antes del evento</strong>. Ante cualquier consulta, escribinos sin compromiso.</p>
+      </div>
+      <div class="pay-card">
+        <h3>Medios de pago</h3>
+        <p>Efectivo · Transferencia bancaria · Mercado Pago</p>
+      </div>
+    </div>
+    <div>
+      <div class="sec-title" style="font-size:26px">Contacto</div>
+      <div class="sec-sub" style="margin-bottom:20px">Estamos para ayudarte</div>
+      <div class="contact-row">
+        <div class="contact-card">
+          <div class="contact-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="#C8A84B" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          </div>
+          <div>
+            <div class="cd-label">Instagram</div>
+            <div class="cd-value" id="contact-ig">@cristian.romero.digital</div>
+          </div>
+        </div>
+        <div class="contact-card">
+          <div class="contact-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="#C8A84B" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 10.7 19.79 19.79 0 0 1 1 2.18 2 2 0 0 1 2.96 0h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 7.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 14.92z"/></svg>
+          </div>
+          <div>
+            <div class="cd-label">WhatsApp</div>
+            <div class="cd-value" id="contact-phone">11 6255 7763</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="contact-closing">
+      <img class="close-logo" id="logo-closing" alt="Logo">
+      <div class="close-name">Cristian Romero Digital</div>
+      <div class="close-sub">Fotografía &amp; Video de Eventos</div>
+      <div class="close-note" id="close-note">Precios vigentes Mayo 2025 — No incluye IVA</div>
+    </div>
+  </div>
+  <div class="page-bar">
+    <span class="social" id="footer-ig-5">@cristian.romero.digital</span>
+    <span class="validity" id="footer-validity-5">Válido por 15 días</span>
+    <span id="footer-phone-5">11 6255 7763</span>
+  </div>
+</div>
+
+<script>
+const PRESUPUESTO_DEFAULT = {
+  packs: [
+    { number:'01', name:'Solo Fiesta', fotoPrice:'$380.000', fotoItems:['Cobertura total del evento','Edición y entrega en la Nube'], videoPrice:'$380.000', videoItems:['Cobertura total del evento','Resumen editado (20–30 min aprox.)'], totalPrice:'$760.000.-', photos:['','',''] },
+    { number:'02', name:'Recuerdo Esencial', fotoPrice:'$580.000', fotoItems:['Sesión de exteriores','Cobertura total del evento','1 pendrive + caja personalizada de regalo'], videoPrice:'$580.000', videoItems:['Sesión de exteriores','Cobertura total del evento','Resumen editado (20–30 min aprox.)'], totalPrice:'$1.160.000.-', photos:['','',''] },
+    { number:'03', name:'Experiencia Completa', fotoPrice:'$750.000', fotoItems:['Sesión de exteriores','Cobertura total del evento','Fotos ilimitadas editadas en alta calidad','1 mural 50×70','Fotolibro 30×30 cm, 20 páginas','1 pendrive + caja personalizada'], videoPrice:'$750.000', videoItems:['Sesión de exteriores','Cobertura total del evento','Video cronológico + clip de entrada','Resumen editado (20–30 min aprox.)'], totalPrice:'$1.300.000.-', photos:['','',''] },
+    { number:'04', name:'Historia Personalizada', fotoPrice:'$875.000', fotoItems:['Entrevistas y moodboard para exteriores personalizados','Sesión de exteriores personalizada','Cobertura total del evento','Producción personalizada (narrativa fotográfica)','Fotos ilimitadas editadas en alta calidad','1 pendrive + caja personalizada de regalo'], videoPrice:'$875.000', videoItems:['Sesión de exteriores','Cobertura total del evento','Producción personalizada (30–40 min, con entrevistas y audio externo)','Resumen Evento Personalizado (30–40 min aprox.)'], totalPrice:'$1.750.000.-', photos:['','',''] }
+  ],
+  coverPhotos: ['','','','',''],
+  sobrePhotos: ['',''],
+  estiloPhotos: ['','',''],
+  includes: ['Equipos Profesionales','Retoque sin marca de agua','Fotografía ilimitada','Video del evento editado'],
+  observations: 'Válido por 15 días desde la fecha de envío. Precios en pesos argentinos, no incluye IVA.',
+  instagram: '@cristian.romero.digital',
+  phone: '11 6255 7763',
+  validity: 'Válido por 15 días',
+  paymentNote: 'El total del presupuesto deberá estar abonado 15 días antes del evento. Ante cualquier consulta, escribinos sin compromiso.'
+};
+
+function getData() {
+  try { return JSON.parse(localStorage.getItem('crd_presupuesto')) || JSON.parse(JSON.stringify(PRESUPUESTO_DEFAULT)); }
+  catch(e) { return JSON.parse(JSON.stringify(PRESUPUESTO_DEFAULT)); }
+}
+function saveData(data) {
+  try { localStorage.setItem('crd_presupuesto', JSON.stringify(data)); } catch(e) {}
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if(el && val !== undefined && val !== '') el.textContent = val;
+}
+function setItems(id, items) {
+  const ul = document.getElementById(id);
+  if(!ul || !items) return;
+  ul.innerHTML = items.map(i => `<li>${i}</li>`).join('');
+}
+function setIncludes(id, items) {
+  const grid = document.getElementById(id);
+  if(!grid || !items) return;
+  grid.innerHTML = items.map(i => `<div class="inc-item"><span class="inc-dot"></span>${i}</div>`).join('');
+}
+function applyPhoto(id, src) {
+  const ph = document.getElementById(id);
+  if(!ph) return;
+  if(src) {
+    ph.innerHTML = `<img src="${src}" style="width:100%;height:100%;object-fit:cover;display:block">`;
+    ph.classList.add('loaded');
+  }
+}
+function applyLogo(src) {
+  const imgs = document.querySelectorAll('.logo-img, .close-logo, .sobre-hdr-logo, .pack-hdr-logo');
+  const fallbacks = document.querySelectorAll('.logo-fallback');
+  if(src) {
+    imgs.forEach(img => { img.src = src; img.style.display = 'block'; });
+    fallbacks.forEach(f => f.style.display = 'none');
+  }
+}
+
+function init() {
+  const data = getData();
+  const logo = localStorage.getItem('crd_site_logo');
+  if(logo) applyLogo(logo);
+  loadEditable();
+  loadOpcionales();
+
+  // Cover photos
+  (data.coverPhotos || []).forEach((p, i) => applyPhoto('cover-photo-' + i, p));
+  // Sobre mí photos
+  (data.sobrePhotos || []).forEach((p, i) => applyPhoto('sobre-photo-' + i, p));
+  // Mi estilo photos
+  (data.estiloPhotos || []).forEach((p, i) => applyPhoto('estilo-photo-' + i, p));
+
+  // Packs
+  (data.packs || []).forEach((pack, pi) => {
+    setText('pack-eyebrow-' + pi, (pack.number || String(pi+1).padStart(2,'0')) + ' — Pack');
+    setText('pack-name-' + pi, pack.name);
+    setText('foto-price-' + pi, pack.fotoPrice);
+    setText('video-price-' + pi, pack.videoPrice);
+    setText('total-price-' + pi, pack.totalPrice);
+    setItems('foto-items-' + pi, pack.fotoItems);
+    setItems('video-items-' + pi, pack.videoItems);
+    setIncludes('includes-grid-' + pi, data.includes);
+    // Observations
+    const obsEl = document.getElementById('obs-' + pi);
+    if(obsEl && data.observations) obsEl.innerHTML = `<strong>Observaciones:</strong> ${data.observations}`;
+    // Photos
+    (pack.photos || []).forEach((p, ji) => applyPhoto('pack-photo-' + pi + '-' + ji, p));
+  });
+
+  // Contact & footers
+  const ig = data.instagram || '@cristian.romero.digital';
+  const phone = data.phone || '11 6255 7763';
+  const validity = data.validity || 'Válido por 15 días';
+
+  setText('contact-ig', ig);
+  setText('contact-phone', phone);
+  if(data.paymentNote) setText('payment-note', data.paymentNote);
+
+  for(let i = 0; i <= 5; i++) {
+    setText('footer-ig-' + (i === 0 ? '' : i).toString().replace(/^$/, ''), ig);
+    setText('footer-validity-' + i, validity);
+    setText('footer-phone-' + i, phone);
+  }
+  // cover footer has no suffix
+  setText('footer-ig', ig);
+  setText('footer-validity-0', validity);
+  setText('footer-phone-0', phone);
+}
+
+// Click-to-load images (saves to localStorage for persistence)
+function compressAndLoad(file, callback) {
+  const canvas = document.createElement('canvas');
+  const img = new Image();
+  img.onload = () => {
+    const maxW = 900, maxH = 700;
+    let w = img.width, h = img.height;
+    if(w > maxW) { h = h * maxW / w; w = maxW; }
+    if(h > maxH) { w = w * maxH / h; h = maxH; }
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    callback(canvas.toDataURL('image/jpeg', 0.78));
+  };
+  img.src = URL.createObjectURL(file);
+}
+
+document.querySelectorAll('.img-ph').forEach(ph => {
+  ph.addEventListener('click', () => {
+    if(ph.classList.contains('loaded')) return;
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = 'image/*';
+    input.onchange = e => {
+      const file = e.target.files[0];
+      if(!file) return;
+      compressAndLoad(file, b64 => {
+        const slot = ph.dataset.slot;
+        const data = getData();
+        if(slot && slot.startsWith('cover:')) {
+          const i = parseInt(slot.split(':')[1]);
+          if(!data.coverPhotos) data.coverPhotos = ['','','','',''];
+          data.coverPhotos[i] = b64;
+        } else if(slot && slot.startsWith('pack:')) {
+          const [, pi, ji] = slot.split(':').map(Number);
+          if(!data.packs[pi].photos) data.packs[pi].photos = ['','',''];
+          data.packs[pi].photos[ji] = b64;
+        } else if(slot && slot.startsWith('sobre:')) {
+          const i = parseInt(slot.split(':')[1]);
+          if(!data.sobrePhotos) data.sobrePhotos = ['',''];
+          data.sobrePhotos[i] = b64;
+        } else if(slot && slot.startsWith('estilo:')) {
+          const i = parseInt(slot.split(':')[1]);
+          if(!data.estiloPhotos) data.estiloPhotos = ['','',''];
+          data.estiloPhotos[i] = b64;
+        }
+        saveData(data);
+        ph.innerHTML = `<img src="${b64}" style="width:100%;height:100%;object-fit:cover;display:block">`;
+        ph.classList.add('loaded');
+      });
+    };
+    input.click();
+  });
+});
+
+// Persistencia de texto editable
+function saveEditable() {
+  const d = {};
+  document.querySelectorAll('[data-persist]').forEach(el => { d[el.dataset.persist] = el.innerHTML; });
+  try { localStorage.setItem('crd_editable', JSON.stringify(d)); } catch(e) {}
+}
+function loadEditable() {
+  try {
+    const d = JSON.parse(localStorage.getItem('crd_editable')) || {};
+    document.querySelectorAll('[data-persist]').forEach(el => { if(d[el.dataset.persist] !== undefined) el.innerHTML = d[el.dataset.persist]; });
+  } catch(e) {}
+}
+function saveOpcionales() {
+  const p = [];
+  document.querySelectorAll('.opc-price-val').forEach(el => p.push(el.innerHTML));
+  try { localStorage.setItem('crd_opc', JSON.stringify(p)); } catch(e) {}
+}
+function loadOpcionales() {
+  try {
+    const p = JSON.parse(localStorage.getItem('crd_opc')) || [];
+    document.querySelectorAll('.opc-price-val').forEach((el, i) => { if(p[i] !== undefined) el.innerHTML = p[i]; });
+  } catch(e) {}
+}
+document.querySelectorAll('[data-persist]').forEach(el => el.addEventListener('input', saveEditable));
+document.querySelectorAll('.opc-price-val').forEach(el => el.addEventListener('input', saveOpcionales));
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
