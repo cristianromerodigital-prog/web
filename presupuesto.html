@@ -40,9 +40,9 @@
       text-transform: uppercase; cursor: pointer; transition: border-color .2s, background .2s; padding: 16px; text-align: center;
     }
     .img-ph:hover { border-color: var(--gold); background: #F2EDE3; }
-    .img-ph.loaded { border: none; padding: 0; cursor: default; }
+    .img-ph.loaded { border: none; padding: 0; cursor: default; position: relative; overflow: hidden; }
     .img-ph.loaded:hover { background: transparent; }
-    .img-ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .img-ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
     .img-ph svg { opacity: 0.35; }
 
     /* ── PAGE FOOTER BAR ── */
@@ -76,9 +76,9 @@
     .pack-body { min-height: 1000px; padding: 0 60px 44px; display: flex; flex-direction: column; }
     .pack-header { text-align: center; padding: 24px 0 18px; font-size: 10px; font-weight: 700; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); border-bottom: 1px solid var(--border); margin-bottom: 26px; position: relative; }
     .pack-hdr-logo { position: absolute; right: 0; top: 50%; transform: translateY(-50%); height: 26px; width: auto; object-fit: contain; display: none; }
-    .pack-box { border: 1.5px solid var(--dark); flex: 1; display: grid; grid-template-columns: 300px 1fr; overflow: hidden; }
-    .photos-col { border-right: 1.5px solid var(--dark); display: grid; grid-template-rows: 2fr 1fr 1fr; }
-    .photos-col .img-ph { border: none; border-bottom: 1px solid var(--border); }
+    .pack-box { border: 1.5px solid var(--dark); flex: 1; display: grid; grid-template-columns: 300px 1fr; overflow: hidden; min-height: 0; }
+    .photos-col { border-right: 1.5px solid var(--dark); display: grid; grid-template-rows: 2fr 1fr 1fr; overflow: hidden; }
+    .photos-col .img-ph { border: none; border-bottom: 1px solid var(--border); min-height: 0; }
     .photos-col .img-ph:last-child { border-bottom: none; }
     .content-col { padding: 30px 34px 26px; display: flex; flex-direction: column; }
     .pack-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 5px; }
