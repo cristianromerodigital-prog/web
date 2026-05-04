@@ -90,8 +90,9 @@
     .svc-title::before { content: ''; display: inline-block; width: 8px; height: 8px; background: var(--gold); transform: rotate(45deg); flex-shrink: 0; }
     .svc-price { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--gold); }
     .svc-list { list-style: none; padding: 0; }
-    .svc-list li { font-size: 12px; font-weight: 300; color: var(--gray); padding: 2px 0 2px 16px; position: relative; line-height: 1.4; }
-    .svc-list li::before { content: ''; position: absolute; left: 4px; top: 7px; width: 4px; height: 4px; background: var(--border); }
+    .svc-list li { font-size: 11.5px; font-weight: 400; color: var(--dark); padding: 7px 0 7px 20px; position: relative; line-height: 1.4; border-bottom: 1px dotted var(--border); }
+    .svc-list li:last-child { border-bottom: none; }
+    .svc-list li::before { content: ''; position: absolute; left: 3px; top: 12px; width: 7px; height: 7px; background: var(--gold); transform: rotate(45deg); flex-shrink: 0; }
     .svc-sep { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
     .total-block { margin-top: auto; padding-top: 16px; border-top: 2px solid var(--dark); display: flex; justify-content: space-between; align-items: flex-end; }
     .total-lbl { font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gray); }
@@ -335,27 +336,7 @@
         <div class="pack-eyebrow" id="pack-eyebrow-0">01 — Pack</div>
         <div class="pack-name" id="pack-name-0">Solo Fiesta</div>
         <div class="name-divider"></div>
-        <div class="svc">
-          <div class="svc-head">
-            <span class="svc-title">Fotografía</span>
-            <span class="svc-price" id="foto-price-0">$380.000</span>
-          </div>
-          <ul class="svc-list" id="foto-items-0">
-            <li>Cobertura total del evento</li>
-            <li>Edición y entrega en la Nube</li>
-          </ul>
-        </div>
-        <hr class="svc-sep">
-        <div class="svc">
-          <div class="svc-head">
-            <span class="svc-title">Video</span>
-            <span class="svc-price" id="video-price-0">$380.000</span>
-          </div>
-          <ul class="svc-list" id="video-items-0">
-            <li>Cobertura total del evento</li>
-            <li>Resumen editado (20–30 min aprox.)</li>
-          </ul>
-        </div>
+        <ul class="svc-list" id="pack-items-0"></ul>
         <div class="total-block">
           <span class="total-lbl">Total del pack</span>
           <span class="total-val" id="total-price-0">$760.000.-</span>
@@ -395,29 +376,7 @@
         <div class="pack-eyebrow" id="pack-eyebrow-1">02 — Pack</div>
         <div class="pack-name" id="pack-name-1">Recuerdo Esencial</div>
         <div class="name-divider"></div>
-        <div class="svc">
-          <div class="svc-head">
-            <span class="svc-title">Fotografía</span>
-            <span class="svc-price" id="foto-price-1">$580.000</span>
-          </div>
-          <ul class="svc-list" id="foto-items-1">
-            <li>Sesión de exteriores</li>
-            <li>Cobertura total del evento</li>
-            <li>1 pendrive + caja personalizada de regalo</li>
-          </ul>
-        </div>
-        <hr class="svc-sep">
-        <div class="svc">
-          <div class="svc-head">
-            <span class="svc-title">Video</span>
-            <span class="svc-price" id="video-price-1">$580.000</span>
-          </div>
-          <ul class="svc-list" id="video-items-1">
-            <li>Sesión de exteriores</li>
-            <li>Cobertura total del evento</li>
-            <li>Resumen editado (20–30 min aprox.)</li>
-          </ul>
-        </div>
+        <ul class="svc-list" id="pack-items-1"></ul>
         <div class="total-block">
           <span class="total-lbl">Total del pack</span>
           <span class="total-val" id="total-price-1">$1.160.000.-</span>
@@ -457,33 +416,7 @@
         <div class="pack-eyebrow" id="pack-eyebrow-2">03 — Pack</div>
         <div class="pack-name" id="pack-name-2">Experiencia Completa</div>
         <div class="name-divider"></div>
-        <div class="svc">
-          <div class="svc-head">
-            <span class="svc-title">Fotografía</span>
-            <span class="svc-price" id="foto-price-2">$750.000</span>
-          </div>
-          <ul class="svc-list" id="foto-items-2">
-            <li>Sesión de exteriores</li>
-            <li>Cobertura total del evento</li>
-            <li>Fotos ilimitadas editadas en alta calidad</li>
-            <li>1 mural 50×70</li>
-            <li>Fotolibro 30×30 cm, 20 páginas</li>
-            <li>1 pendrive + caja personalizada</li>
-          </ul>
-        </div>
-        <hr class="svc-sep">
-        <div class="svc">
-          <div class="svc-head">
-            <span class="svc-title">Video</span>
-            <span class="svc-price" id="video-price-2">$750.000</span>
-          </div>
-          <ul class="svc-list" id="video-items-2">
-            <li>Sesión de exteriores</li>
-            <li>Cobertura total del evento</li>
-            <li>Video cronológico + clip de entrada</li>
-            <li>Resumen editado (20–30 min aprox.)</li>
-          </ul>
-        </div>
+        <ul class="svc-list" id="pack-items-2"></ul>
         <div class="total-block">
           <span class="total-lbl">Total del pack</span>
           <span class="total-val" id="total-price-2">$1.300.000.-</span>
@@ -523,33 +456,7 @@
         <div class="pack-eyebrow" id="pack-eyebrow-3">04 — Pack</div>
         <div class="pack-name" id="pack-name-3">Historia Personalizada</div>
         <div class="name-divider"></div>
-        <div class="svc">
-          <div class="svc-head">
-            <span class="svc-title">Fotografía</span>
-            <span class="svc-price" id="foto-price-3">$875.000</span>
-          </div>
-          <ul class="svc-list" id="foto-items-3">
-            <li>Entrevistas y moodboard para exteriores personalizados</li>
-            <li>Sesión de exteriores personalizada</li>
-            <li>Cobertura total del evento</li>
-            <li>Producción personalizada (narrativa fotográfica)</li>
-            <li>Fotos ilimitadas editadas en alta calidad</li>
-            <li>1 pendrive + caja personalizada de regalo</li>
-          </ul>
-        </div>
-        <hr class="svc-sep">
-        <div class="svc">
-          <div class="svc-head">
-            <span class="svc-title">Video</span>
-            <span class="svc-price" id="video-price-3">$875.000</span>
-          </div>
-          <ul class="svc-list" id="video-items-3">
-            <li>Sesión de exteriores</li>
-            <li>Cobertura total del evento</li>
-            <li>Producción personalizada (30–40 min, con entrevistas y audio externo)</li>
-            <li>Resumen Evento Personalizado (30–40 min aprox.)</li>
-          </ul>
-        </div>
+        <ul class="svc-list" id="pack-items-3"></ul>
         <div class="total-block">
           <span class="total-lbl">Total del pack</span>
           <span class="total-val" id="total-price-3">$1.750.000.-</span>
@@ -583,67 +490,7 @@
       <img class="sobre-hdr-logo" alt="Logo">
     </div>
     <div class="pack-header" style="margin-bottom:0"><img class="pack-hdr-logo" alt="Logo">Servicios Opcionales</div>
-    <div class="opc-list">
-      <div class="opc-row">
-        <div><div class="opc-name">Fotos previa en suite</div><div class="opc-desc">Cobertura de detalles y preparativos previos al evento, 2hs.</div></div>
-        <div class="opc-price-val" contenteditable="true">$170.000.-</div>
-      </div>
-      <div class="opc-row">
-        <div><div class="opc-name">Video previa en suite</div><div class="opc-desc">Cobertura de detalles y preparativos previos al evento, 2hs.</div></div>
-        <div class="opc-price-val" contenteditable="true">$170.000.-</div>
-      </div>
-      <div class="opc-row">
-        <div><div class="opc-name">Segundo fotógrafo</div><div class="opc-desc">Material más espontáneo y artístico. Ideal para más de 120 invitados.</div></div>
-        <div class="opc-price-val" contenteditable="true">$600.000.-</div>
-      </div>
-      <div class="opc-row">
-        <div><div class="opc-name">Segundo videógrafo</div><div class="opc-desc">Video más ágil y dinámico con más variación de planos. Con Gimbal. Recomendado desde 100 invitados.</div></div>
-        <div class="opc-price-val" contenteditable="true">$660.000.-</div>
-      </div>
-      <div class="opc-row">
-        <div><div class="opc-name">Drone estabilizado exterior</div><div class="opc-desc">Tomas aéreas panorámicas de alto impacto, solo exterior.</div></div>
-        <div class="opc-price-val" contenteditable="true">$750.000.-</div>
-      </div>
-      <div class="opc-row">
-        <div><div class="opc-name">Drone FPV interior / exterior</div><div class="opc-desc">Tecnología avanzada, tomas aéreas de alto impacto. Convierte tu evento en una experiencia cinematográfica.</div></div>
-        <div class="opc-price-val" contenteditable="true">$990.000.-</div>
-      </div>
-      <div class="opc-row">
-        <div><div class="opc-name">Video clip cronológico</div><div class="opc-desc">Diferentes opciones de grabación y edición del evento.</div></div>
-        <div class="opc-price-val consultar" contenteditable="true">consultar</div>
-      </div>
-      <div class="opc-row">
-        <div><div class="opc-name">Producción de fotos en exterior</div><div class="opc-desc">Costo a definir según nivel de producción y locación. Más de 30 locaciones disponibles.</div></div>
-        <div class="opc-price-val consultar" contenteditable="true">consultar</div>
-      </div>
-      <div class="opc-row">
-        <div><div class="opc-name">Video backstage en exterior</div><div class="opc-desc">Grabación y edición de la producción de fotos en exterior para proyectar durante el evento.</div></div>
-        <div class="opc-price-val consultar" contenteditable="true">consultar</div>
-      </div>
-      <div class="opc-row">
-        <div><div class="opc-name">Video de entrada personalizado</div><div class="opc-desc">Grabado en estudio o exterior con técnica e iluminación avanzada y estética cinematográfica.</div></div>
-        <div class="opc-price-val consultar" contenteditable="true">consultar</div>
-      </div>
-      <div class="opc-row">
-        <div><div class="opc-name">Video coming soon</div><div class="opc-desc">Adelanto del evento en formato video.</div></div>
-        <div class="opc-price-val" contenteditable="true">$130.000.-</div>
-      </div>
-      <div class="opc-row">
-        <div><div class="opc-name">Video reportaje</div><div class="opc-desc">Recopilación de testimonios de personas cercanas a la protagonista.</div></div>
-        <div class="opc-price-val consultar" contenteditable="true">consultar</div>
-      </div>
-      <div class="opc-row">
-        <div><div class="opc-name">Libros / murales / gigantografías</div><div class="opc-desc">Diferentes tamaños y opciones de impresión y encuadernación.</div></div>
-        <div class="opc-price-val consultar" contenteditable="true">consultar</div>
-      </div>
-      <div class="opc-row">
-        <div><div class="opc-name">Cabina de fotos / espejo mágico</div><div class="opc-desc">Entretenimiento interactivo para tus invitados.</div></div>
-        <div class="opc-price-val consultar" contenteditable="true">consultar</div>
-      </div>
-      <div class="opc-row">
-        <div><div class="opc-name">Experiencia 360</div><div class="opc-desc">Video rotatorio 360° de alta tecnología.</div></div>
-        <div class="opc-price-val consultar" contenteditable="true">consultar</div>
-      </div>
+    <div class="opc-list" id="opc-rendered">
     </div>
     <p class="opc-foot">Los precios de los opcionales se suman al pack contratado. Todos los precios en pesos argentinos, no incluyen IVA. Consultar disponibilidad.</p>
   </div>
@@ -681,7 +528,7 @@
       </div>
       <div class="pay-card">
         <h3>Medios de pago</h3>
-        <p>Efectivo · Transferencia bancaria · Mercado Pago</p>
+        <p id="payment-methods">Efectivo · Transferencia bancaria · Mercado Pago</p>
       </div>
     </div>
     <div>
@@ -725,10 +572,10 @@
 <script>
 const PRESUPUESTO_DEFAULT = {
   packs: [
-    { number:'01', name:'Solo Fiesta', fotoPrice:'$380.000', fotoItems:['Cobertura total del evento','Edición y entrega en la Nube'], videoPrice:'$380.000', videoItems:['Cobertura total del evento','Resumen editado (20–30 min aprox.)'], totalPrice:'$760.000.-', photos:['','',''] },
-    { number:'02', name:'Recuerdo Esencial', fotoPrice:'$580.000', fotoItems:['Sesión de exteriores','Cobertura total del evento','1 pendrive + caja personalizada de regalo'], videoPrice:'$580.000', videoItems:['Sesión de exteriores','Cobertura total del evento','Resumen editado (20–30 min aprox.)'], totalPrice:'$1.160.000.-', photos:['','',''] },
-    { number:'03', name:'Experiencia Completa', fotoPrice:'$750.000', fotoItems:['Sesión de exteriores','Cobertura total del evento','Fotos ilimitadas editadas en alta calidad','1 mural 50×70','Fotolibro 30×30 cm, 20 páginas','1 pendrive + caja personalizada'], videoPrice:'$750.000', videoItems:['Sesión de exteriores','Cobertura total del evento','Video cronológico + clip de entrada','Resumen editado (20–30 min aprox.)'], totalPrice:'$1.300.000.-', photos:['','',''] },
-    { number:'04', name:'Historia Personalizada', fotoPrice:'$875.000', fotoItems:['Entrevistas y moodboard para exteriores personalizados','Sesión de exteriores personalizada','Cobertura total del evento','Producción personalizada (narrativa fotográfica)','Fotos ilimitadas editadas en alta calidad','1 pendrive + caja personalizada de regalo'], videoPrice:'$875.000', videoItems:['Sesión de exteriores','Cobertura total del evento','Producción personalizada (30–40 min, con entrevistas y audio externo)','Resumen Evento Personalizado (30–40 min aprox.)'], totalPrice:'$1.750.000.-', photos:['','',''] }
+    { number:'01', name:'Solo Fiesta', items:['Fotografía de Evento','Video de Evento'], totalPrice:'$760.000.-', photos:['','',''] },
+    { number:'02', name:'Recuerdo Esencial', items:['Fotografía de Evento','Video de Evento','Producción de Fotos en Estudio','Video Backstage en Estudio'], totalPrice:'$1.160.000.-', photos:['','',''] },
+    { number:'03', name:'Experiencia Completa', items:['Fotografía de Evento','Video de Evento','Producción de Fotos en Estudio','Video Backstage en Estudio','Make Up y Peinado','Fotolibro 30x30 cm'], totalPrice:'$1.300.000.-', photos:['','',''] },
+    { number:'04', name:'Historia Personalizada', items:['Fotografía de Evento','Video de Evento','Producción de Fotos en Estudio','Video Backstage en Estudio','Make Up y Peinado','Fotolibro 30x45 cm','Video Edición en Vivo','Video Save the Date','Previa Foto y Video en Suite'], totalPrice:'$1.750.000.-', photos:['','',''] }
   ],
   coverPhotos: ['','','','',''],
   sobrePhotos: ['',''],
@@ -738,7 +585,10 @@ const PRESUPUESTO_DEFAULT = {
   instagram: '@cristian.romero.digital',
   phone: '11 6255 7763',
   validity: 'Válido por 15 días',
-  paymentNote: 'El total del presupuesto deberá estar abonado 15 días antes del evento. Ante cualquier consulta, escribinos sin compromiso.'
+  paymentHow: 'Para reservar y bloquear la fecha se abona una seña. Podés hacerlo en efectivo, transferencia bancaria o Mercado Pago.',
+  paymentFreeze: 'Sí. El monto abonado en concepto de seña queda congelado. El saldo restante se actualiza al momento del evento.',
+  paymentNote: 'El total del presupuesto deberá estar abonado 15 días antes del evento. Ante cualquier consulta, escribinos sin compromiso.',
+  paymentMethods: 'Efectivo · Transferencia bancaria · Mercado Pago'
 };
 
 function getData() {
@@ -782,10 +632,10 @@ function applyLogo(src) {
 
 function init() {
   const data = getData();
-  const logo = localStorage.getItem('crd_site_logo');
+  let logo = null;
+  try { logo = JSON.parse(localStorage.getItem('crd_site_logo')); } catch(e) { logo = localStorage.getItem('crd_site_logo'); }
   if(logo) applyLogo(logo);
   loadEditable();
-  loadOpcionales();
 
   // Cover photos
   (data.coverPhotos || []).forEach((p, i) => applyPhoto('cover-photo-' + i, p));
@@ -798,11 +648,10 @@ function init() {
   (data.packs || []).forEach((pack, pi) => {
     setText('pack-eyebrow-' + pi, (pack.number || String(pi+1).padStart(2,'0')) + ' — Pack');
     setText('pack-name-' + pi, pack.name);
-    setText('foto-price-' + pi, pack.fotoPrice);
-    setText('video-price-' + pi, pack.videoPrice);
     setText('total-price-' + pi, pack.totalPrice);
-    setItems('foto-items-' + pi, pack.fotoItems);
-    setItems('video-items-' + pi, pack.videoItems);
+    // items: new flat format from GSheet, or backward compat with fotoItems/videoItems
+    const allItems = pack.items || [...(pack.fotoItems||[]), ...(pack.videoItems||[])];
+    setItems('pack-items-' + pi, allItems);
     setIncludes('includes-grid-' + pi, data.includes);
     // Observations
     const obsEl = document.getElementById('obs-' + pi);
@@ -818,7 +667,11 @@ function init() {
 
   setText('contact-ig', ig);
   setText('contact-phone', phone);
+  if(data.paymentHow) setText('payment-how', data.paymentHow);
+  if(data.paymentFreeze) setText('payment-freeze', data.paymentFreeze);
   if(data.paymentNote) setText('payment-note', data.paymentNote);
+  if(data.paymentMethods) setText('payment-methods', data.paymentMethods);
+  renderOpcionales();
 
   for(let i = 0; i <= 5; i++) {
     setText('footer-ig-' + (i === 0 ? '' : i).toString().replace(/^$/, ''), ig);
@@ -884,6 +737,48 @@ document.querySelectorAll('.img-ph').forEach(ph => {
   });
 });
 
+// Opcionales data-driven
+const OPCIONALES_DEFAULT = [
+  {name:'Fotos previa en suite', desc:'Cobertura de detalles y preparativos previos al evento, 2hs.', price:'$170.000.-'},
+  {name:'Video previa en suite', desc:'Cobertura de detalles y preparativos previos al evento, 2hs.', price:'$170.000.-'},
+  {name:'Segundo fotógrafo', desc:'Material más espontáneo y artístico. Ideal para más de 120 invitados.', price:'$600.000.-'},
+  {name:'Segundo videógrafo', desc:'Video más ágil y dinámico con más variación de planos. Con Gimbal. Recomendado desde 100 invitados.', price:'$660.000.-'},
+  {name:'Drone estabilizado exterior', desc:'Tomas aéreas panorámicas de alto impacto, solo exterior.', price:'$750.000.-'},
+  {name:'Drone FPV interior / exterior', desc:'Tecnología avanzada, tomas aéreas de alto impacto. Convierte tu evento en una experiencia cinematográfica.', price:'$990.000.-'},
+  {name:'Video clip cronológico', desc:'Diferentes opciones de grabación y edición del evento.', price:'consultar'},
+  {name:'Producción de fotos en exterior', desc:'Costo a definir según nivel de producción y locación. Más de 30 locaciones disponibles.', price:'consultar'},
+  {name:'Video backstage en exterior', desc:'Grabación y edición de la producción de fotos en exterior para proyectar durante el evento.', price:'consultar'},
+  {name:'Video de entrada personalizado', desc:'Grabado en estudio o exterior con técnica e iluminación avanzada y estética cinematográfica.', price:'consultar'},
+  {name:'Video coming soon', desc:'Adelanto del evento en formato video.', price:'$130.000.-'},
+  {name:'Video reportaje', desc:'Recopilación de testimonios de personas cercanas a la protagonista.', price:'consultar'},
+  {name:'Libros / murales / gigantografías', desc:'Diferentes tamaños y opciones de impresión y encuadernación.', price:'consultar'},
+  {name:'Cabina de fotos / espejo mágico', desc:'Entretenimiento interactivo para tus invitados.', price:'consultar'},
+  {name:'Experiencia 360', desc:'Video rotatorio 360° de alta tecnología.', price:'consultar'}
+];
+function getOpcionales() {
+  try { return JSON.parse(localStorage.getItem('crd_opcionales')) || OPCIONALES_DEFAULT.map(o=>({...o})); }
+  catch(e) { return OPCIONALES_DEFAULT.map(o=>({...o})); }
+}
+function renderOpcionales() {
+  const items = getOpcionales();
+  const c = document.getElementById('opc-rendered');
+  if(!c) return;
+  c.innerHTML = items.map((item,i) => {
+    const isQ = item.price === 'consultar';
+    return '<div class="opc-row"><div><div class="opc-name">'+item.name+'</div><div class="opc-desc">'+item.desc+'</div></div>'
+      +'<div class="opc-price-val'+(isQ?' consultar':'')+'" contenteditable="true" data-opc-idx="'+i+'">'+item.price+'</div></div>';
+  }).join('');
+  c.querySelectorAll('.opc-price-val').forEach(el => el.addEventListener('input', saveOpcionalPrice));
+}
+function saveOpcionalPrice(e) {
+  const idx = parseInt(e.target.dataset.opcIdx);
+  const items = getOpcionales();
+  if(items[idx]) {
+    items[idx].price = e.target.textContent.trim();
+    try { localStorage.setItem('crd_opcionales', JSON.stringify(items)); } catch(e2) {}
+  }
+}
+
 // Persistencia de texto editable
 function saveEditable() {
   const d = {};
@@ -896,19 +791,8 @@ function loadEditable() {
     document.querySelectorAll('[data-persist]').forEach(el => { if(d[el.dataset.persist] !== undefined) el.innerHTML = d[el.dataset.persist]; });
   } catch(e) {}
 }
-function saveOpcionales() {
-  const p = [];
-  document.querySelectorAll('.opc-price-val').forEach(el => p.push(el.innerHTML));
-  try { localStorage.setItem('crd_opc', JSON.stringify(p)); } catch(e) {}
-}
-function loadOpcionales() {
-  try {
-    const p = JSON.parse(localStorage.getItem('crd_opc')) || [];
-    document.querySelectorAll('.opc-price-val').forEach((el, i) => { if(p[i] !== undefined) el.innerHTML = p[i]; });
-  } catch(e) {}
-}
+
 document.querySelectorAll('[data-persist]').forEach(el => el.addEventListener('input', saveEditable));
-document.querySelectorAll('.opc-price-val').forEach(el => el.addEventListener('input', saveOpcionales));
 
 document.addEventListener('DOMContentLoaded', init);
 </script>

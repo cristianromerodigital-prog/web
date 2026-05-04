@@ -577,6 +577,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
             <div class="form-group"><label class="form-label">Número WhatsApp</label><input class="form-input" id="set-wa" placeholder="+5491100000000"></div>
             <div class="form-group"><label class="form-label">Instagram (@usuario)</label><input class="form-input" id="set-instagram" placeholder="@cristian_romero"></div>
           </div>
+          <div class="form-group" style="margin-top:12px"><label class="form-label">URL Web App GAS (servicios/contratos)</label><input class="form-input" id="set-gas-url" placeholder="https://script.google.com/macros/s/.../exec"></div>
         </div>
         <div class="settings-section">
           <div class="settings-section-title">Seguridad</div>
@@ -996,6 +997,38 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           <div id="pr-cover-photos" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px"></div>
         </div>
 
+        <!-- SOBRE MÍ -->
+        <div class="settings-section">
+          <div class="settings-section-title">Sobre mí — Texto</div>
+          <div class="form-group"><label class="form-label">Título</label><input class="form-input" id="pr-sobre-title" placeholder="Fotografía social. Buenos Aires."></div>
+          <div class="form-group"><label class="form-label">Párrafo 1</label><textarea class="form-textarea" id="pr-sobre-p0" style="min-height:70px" placeholder="Sobre mi trabajo y especialidad..."></textarea></div>
+          <div class="form-group"><label class="form-label">Párrafo 2</label><textarea class="form-textarea" id="pr-sobre-p1" style="min-height:70px" placeholder="Mi enfoque y metodología..."></textarea></div>
+          <div class="form-group"><label class="form-label">Párrafo 3</label><textarea class="form-textarea" id="pr-sobre-p2" style="min-height:70px" placeholder="Mi propuesta de valor..."></textarea></div>
+        </div>
+
+        <!-- MI ESTILO -->
+        <div class="settings-section">
+          <div class="settings-section-title">Mi Estilo — Texto</div>
+          <div class="form-group"><label class="form-label">Título</label><input class="form-input" id="pr-estilo-title" placeholder="Luz natural. Momentos reales."></div>
+          <div class="form-group"><label class="form-label">Descripción</label><textarea class="form-textarea" id="pr-estilo-desc" style="min-height:80px" placeholder="Descripción de tu estilo fotográfico..."></textarea></div>
+        </div>
+
+        <!-- OPCIONALES -->
+        <div class="settings-section">
+          <div class="settings-section-title">Servicios Opcionales</div>
+          <p style="font-size:11px;color:var(--gray);margin-bottom:12px">Aparecen en la hoja de Opcionales del presupuesto. Pods agregar, quitar y editar nombre, descripcin y precio.</p>
+          <div id="pr-opc-list"></div>
+          <button onclick="addPresupuestoOpcional()" class="btn-sm" style="margin-top:8px;font-size:10px">+ Agregar opcional</button>
+        </div>
+
+        <!-- FORMAS DE PAGO -->
+        <div class="settings-section">
+          <div class="settings-section-title">Formas de Pago — Textos</div>
+          <div class="form-group"><label class="form-label">¿Cmo reservar?</label><textarea class="form-textarea" id="pr-payment-how" style="min-height:60px" placeholder="Para reservar y bloquear la fecha..."></textarea></div>
+          <div class="form-group"><label class="form-label">¿Se puede congelar el precio?</label><textarea class="form-textarea" id="pr-payment-freeze" style="min-height:60px" placeholder="S. El monto abonado..."></textarea></div>
+          <div class="form-group"><label class="form-label">Medios de pago aceptados</label><input class="form-input" id="pr-payment-methods" placeholder="Efectivo · Transferencia bancaria · Mercado Pago"></div>
+        </div>
+
         <!-- TABS PACKS -->
         <div style="display:flex;gap:1px;background:rgba(255,255,255,0.06);margin-bottom:0;flex-wrap:wrap">
           <button class="cnt-subtab active" id="pr-tab-0" onclick="switchPresupuestoPack(0,this)">01 Solo Fiesta</button>
@@ -1026,6 +1059,22 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <button class="btn-add" onclick="savePresupuesto()">Guardar Presupuesto</button>
       </div>
 
+
+        <!-- GSheet Services Selector Modal -->
+        <div id="svc-selector-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:3000;overflow-y:auto;padding:24px">
+          <div style="max-width:640px;margin:0 auto;background:var(--black2);border:1px solid rgba(255,255,255,0.1);padding:28px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+              <h3 style="font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--white)">Servicios desde GSheet</h3>
+              <button onclick="cerrarSelectorServicios()" style="background:none;border:none;color:var(--gray);font-size:20px;cursor:pointer">&#x2715;</button>
+            </div>
+            <p style="font-size:11px;color:var(--gray);margin-bottom:16px">Tildá los servicios que querés incluir en este pack. Se reemplaza la lista actual.</p>
+            <div id="svc-selector-list" style="max-height:55vh;overflow-y:auto">Cargando servicios...</div>
+            <div style="display:flex;gap:10px;margin-top:20px">
+              <button onclick="confirmarServicios()" class="btn-add" style="flex:1">Confirmar selección</button>
+              <button onclick="cerrarSelectorServicios()" class="btn-sm">Cancelar</button>
+            </div>
+          </div>
+        </div>
 
         <!-- Cloudinary Browser Modal -->
         <div id="cloudinary-browser" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:2000;overflow-y:auto;padding:24px">
@@ -2117,6 +2166,7 @@ function loadSettings() {
   document.getElementById('set-price-book-boda').value = s.priceBookBoda || '';
   document.getElementById('set-wa').value = s.waSuffix || '';
   document.getElementById('set-instagram').value = s.instagram || '';
+  document.getElementById('set-gas-url').value = s.gasUrl || '';
   loadLogoPreview();
 }
 
@@ -2146,6 +2196,7 @@ function saveSettings() {
     priceBookBoda: document.getElementById('set-price-book-boda').value.trim(),
     waSuffix: document.getElementById('set-wa').value.trim(),
     instagram: document.getElementById('set-instagram').value.trim(),
+    gasUrl: document.getElementById('set-gas-url').value.trim(),
   };
   S.set('crd_settings', s);
   toast('Configuración guardada ✓');
@@ -3328,6 +3379,22 @@ function loadPresupuestoPage() {
     prLogoImg.style.display = 'none';
     if(prLogoEmpty) prLogoEmpty.style.display = 'block';
   }
+  // Sobre mí / Estilo
+  const editable = S.get('crd_editable') || {};
+  const stripHtml = h => { const t = document.createElement('div'); t.innerHTML = h; return t.textContent || t.innerText || ''; };
+  const ef = id => { const el = document.getElementById(id); if(el) el.value = stripHtml(editable[el.id.replace('pr-','').replace(/-/g, x => x === '-' ? '-' : '')] || ''); };
+  document.getElementById('pr-sobre-title').value = stripHtml(editable['sobre-title'] || '');
+  document.getElementById('pr-sobre-p0').value    = stripHtml(editable['sobre-p0'] || '');
+  document.getElementById('pr-sobre-p1').value    = stripHtml(editable['sobre-p1'] || '');
+  document.getElementById('pr-sobre-p2').value    = stripHtml(editable['sobre-p2'] || '');
+  document.getElementById('pr-estilo-title').value = stripHtml(editable['estilo-title'] || '');
+  document.getElementById('pr-estilo-desc').value  = stripHtml(editable['estilo-desc'] || '');
+  // Opcionales
+  renderOpcionalesAdmin();
+  // Payment texts
+  document.getElementById('pr-payment-how').value     = data.paymentHow || '';
+  document.getElementById('pr-payment-freeze').value  = data.paymentFreeze || '';
+  document.getElementById('pr-payment-methods').value = data.paymentMethods || '';
   renderPresupuestoCoverPhotos(data.coverPhotos || []);
   renderPresupuestoPack(0, data);
   renderPresupuestoIncludes(data.includes || PRESUPUESTO_DEFAULT.includes);
@@ -3369,11 +3436,8 @@ function saveCurrentPackFields() {
   if(!nameEl) return;
   pack.name      = nameEl.value.trim();
   pack.number    = (document.getElementById('pr-pack-number') || {}).value?.trim() || pack.number;
-  pack.fotoPrice = (document.getElementById('pr-foto-price') || {}).value?.trim() || '';
-  pack.videoPrice= (document.getElementById('pr-video-price') || {}).value?.trim() || '';
   pack.totalPrice= (document.getElementById('pr-total-price') || {}).value?.trim() || '';
-  pack.fotoItems = [...(document.getElementById('pr-foto-items') || {querySelectorAll:()=>[]}).querySelectorAll('input')].map(i=>i.value.trim()).filter(Boolean);
-  pack.videoItems= [...(document.getElementById('pr-video-items') || {querySelectorAll:()=>[]}).querySelectorAll('input')].map(i=>i.value.trim()).filter(Boolean);
+  pack.items     = [...(document.getElementById('pr-pack-items') || {querySelectorAll:()=>[]}).querySelectorAll('input')].map(i=>i.value.trim()).filter(Boolean);
   setPresupuesto(data);
 }
 
@@ -3382,39 +3446,28 @@ function renderPresupuestoPack(idx, data) {
   const pack = data.packs[idx];
   const c = document.getElementById('pr-pack-editor');
   if(!c) return;
+  const currentItems = pack.items || [...(pack.fotoItems||[]), ...(pack.videoItems||[])];
   c.innerHTML = `
     <div class="settings-section" style="margin-top:0;border-top:none">
       <div class="form-row">
         <div class="form-group"><label class="form-label">Nombre del Pack</label><input class="form-input" id="pr-pack-name" value="${pack.name||''}"></div>
         <div class="form-group" style="max-width:90px"><label class="form-label">Número</label><input class="form-input" id="pr-pack-number" value="${pack.number||''}"></div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:4px">
-        <div>
-          <div class="form-group"><label class="form-label">Precio Fotografía</label><input class="form-input" id="pr-foto-price" value="${pack.fotoPrice||''}"></div>
-          <label class="form-label" style="display:block;margin-bottom:8px">Items Fotografía</label>
-          <div id="pr-foto-items">
-            ${(pack.fotoItems||[]).map(item=>`
-              <div class="cnt-item-row" style="margin-bottom:5px">
-                <input class="form-input" value="${item}" style="font-size:12px">
-                <button onclick="this.closest('.cnt-item-row').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0 4px">✕</button>
-              </div>`).join('')}
-          </div>
-          <button onclick="addPresupuestoItem('foto')" class="btn-sm" style="margin-top:6px;font-size:10px">+ Agregar item</button>
+      <div class="form-group" style="margin-top:6px"><label class="form-label">Total del Pack</label><input class="form-input" id="pr-total-price" value="${pack.totalPrice||''}" placeholder="$760.000.-" style="max-width:200px"></div>
+      <div style="margin-top:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <label class="form-label">Servicios incluidos</label>
+          <button onclick="abrirSelectorServicios()" class="btn-sm" style="font-size:10px;background:var(--gold);color:var(--black)">☰ Seleccionar desde GSheet</button>
         </div>
-        <div>
-          <div class="form-group"><label class="form-label">Precio Video</label><input class="form-input" id="pr-video-price" value="${pack.videoPrice||''}"></div>
-          <label class="form-label" style="display:block;margin-bottom:8px">Items Video</label>
-          <div id="pr-video-items">
-            ${(pack.videoItems||[]).map(item=>`
-              <div class="cnt-item-row" style="margin-bottom:5px">
-                <input class="form-input" value="${item}" style="font-size:12px">
-                <button onclick="this.closest('.cnt-item-row').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0 4px">✕</button>
-              </div>`).join('')}
-          </div>
-          <button onclick="addPresupuestoItem('video')" class="btn-sm" style="margin-top:6px;font-size:10px">+ Agregar item</button>
+        <div id="pr-pack-items">
+          ${currentItems.map(item=>`
+            <div class="cnt-item-row" style="margin-bottom:5px">
+              <input class="form-input" value="${item.replace(/"/g,'&quot;')}" style="font-size:12px">
+              <button onclick="this.closest('.cnt-item-row').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0 4px">✕</button>
+            </div>`).join('')}
         </div>
+        <button onclick="addPresupuestoItem()" class="btn-sm" style="margin-top:6px;font-size:10px">+ Agregar manualmente</button>
       </div>
-      <div class="form-group" style="margin-top:14px"><label class="form-label">Total del Pack</label><input class="form-input" id="pr-total-price" value="${pack.totalPrice||''}" placeholder="$760.000.-" style="max-width:200px"></div>
       <div style="margin-top:18px">
         <label class="form-label" style="display:block;margin-bottom:10px">Fotos del Pack (3 — columna izquierda)</label>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
@@ -3430,13 +3483,13 @@ function renderPresupuestoPack(idx, data) {
     </div>`;
 }
 
-function addPresupuestoItem(type) {
-  const c = document.getElementById('pr-'+type+'-items');
+function addPresupuestoItem() {
+  const c = document.getElementById('pr-pack-items');
   if(!c) return;
   const div = document.createElement('div');
   div.className = 'cnt-item-row';
   div.style.marginBottom = '5px';
-  div.innerHTML = `<input class="form-input" value="" style="font-size:12px" placeholder="Nuevo item"><button onclick="this.closest('.cnt-item-row').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0 4px">✕</button>`;
+  div.innerHTML = '<input class="form-input" value="" style="font-size:12px" placeholder="Nuevo servicio"><button onclick="this.closest(\'.cnt-item-row\').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0 4px">&#x2715;</button>';
   c.appendChild(div);
 }
 
@@ -3487,6 +3540,98 @@ function clearPresupuestoPhoto(type, idx) {
   else if(type === 'pack') { data.packs[currentPresupuestoPack].photos[idx] = ''; setPresupuesto(data); renderPresupuestoPack(currentPresupuestoPack, data); }
 }
 
+let _cachedServicios = null;
+
+async function abrirSelectorServicios() {
+  const gasUrl = (S.get('crd_settings') || {}).gasUrl || '';
+  if(!gasUrl) {
+    toast('Configúrá la URL del GAS en Configuración → Contacto & Redes primero.', 'error');
+    return;
+  }
+  saveCurrentPackFields();
+  const modal = document.getElementById('svc-selector-modal');
+  const listEl = document.getElementById('svc-selector-list');
+  modal.style.display = 'block';
+  listEl.innerHTML = 'Cargando servicios...';
+  try {
+    if(!_cachedServicios) {
+      const res = await fetch(gasUrl + '?action=getServicios');
+      _cachedServicios = await res.json();
+    }
+    const pack = getPresupuesto().packs[currentPresupuestoPack];
+    const current = (pack.items || [...(pack.fotoItems||[]), ...(pack.videoItems||[])]);
+    listEl.innerHTML = (_cachedServicios||[]).map(svc => `
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+        <input type="checkbox" id="sv-${svc.id}" value="${svc.id}" ${current.includes(svc.descripcion)?'checked':''} style="width:16px;height:16px;flex-shrink:0;cursor:pointer">
+        <label for="sv-${svc.id}" style="cursor:pointer;flex:1;display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <span style="font-size:12px;color:var(--white)">${svc.descripcion}</span>
+          ${svc.pesos ? '<span style="font-size:11px;color:var(--gold);white-space:nowrap">$'+svc.pesos.toLocaleString('es-AR')+'</span>' : ''}
+        </label>
+      </div>`).join('');
+  } catch(err) {
+    listEl.innerHTML = '<p style="color:var(--red);padding:20px">Error al cargar: ' + err.message + '</p>';
+  }
+}
+
+function confirmarServicios() {
+  const checked = [...document.querySelectorAll('#svc-selector-list input[type=checkbox]:checked')];
+  const ids = checked.map(cb => cb.value);
+  const items = (_cachedServicios||[]).filter(s => ids.includes(s.id)).map(s => s.descripcion);
+  const data = getPresupuesto();
+  data.packs[currentPresupuestoPack].items = items;
+  setPresupuesto(data);
+  renderPresupuestoPack(currentPresupuestoPack, data);
+  cerrarSelectorServicios();
+  toast('Servicios actualizados ✓');
+}
+
+function cerrarSelectorServicios() {
+  document.getElementById('svc-selector-modal').style.display = 'none';
+}
+
+function renderOpcionalesAdmin() {
+  const OPC_DEF = [
+    {name:'Fotos previa en suite', desc:'Cobertura de detalles y preparativos previos al evento, 2hs.', price:'$170.000.-'},
+    {name:'Video previa en suite', desc:'Cobertura de detalles y preparativos previos al evento, 2hs.', price:'$170.000.-'},
+    {name:'Segundo fotgrafo', desc:'Material ms espontneo y artstico. Ideal para ms de 120 invitados.', price:'$600.000.-'},
+    {name:'Segundo videgrafo', desc:'Video ms gil y dinmico con ms variacin de planos. Con Gimbal.', price:'$660.000.-'},
+    {name:'Drone estabilizado exterior', desc:'Tomas areas panoramicas de alto impacto, solo exterior.', price:'$750.000.-'},
+    {name:'Drone FPV interior / exterior', desc:'Tecnologa avanzada, tomas areas de alto impacto cinematogrfico.', price:'$990.000.-'},
+    {name:'Video clip cronolgico', desc:'Diferentes opciones de grabacin y edicin del evento.', price:'consultar'},
+    {name:'Produccin de fotos en exterior', desc:'Costo a definir segn nivel de produccin y locacin.', price:'consultar'},
+    {name:'Video backstage en exterior', desc:'Grabacin y edicin de la produccin de fotos para proyectar durante el evento.', price:'consultar'},
+    {name:'Video de entrada personalizado', desc:'Grabado en estudio o exterior con tcnica e iluminacin cinematogrfica.', price:'consultar'},
+    {name:'Video coming soon', desc:'Adelanto del evento en formato video.', price:'$130.000.-'},
+    {name:'Video reportaje', desc:'Recopilacin de testimonios de personas cercanas a la protagonista.', price:'consultar'},
+    {name:'Libros / murales / gigantografas', desc:'Diferentes tamaos y opciones de impresin y encuadernacin.', price:'consultar'},
+    {name:'Cabina de fotos / espejo mgico', desc:'Entretenimiento interactivo para tus invitados.', price:'consultar'},
+    {name:'Experiencia 360', desc:'Video rotatorio 360 de alta tecnologa.', price:'consultar'},
+  ];
+  const items = S.get('crd_opcionales') || OPC_DEF;
+  const c = document.getElementById('pr-opc-list');
+  if(!c) return;
+  c.innerHTML = items.map(item => `
+    <div class="cnt-item-row" style="flex-wrap:wrap;align-items:flex-start;gap:8px;margin-bottom:8px">
+      <input class="form-input pr-opc-name" value="${(item.name||'').replace(/"/g,'&quot;')}" style="font-size:12px;min-width:160px;flex:2" placeholder="Nombre">
+      <input class="form-input pr-opc-desc" value="${(item.desc||'').replace(/"/g,'&quot;')}" style="font-size:12px;flex:3;min-width:180px" placeholder="Descripcion">
+      <input class="form-input pr-opc-price" value="${(item.price||'').replace(/"/g,'&quot;')}" style="font-size:12px;width:110px;flex-shrink:0" placeholder="$0 o consultar">
+      <button onclick="this.closest('.cnt-item-row').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:0 4px;align-self:center">&#x2715;</button>
+    </div>`).join('');
+}
+
+function addPresupuestoOpcional() {
+  const c = document.getElementById('pr-opc-list');
+  if(!c) return;
+  const div = document.createElement('div');
+  div.className = 'cnt-item-row';
+  div.style.cssText = 'flex-wrap:wrap;align-items:flex-start;gap:8px;margin-bottom:8px';
+  div.innerHTML = '<input class="form-input pr-opc-name" value="" style="font-size:12px;min-width:160px;flex:2" placeholder="Nombre">'
+    + '<input class="form-input pr-opc-desc" value="" style="font-size:12px;flex:3;min-width:180px" placeholder="Descripcion">'
+    + '<input class="form-input pr-opc-price" value="" style="font-size:12px;width:110px;flex-shrink:0" placeholder="$0 o consultar">'
+    + '<button onclick="this.closest(\'.cnt-item-row\').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:0 4px;align-self:center">&#x2715;</button>';
+  c.appendChild(div);
+}
+
 function savePresupuesto() {
   saveCurrentPackFields();
   const data = getPresupuesto();
@@ -3496,6 +3641,27 @@ function savePresupuesto() {
   data.validity     = document.getElementById('pr-validity').value.trim();
   data.paymentNote  = document.getElementById('pr-payment-note').value.trim();
   data.includes = [...(document.getElementById('pr-includes-list')||{querySelectorAll:()=>[]}).querySelectorAll('input')].map(i=>i.value.trim()).filter(Boolean);
+  // Sobre mi / Estilo
+  const editableData = S.get('crd_editable') || {};
+  editableData['sobre-title']  = document.getElementById('pr-sobre-title').value.trim();
+  editableData['sobre-p0']     = document.getElementById('pr-sobre-p0').value.trim();
+  editableData['sobre-p1']     = document.getElementById('pr-sobre-p1').value.trim();
+  editableData['sobre-p2']     = document.getElementById('pr-sobre-p2').value.trim();
+  editableData['estilo-title'] = document.getElementById('pr-estilo-title').value.trim();
+  editableData['estilo-desc']  = document.getElementById('pr-estilo-desc').value.trim();
+  S.set('crd_editable', editableData);
+  // Opcionales
+  const opcRows = [...document.querySelectorAll('#pr-opc-list .cnt-item-row')];
+  const opcSaved = opcRows.map(row => ({
+    name:  (row.querySelector('.pr-opc-name')||{value:''}).value.trim(),
+    desc:  (row.querySelector('.pr-opc-desc')||{value:''}).value.trim(),
+    price: (row.querySelector('.pr-opc-price')||{value:''}).value.trim()
+  })).filter(o => o.name);
+  S.set('crd_opcionales', opcSaved);
+  // Payment texts
+  data.paymentHow     = (document.getElementById('pr-payment-how')||{value:''}).value.trim();
+  data.paymentFreeze  = (document.getElementById('pr-payment-freeze')||{value:''}).value.trim();
+  data.paymentMethods = (document.getElementById('pr-payment-methods')||{value:''}).value.trim();
   // Update tab labels
   data.packs.forEach((pack, i) => {
     const tab = document.getElementById('pr-tab-'+i);
