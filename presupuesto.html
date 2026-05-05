@@ -63,8 +63,8 @@
     .cf-value { font-weight: 300; color: var(--gray); border-bottom: 1px dotted #CCC; min-width: 60px; outline: none; }
     .cf-value:empty::before { content: attr(data-ph); color: #CCC; font-style: italic; }
     .cover-gallery { flex: 1; display: flex; padding: 20px 60px; align-items: center; justify-content: center; min-height: 420px; }
-    .cover-gallery .img-ph { width: 65%; max-width: 480px; min-height: 340px; border: none; }
-    .cover-gallery .img-ph img { object-fit: contain !important; background: transparent; }
+    .cover-gallery .img-ph { width: 65%; max-width: 480px; min-height: 340px; border: none; background: white; }
+    .cover-gallery .img-ph img { object-fit: contain !important; }
     .cover-bottom { padding: 40px 60px 32px; display: flex; justify-content: space-between; align-items: flex-end; }
     .welcome { font-family: 'Playfair Display', serif; font-size: 60px; font-weight: 900; line-height: .9; letter-spacing: -1px; }
     .welcome-sub { font-size: 11px; font-weight: 300; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-top: 12px; }
@@ -208,7 +208,7 @@
       .page-bar { padding: 12px 60px !important; flex-wrap: nowrap !important; font-size: 11px !important; }
       .cf-value { border-bottom: 1px dotted #999; }
     }
-    @media (max-width: 940px) {
+    @media screen and (max-width: 940px) {
       /* ── páginas ── */
       body { background: #fff; }
       .page { width: 100%; margin: 0 0 8px; box-shadow: none; border-radius: 0; }
