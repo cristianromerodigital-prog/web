@@ -4566,7 +4566,7 @@ function saveCurrentPackFields() {
   pack.name      = nameEl.value.trim();
   pack.number    = (document.getElementById('pr-pack-number') || {}).value?.trim() || pack.number;
   pack.totalPrice= (document.getElementById('pr-total-price') || {}).value?.trim() || '';
-  const itemCards = [...(document.getElementById('pr-pack-items')||document.createElement('div')).querySelectorAll('div[style]')];
+  const itemCards = [...(document.getElementById('pr-pack-items')||document.createElement('div')).children];
   pack.items = itemCards.map(card => ({
     name: (card.querySelector('.pr-item-name')||{value:''}).value.trim(),
     desc: (card.querySelector('.pr-item-desc')||{value:''}).value.trim()
