@@ -77,7 +77,7 @@
     .pack-hdr-logo { position: absolute; right: 0; top: 50%; transform: translateY(-50%); height: 26px; width: auto; object-fit: contain; display: none; }
     .pack-box { border: 1.5px solid var(--dark); flex: 1; display: grid; grid-template-columns: 300px 1fr; overflow: hidden; min-height: 0; }
     .photos-col { border-right: 1.5px solid var(--dark); display: grid; grid-template-rows: 2fr 1fr 1fr; overflow: hidden; }
-    .photos-col .img-ph { border: none; border-bottom: 1px solid var(--border); min-height: 0; }
+    .photos-col .img-ph { border: none; min-height: 0; }
     .photos-col .img-ph:last-child { border-bottom: none; }
     .content-col { padding: 30px 34px 26px; display: flex; flex-direction: column; }
     .pack-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 5px; }
@@ -167,10 +167,48 @@
       .cf-value { border-bottom: 1px dotted #999; }
     }
     @media (max-width: 940px) {
-      .page { width: 100%; margin: 0; }
+      /* ── páginas ── */
+      body { background: #fff; }
+      .page { width: 100%; margin: 0 0 8px; box-shadow: none; border-radius: 0; }
+      #toolbar { top: 8px; right: 8px; gap: 6px; }
+      #toolbar .hint { display: none; }
+      #toolbar button { padding: 8px 14px; font-size: 10px; }
+
+      /* ── portada ── */
+      .cover-top { flex-direction: column; gap: 16px; padding: 20px 20px 16px; }
+      .client-box { min-width: unset; width: 100%; }
+      .cover-gallery { padding: 0 20px; min-height: 260px; }
+      .cover-bottom { padding: 20px; flex-direction: column; gap: 8px; }
+      .welcome { font-size: 36px; }
+      .brand-block { text-align: left; }
+      .page-bar { padding: 10px 16px; gap: 6px; flex-wrap: wrap; font-size: 10px; }
+      .page-bar .validity { font-size: 8px; padding: 3px 10px; }
+
+      /* ── packs ── */
+      .pack-body { padding: 0 20px 28px; }
       .pack-box { grid-template-columns: 1fr; }
       .photos-col { display: none; }
-      .cover-gallery { grid-template-columns: 1fr 1fr; }
+      .content-col { padding: 20px 0; }
+      .total-val { font-size: 26px; }
+      .pack-foot { margin-top: 16px; }
+      .includes-grid { grid-template-columns: 1fr; }
+
+      /* ── sobre mi / estilo ── */
+      .sobre-body, .estilo-body, .opc-body { padding: 0 20px 28px; }
+      .sobre-hdr { padding: 14px 0; }
+      .sobre-grid { grid-template-columns: 1fr; gap: 20px; }
+      .sobre-photos { min-height: 240px; }
+      .estilo-gallery { grid-template-rows: 200px 180px; }
+      .estilo-gallery .span2 { grid-column: 1; }
+
+      /* ── opcionales ── */
+      .opc-row { grid-template-columns: 1fr auto; gap: 10px; }
+
+      /* ── contacto ── */
+      .contact-body { padding: 0 20px 28px; gap: 20px; }
+      .pay-grid { grid-template-columns: 1fr; }
+      .contact-row { flex-direction: column; }
+      .sec-title { font-size: 24px; }
     }
   </style>
 </head>
@@ -774,7 +812,24 @@ function loadEditable() {
 
 document.querySelectorAll('[data-persist]').forEach(el => el.addEventListener('input', saveEditable));
 
-document.addEventListener('DOMContentLoaded', init);
+const CF_URL = 'https://web.cristian-romero-digital.workers.dev';
+
+async function syncFromCloud() {
+  const keys = ['crd_presupuesto', 'crd_editable', 'crd_opcionales', 'crd_site_logo'];
+  await Promise.all(keys.map(async key => {
+    try {
+      const res = await fetch(CF_URL + '/' + key);
+      if(!res.ok) return;
+      const text = await res.text();
+      if(text && text !== 'null' && text.length > 2) localStorage.setItem(key, text);
+    } catch(e) {}
+  }));
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await syncFromCloud();
+  init();
+});
 </script>
 </body>
 </html>
