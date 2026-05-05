@@ -764,10 +764,11 @@ function saveEditable() {
   document.querySelectorAll('[data-persist]').forEach(el => { d[el.dataset.persist] = el.innerHTML; });
   try { localStorage.setItem('crd_editable', JSON.stringify(d)); } catch(e) {}
 }
+function mdBold(t) { return (t||'').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>'); }
 function loadEditable() {
   try {
     const d = JSON.parse(localStorage.getItem('crd_editable')) || {};
-    document.querySelectorAll('[data-persist]').forEach(el => { if(d[el.dataset.persist] !== undefined) el.innerHTML = d[el.dataset.persist]; });
+    document.querySelectorAll('[data-persist]').forEach(el => { if(d[el.dataset.persist] !== undefined) el.innerHTML = mdBold(d[el.dataset.persist]); });
   } catch(e) {}
 }
 
