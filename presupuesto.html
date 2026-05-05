@@ -729,6 +729,7 @@ function init() {
   if(data.paymentHow) setText('payment-how', data.paymentHow);
   if(data.paymentFreeze) setText('payment-freeze', data.paymentFreeze);
   if(data.paymentNote) setText('payment-note', data.paymentNote);
+  if(data.closingNote !== undefined) setText('close-note', data.closingNote);
   if(data.paymentMethods) setText('payment-methods', data.paymentMethods);
   renderOpcionales();
 
