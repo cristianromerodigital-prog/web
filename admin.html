@@ -951,7 +951,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
             </div>
           </div>
           <p style="font-size:11px;color:var(--gray);margin-top:12px;letter-spacing:1px">
-            💡 El logo se guarda en el navegador y se aplica automáticamente al abrir <code style="color:var(--cyan)">index.html</code> en el mismo dispositivo.
+            💡 El logo se sincroniza automáticamente a todos los dispositivos via Cloudflare. Se aplica en el sitio, en el presupuesto y en las invitaciones.
           </p>
         </div>
         <button class="btn-add" onclick="saveSettings()">Guardar configuración</button>
@@ -1572,16 +1572,11 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <!-- LOGO -->
         <div class="settings-section">
           <div class="settings-section-title">Logo</div>
-          <div style="display:flex;align-items:center;gap:16px">
-            <div id="pr-logo-preview" style="width:60px;height:60px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;overflow:hidden">
-              <img id="pr-logo-img" style="max-width:56px;max-height:56px;object-fit:contain;display:none" alt="">
-              <span id="pr-logo-empty" style="font-size:10px;color:var(--gray);letter-spacing:1px">Sin logo</span>
-            </div>
-            <div>
-              <p style="font-size:12px;color:var(--gray2);margin-bottom:6px">El logo es el <strong style="color:var(--white)">mismo que el del sitio</strong>. Se gestiona en Configuracion.</p>
-              <button class="btn-sm" onclick="showPage('settings')" style="font-size:10px">Ir a Configuracion</button>
-            </div>
-          </div>
+          <p style="font-size:12px;color:var(--gray2);line-height:1.6">
+            El logo se gestiona <strong style="color:var(--white)">únicamente</strong> desde
+            <button onclick="showPage('settings')" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:12px;padding:0;text-decoration:underline;font-family:inherit">Configuración → Logo del Sitio</button>
+            y se aplica automáticamente aquí, en el sitio y en las invitaciones.
+          </p>
         </div>
 
         <!-- FOTOS PORTADA -->
@@ -4479,10 +4474,6 @@ let currentPresupuestoPack = 0;
 
 function loadPresupuestoPage() {
   const data = getPresupuesto();
-  const logo = S.get('crd_site_logo');
-  const prLogoImg = document.getElementById('pr-logo-img');
-  const prLogoEmpty = document.getElementById('pr-logo-empty');
-  if(logo && prLogoImg) { prLogoImg.src = logo; prLogoImg.style.display = 'block'; if(prLogoEmpty) prLogoEmpty.style.display = 'none'; }
   // Sobre mi / Estilo
   const editable = S.get('crd_editable') || {};
   const stripHtml = h => { const t = document.createElement('div'); t.innerHTML = h; return t.textContent || t.innerText || ''; };
