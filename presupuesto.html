@@ -62,9 +62,8 @@
     .cf-label { font-weight: 700; letter-spacing: 0.03em; }
     .cf-value { font-weight: 300; color: var(--gray); border-bottom: 1px dotted #CCC; min-width: 60px; outline: none; }
     .cf-value:empty::before { content: attr(data-ph); color: #CCC; font-style: italic; }
-    .cover-gallery { flex: 1; display: grid; grid-template-columns: 3fr 2fr 2fr; grid-template-rows: 1fr 1fr; gap: 4px; padding: 0 60px; min-height: 420px; }
-    .cover-gallery .img-ph { border: none; }
-    .cover-gallery .img-ph.tall { grid-row: 1 / 3; }
+    .cover-gallery { flex: 1; display: flex; padding: 0 60px; min-height: 420px; }
+    .cover-gallery .img-ph { flex: 1; border: none; }
     .cover-bottom { padding: 40px 60px 32px; display: flex; justify-content: space-between; align-items: flex-end; }
     .welcome { font-family: 'Playfair Display', serif; font-size: 60px; font-weight: 900; line-height: .9; letter-spacing: -1px; }
     .welcome-sub { font-size: 11px; font-weight: 300; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-top: 12px; }
@@ -211,24 +210,8 @@
       </div>
     </div>
     <div class="cover-gallery">
-      <div class="img-ph tall" id="cover-photo-0" data-slot="cover:0">
+      <div class="img-ph" id="cover-photo-0" data-slot="cover:0">
         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        Clic para cargar foto
-      </div>
-      <div class="img-ph" id="cover-photo-1" data-slot="cover:1">
-        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        Clic para cargar foto
-      </div>
-      <div class="img-ph" id="cover-photo-2" data-slot="cover:2">
-        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        Clic para cargar foto
-      </div>
-      <div class="img-ph" id="cover-photo-3" data-slot="cover:3">
-        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        Clic para cargar foto
-      </div>
-      <div class="img-ph" id="cover-photo-4" data-slot="cover:4">
-        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
         Clic para cargar foto
       </div>
     </div>
@@ -270,10 +253,6 @@
       <div class="sobre-photos">
         <div class="img-ph" id="sobre-photo-0" data-slot="sobre:0">
           <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          Clic para cargar foto
-        </div>
-        <div class="img-ph" id="sobre-photo-1" data-slot="sobre:1">
-          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
           Clic para cargar foto
         </div>
       </div>
