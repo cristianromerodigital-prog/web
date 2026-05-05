@@ -1615,9 +1615,18 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <!-- FORMAS DE PAGO -->
         <div class="settings-section">
           <div class="settings-section-title">Formas de Pago</div>
-          <div class="form-group"><label class="form-label">Como reservar?</label><textarea class="form-textarea" id="pr-payment-how" style="min-height:60px"></textarea></div>
-          <div class="form-group"><label class="form-label">Se puede congelar?</label><textarea class="form-textarea" id="pr-payment-freeze" style="min-height:60px"></textarea></div>
-          <div class="form-group"><label class="form-label">Medios de pago</label><input class="form-input" id="pr-payment-methods" placeholder="Efectivo - Transferencia - Mercado Pago"></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Título tarjeta 1</label><input class="form-input" id="pr-payment-how-title" placeholder="¿Cómo reservar?"></div>
+            <div class="form-group"><label class="form-label">Título tarjeta 2</label><input class="form-input" id="pr-payment-freeze-title" placeholder="¿Se puede congelar?"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Título tarjeta 3</label><input class="form-input" id="pr-payment-note-title" placeholder="Saldo final"></div>
+            <div class="form-group"><label class="form-label">Título tarjeta 4</label><input class="form-input" id="pr-payment-methods-title" placeholder="Medios de pago"></div>
+          </div>
+          <div class="form-group"><label class="form-label">Texto tarjeta 1</label><textarea class="form-textarea" id="pr-payment-how" style="min-height:60px"></textarea></div>
+          <div class="form-group"><label class="form-label">Texto tarjeta 2</label><textarea class="form-textarea" id="pr-payment-freeze" style="min-height:60px"></textarea></div>
+          <div class="form-group"><label class="form-label">Texto tarjeta 3 (Saldo final)</label><textarea class="form-textarea" id="pr-payment-note-body" style="min-height:60px"></textarea></div>
+          <div class="form-group"><label class="form-label">Texto tarjeta 4</label><input class="form-input" id="pr-payment-methods" placeholder="Efectivo · Transferencia · Mercado Pago"></div>
         </div>
 
         <!-- TABS PACKS -->
@@ -4487,9 +4496,14 @@ function loadPresupuestoPage() {
   // Opcionales
   renderOpcionalesAdmin();
   // Payment texts
-  document.getElementById('pr-payment-how').value     = data.paymentHow || '';
-  document.getElementById('pr-payment-freeze').value  = data.paymentFreeze || '';
-  document.getElementById('pr-payment-methods').value = data.paymentMethods || '';
+  document.getElementById('pr-payment-how-title').value    = data.paymentHowTitle || '';
+  document.getElementById('pr-payment-freeze-title').value = data.paymentFreezeTitle || '';
+  document.getElementById('pr-payment-note-title').value   = data.paymentNoteTitle || '';
+  document.getElementById('pr-payment-methods-title').value= data.paymentMethodsTitle || '';
+  document.getElementById('pr-payment-how').value          = data.paymentHow || '';
+  document.getElementById('pr-payment-freeze').value       = data.paymentFreeze || '';
+  document.getElementById('pr-payment-note-body').value    = data.paymentNote || '';
+  document.getElementById('pr-payment-methods').value      = data.paymentMethods || '';
   // Cover photos + Sobre mi + Estilo
   renderPresupuestoCoverPhotos(data.coverPhotos || []);
   renderPresupuestoExtraPhotos('sobre', data.sobrePhotos || [], 1);
@@ -4552,7 +4566,11 @@ function saveCurrentPackFields() {
   pack.name      = nameEl.value.trim();
   pack.number    = (document.getElementById('pr-pack-number') || {}).value?.trim() || pack.number;
   pack.totalPrice= (document.getElementById('pr-total-price') || {}).value?.trim() || '';
-  pack.items     = [...(document.getElementById('pr-pack-items') || {querySelectorAll:()=>[]}).querySelectorAll('input')].map(i=>i.value.trim()).filter(Boolean);
+  const itemCards = [...(document.getElementById('pr-pack-items')||document.createElement('div')).querySelectorAll('div[style]')];
+  pack.items = itemCards.map(card => ({
+    name: (card.querySelector('.pr-item-name')||{value:''}).value.trim(),
+    desc: (card.querySelector('.pr-item-desc')||{value:''}).value.trim()
+  })).filter(o => o.name);
   setPresupuesto(data);
 }
 
@@ -4575,11 +4593,17 @@ function renderPresupuestoPack(idx, data) {
           <button onclick="abrirSelectorServicios()" class="btn-sm" style="font-size:10px;background:var(--gold);color:var(--black)">Seleccionar desde GSheet</button>
         </div>
         <div id="pr-pack-items">
-          ${currentItems.map(item=>`
-            <div class="cnt-item-row" style="margin-bottom:5px;grid-template-columns:1fr 28px">
-              <input class="form-input" value="${item.replace(/"/g,'&quot;')}" style="font-size:12px">
-              <button onclick="this.closest('.cnt-item-row').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0 4px;text-align:center">&#x2715;</button>
-            </div>`).join('')}
+          ${currentItems.map(item=>{
+          const iname = typeof item==='string'?item:(item.name||'');
+          const idesc = typeof item==='object'?(item.desc||''):'';
+          return `<div style="margin-bottom:6px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);padding:8px 10px">
+            <div style="display:grid;grid-template-columns:1fr 28px;gap:6px;align-items:center;margin-bottom:4px">
+              <input class="form-input pr-item-name" value="${iname.replace(/"/g,'&quot;')}" style="font-size:12px" placeholder="Nombre del servicio">
+              <button onclick="this.closest('div[style]').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0;text-align:center">&#x2715;</button>
+            </div>
+            <input class="form-input pr-item-desc" value="${idesc.replace(/"/g,'&quot;')}" style="font-size:11px;padding:8px 12px;color:rgba(255,255,255,0.5)" placeholder="Descripcion breve (opcional)">
+          </div>`;
+        }).join('')}
         </div>
         <button onclick="addPresupuestoItem()" class="btn-sm" style="margin-top:6px;font-size:10px">+ Agregar manualmente</button>
       </div>
@@ -4602,9 +4626,11 @@ function addPresupuestoItem() {
   const c = document.getElementById('pr-pack-items');
   if(!c) return;
   const div = document.createElement('div');
-  div.className = 'cnt-item-row';
-  div.style.marginBottom = '5px';
-  div.innerHTML = `<input class="form-input" value="" style="font-size:12px" placeholder="Nuevo servicio"><button onclick="this.closest('.cnt-item-row').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0 4px">&#x2715;</button>`;
+  div.style.cssText = 'margin-bottom:6px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);padding:8px 10px';
+  div.innerHTML = '<div style="display:grid;grid-template-columns:1fr 28px;gap:6px;align-items:center;margin-bottom:4px">'
+    + '<input class="form-input pr-item-name" value="" style="font-size:12px" placeholder="Nombre del servicio">'
+    + '<button onclick="this.closest(\'div[style]\').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0;text-align:center">&#x2715;</button>'
+    + '</div><input class="form-input pr-item-desc" value="" style="font-size:11px;padding:8px 12px;color:rgba(255,255,255,0.5)" placeholder="Descripcion breve (opcional)">';
   c.appendChild(div);
 }
 
@@ -4693,8 +4719,13 @@ function savePresupuesto() {
   })).filter(o => o.name);
   S.set('crd_opcionales', opcSaved);
   // Payment texts
+  data.paymentHowTitle     = (document.getElementById('pr-payment-how-title')||{value:''}).value.trim();
+  data.paymentFreezeTitle  = (document.getElementById('pr-payment-freeze-title')||{value:''}).value.trim();
+  data.paymentNoteTitle    = (document.getElementById('pr-payment-note-title')||{value:''}).value.trim();
+  data.paymentMethodsTitle = (document.getElementById('pr-payment-methods-title')||{value:''}).value.trim();
   data.paymentHow     = (document.getElementById('pr-payment-how')||{value:''}).value.trim();
   data.paymentFreeze  = (document.getElementById('pr-payment-freeze')||{value:''}).value.trim();
+  data.paymentNote    = (document.getElementById('pr-payment-note-body')||{value:''}).value.trim();
   data.paymentMethods = (document.getElementById('pr-payment-methods')||{value:''}).value.trim();
   // Update tab labels
   data.packs.forEach((pack, i) => {
@@ -4809,7 +4840,7 @@ async function abrirSelectorServicios() {
 function confirmarServicios() {
   const checked = [...document.querySelectorAll('#svc-selector-list input[type=checkbox]:checked')];
   const ids = checked.map(cb => cb.value);
-  const items = (_cachedServicios||[]).filter(s => ids.includes(s.id)).map(s => s.descripcion);
+  const items = (_cachedServicios||[]).filter(s => ids.includes(s.id)).map(s => ({name: s.descripcion, desc: ''}));
   const data = getPresupuesto();
   data.packs[currentPresupuestoPack].items = items;
   setPresupuesto(data);

@@ -44,6 +44,7 @@
     .img-ph.loaded:hover { background: transparent; }
     .img-ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
     .img-ph svg { opacity: 0.35; }
+    .svc-item-desc { display: block; font-size: 11px; font-weight: 300; color: var(--gray); margin-top: 3px; }
 
     /* ── PAGE FOOTER BAR ── */
     .page-bar { background: var(--dark); color: rgba(255,255,255,0.8); padding: 12px 60px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; letter-spacing: 0.06em; }
@@ -570,19 +571,19 @@
     </div>
     <div class="pay-grid">
       <div class="pay-card">
-        <h3>¿Cómo reservar?</h3>
+        <h3 id="payment-how-title">¿Cómo reservar?</h3>
         <p id="payment-how">Para reservar y bloquear la fecha se abona una seña. Podés hacerlo en efectivo, transferencia bancaria o Mercado Pago.</p>
       </div>
       <div class="pay-card">
-        <h3>¿Se puede congelar el precio?</h3>
+        <h3 id="payment-freeze-title">¿Se puede congelar el precio?</h3>
         <p id="payment-freeze">Sí. El monto abonado en concepto de seña queda congelado. El saldo restante se actualiza al momento del evento.</p>
       </div>
       <div class="pay-card">
-        <h3>Saldo final</h3>
+        <h3 id="payment-note-title">Saldo final</h3>
         <p id="payment-note">El total del presupuesto deberá estar abonado <strong>15 días antes del evento</strong>. Ante cualquier consulta, escribinos sin compromiso.</p>
       </div>
       <div class="pay-card">
-        <h3>Medios de pago</h3>
+        <h3 id="payment-methods-title">Medios de pago</h3>
         <p id="payment-methods">Efectivo · Transferencia bancaria · Mercado Pago</p>
       </div>
     </div>
@@ -661,7 +662,11 @@ function setText(id, val) {
 function setItems(id, items) {
   const ul = document.getElementById(id);
   if(!ul || !items) return;
-  ul.innerHTML = items.map(i => `<li>${i}</li>`).join('');
+  ul.innerHTML = items.map(i => {
+    const name = typeof i === 'string' ? i : (i.name || '');
+    const desc = typeof i === 'object' && i.desc ? i.desc : '';
+    return '<li>' + name + (desc ? '<span class="svc-item-desc">' + desc + '</span>' : '') + '</li>';
+  }).join('');
 }
 function setIncludes(id, items) {
   const grid = document.getElementById(id);
@@ -722,6 +727,10 @@ function init() {
 
   setText('contact-ig', ig);
   setText('contact-phone', phone);
+  if(data.paymentHowTitle)      setText('payment-how-title', data.paymentHowTitle);
+  if(data.paymentFreezeTitle)   setText('payment-freeze-title', data.paymentFreezeTitle);
+  if(data.paymentNoteTitle)     setText('payment-note-title', data.paymentNoteTitle);
+  if(data.paymentMethodsTitle)  setText('payment-methods-title', data.paymentMethodsTitle);
   if(data.paymentHow) setText('payment-how', data.paymentHow);
   if(data.paymentFreeze) setText('payment-freeze', data.paymentFreeze);
   if(data.paymentNote) setText('payment-note', data.paymentNote);
