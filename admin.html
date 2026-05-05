@@ -4776,9 +4776,10 @@ function savePresupuesto() {
   // Opcionales
   const opcRows = [...document.querySelectorAll('#pr-opc-list .pr-opc-card')];
   const opcSaved = opcRows.map(row => ({
-    name:  (row.querySelector('.pr-opc-name')||{value:''}).value.trim(),
-    desc:  (row.querySelector('.pr-opc-desc')||{value:''}).value.trim(),
-    price: (row.querySelector('.pr-opc-price')||{value:''}).value.trim()
+    name:   (row.querySelector('.pr-opc-name')||{value:''}).value.trim(),
+    desc:   (row.querySelector('.pr-opc-desc')||{value:''}).value.trim(),
+    price:  (row.querySelector('.pr-opc-price')||{value:''}).value.trim(),
+    hidden: row.dataset.hidden === 'true'
   })).filter(o => o.name);
   S.set('crd_opcionales', opcSaved);
   // Payment texts
@@ -4816,15 +4817,29 @@ function renderOpcionalesAdmin() {
   const items = S.get('crd_opcionales') || OPC_DEF;
   const c = document.getElementById('pr-opc-list');
   if(!c) return;
-  c.innerHTML = items.map(item => `
-    <div class="pr-opc-card" style="margin-bottom:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);padding:10px 12px">
-      <div style="display:grid;grid-template-columns:1fr 120px 28px;gap:8px;align-items:center;margin-bottom:6px">
+  c.innerHTML = items.map(item => {
+    const hidden = !!item.hidden;
+    const cardOpacity = hidden ? 'opacity:0.35' : '';
+    const eyeLabel = hidden ? '👁 Mostrar' : '🚫 Ocultar';
+    return `
+    <div class="pr-opc-card" data-hidden="${hidden}" style="margin-bottom:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);padding:10px 12px;${cardOpacity}">
+      <div style="display:grid;grid-template-columns:1fr 120px auto 28px;gap:8px;align-items:center;margin-bottom:6px">
         <input class="form-input pr-opc-name" value="${(item.name||'').replace(/"/g,'&quot;')}" style="font-size:12px" placeholder="Nombre del servicio">
         <input class="form-input pr-opc-price" value="${(item.price||'').replace(/"/g,'&quot;')}" style="font-size:12px;text-align:right" placeholder="consultar">
+        <button onclick="toggleOpcional(this)" style="background:none;border:1px solid rgba(255,255,255,0.15);color:var(--gray2);cursor:pointer;font-size:10px;padding:3px 7px;white-space:nowrap;letter-spacing:0.5px">${eyeLabel}</button>
         <button onclick="this.closest('.pr-opc-card').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0;text-align:center">&#x2715;</button>
       </div>
       <input class="form-input pr-opc-desc" value="${(item.desc||'').replace(/"/g,'&quot;')}" style="font-size:11px;padding:8px 12px;color:rgba(255,255,255,0.5)" placeholder="Descripcion (opcional)">
-    </div>`).join('');
+    </div>`;
+  }).join('');
+}
+
+function toggleOpcional(btn) {
+  const card = btn.closest('.pr-opc-card');
+  const hidden = card.dataset.hidden !== 'true';
+  card.dataset.hidden = hidden;
+  card.style.opacity = hidden ? '0.35' : '1';
+  btn.textContent = hidden ? '👁 Mostrar' : '🚫 Ocultar';
 }
 
 function addPresupuestoOpcional() {

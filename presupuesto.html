@@ -819,7 +819,7 @@ function getOpcionales() {
   catch(e) { return OPCIONALES_DEFAULT.map(o=>({...o})); }
 }
 function renderOpcionales() {
-  const items = getOpcionales();
+  const items = getOpcionales().filter(item => !item.hidden);
   const c = document.getElementById('opc-rendered');
   if(!c) return;
   c.innerHTML = items.map((item,i) => {
