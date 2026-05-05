@@ -1645,6 +1645,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           <div class="form-row">
             <div class="form-group"><label class="form-label">Vigencia</label><input class="form-input" id="pr-validity" placeholder="Valido por 15 dias"></div>
             <div class="form-group"><label class="form-label">Nota de pago</label><input class="form-input" id="pr-payment-note" placeholder="Abonado 15 dias antes del evento"></div>
+            <div class="form-group"><label class="form-label">Nota de cierre (última página)</label><input class="form-input" id="pr-closing-note" placeholder="Precios vigentes Mayo 2025 — No incluye IVA"></div>
           </div>
         </div>
         <button class="btn-add" onclick="savePresupuesto()">Guardar Presupuesto</button>
@@ -4499,7 +4500,8 @@ function loadPresupuestoPage() {
   document.getElementById('pr-instagram').value    = data.instagram || '';
   document.getElementById('pr-phone').value        = data.phone || '';
   document.getElementById('pr-validity').value     = data.validity || '';
-  document.getElementById('pr-payment-note').value = data.paymentNote || '';
+  document.getElementById('pr-payment-note').value  = data.paymentNote || '';
+  document.getElementById('pr-closing-note').value  = data.closingNote !== undefined ? data.closingNote : 'Precios vigentes Mayo 2025 — No incluye IVA';
   // Logo preview
   const prLogoImg2 = document.getElementById('pr-logo-img');
   if(logo && prLogoImg2) { prLogoImg2.src = logo; prLogoImg2.style.display = 'block'; document.getElementById('pr-logo-empty').style.display = 'none'; }
@@ -4670,6 +4672,7 @@ function savePresupuesto() {
   data.phone          = document.getElementById('pr-phone').value.trim();
   data.validity       = document.getElementById('pr-validity').value.trim();
   data.paymentNote    = document.getElementById('pr-payment-note').value.trim();
+  data.closingNote    = document.getElementById('pr-closing-note').value.trim();
   data.includes = [...(document.getElementById('pr-includes-list')||{querySelectorAll:()=>[]}).querySelectorAll('input')].map(i=>i.value.trim()).filter(Boolean);
   // Sobre mi / Estilo
   const editableData = S.get('crd_editable') || {};
