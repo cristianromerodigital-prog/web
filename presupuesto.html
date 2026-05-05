@@ -160,11 +160,52 @@
 
     /* ── PRINT ── */
     @media print {
-      body { background: white; }
-      #toolbar { display: none; }
-      .page { width: 210mm; min-height: 297mm; margin: 0; box-shadow: none; page-break-after: always; }
-      .page:last-child { page-break-after: avoid; }
       @page { margin: 0; size: A4; }
+      body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      #toolbar { display: none !important; }
+
+      /* fuerza layout desktop — anula mobile CSS */
+      .page { width: 210mm !important; min-height: 297mm; margin: 0 !important; box-shadow: none !important; page-break-after: always; overflow: hidden; }
+      .page:last-child { page-break-after: avoid; }
+
+      /* portada */
+      .cover-top { flex-direction: row !important; padding: 44px 60px 30px !important; }
+      .client-box { min-width: 320px !important; width: auto !important; }
+      .cover-gallery { padding: 0 60px !important; min-height: 380px !important; }
+      .cover-bottom { padding: 40px 60px 32px !important; flex-direction: row !important; }
+      .welcome { font-size: 60px !important; }
+      .brand-block { text-align: right !important; }
+
+      /* sobre mi */
+      .sobre-body { padding: 0 60px 44px !important; }
+      .sobre-grid { grid-template-columns: 1fr 1fr !important; gap: 44px !important; }
+      .sobre-hdr { padding: 20px 0 !important; }
+
+      /* estilo */
+      .estilo-body { padding: 0 60px 44px !important; }
+      .estilo-gallery { grid-template-rows: 1fr 1fr !important; }
+      .estilo-gallery .span2 { grid-column: 1 / 3 !important; }
+
+      /* packs */
+      .pack-body { padding: 0 60px 44px !important; }
+      .pack-box { grid-template-columns: 300px 1fr !important; }
+      .photos-col { display: grid !important; }
+      .content-col { padding: 30px 34px 26px !important; }
+      .total-val { font-size: 34px !important; }
+      .includes-grid { grid-template-columns: 1fr 1fr !important; }
+
+      /* opcionales */
+      .opc-body { padding: 0 60px 44px !important; }
+      .opc-row { grid-template-columns: 1fr auto !important; }
+
+      /* contacto */
+      .contact-body { padding: 0 60px 44px !important; gap: 36px !important; }
+      .pay-grid { grid-template-columns: 1fr 1fr !important; }
+      .contact-row { flex-direction: row !important; }
+      .sec-title { font-size: 34px !important; }
+
+      /* footer bar */
+      .page-bar { padding: 12px 60px !important; flex-wrap: nowrap !important; font-size: 11px !important; }
       .cf-value { border-bottom: 1px dotted #999; }
     }
     @media (max-width: 940px) {
