@@ -1700,10 +1700,11 @@ tr:hover td{background:rgba(255,255,255,0.02);}
             <p style="font-size:10px;color:var(--gray);margin-top:6px;letter-spacing:1px">La carpeta debe estar compartida como "Cualquiera con el enlace puede ver"</p>
           </div>
           <div class="form-group">
-            <label class="form-label">Foto de portada <span style="color:var(--red)">*</span> <span style="font-size:10px;color:var(--gray);font-weight:300">— elegí una de las fotos del álbum</span></label>
-            <select class="form-input" id="ent-portada" onchange="updateEntregaPreview()" style="font-size:12px">
-              <option value="">— Primero seleccioná las fotos del álbum —</option>
-            </select>
+            <label class="form-label">Foto de portada — ID del archivo en Drive (opcional)</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input class="form-input" id="ent-portada" placeholder="ID del archivo en Drive" oninput="updateEntregaPreview()">
+              <button class="btn-sm" onclick="pickPortadaDrive()" style="white-space:nowrap">Elegir desde Drive</button>
+            </div>
           </div>
           <div class="form-group" style="margin-top:4px">
             <label style="display:flex;align-items:center;gap:12px;cursor:pointer;font-size:12px;color:var(--gray2)">
@@ -5087,11 +5088,6 @@ function openDriveBrowser(callback) {
 function closeDriveBrowser() {
   _dbSelected.clear();
   document.getElementById('drive-browser-modal').style.display = 'none';
-  const btnP = document.getElementById('db-btn-portfolio');
-  const btnE = document.getElementById('db-btn-entrega');
-  if(btnP) btnP.style.display = 'inline-block';
-  if(btnE) btnE.style.display = 'none';
-  pendingPhotoCallback = null;
 }
 
 function dbExtractId(input) {
@@ -5296,29 +5292,13 @@ function dbConfirmEntregaFotos() {
 function renderEntregaFotosList() {
   const el = document.getElementById('ent-fotos-chips');
   if(!el) return;
-  if(!_entFotos.length) {
-    el.innerHTML = '<span style="font-size:11px;color:var(--gray)">Sin fotos seleccionadas</span>';
-  } else {
-    el.innerHTML = _entFotos.map((f, i) =>
-      '<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);padding:4px 10px;margin:2px 3px;font-size:10px;letter-spacing:.5px">'
-      + f.name.replace(/\.[^.]+$/, '')
-      + '<button onclick="_entFotos.splice('+i+',1);renderEntregaFotosList()" style="background:none;border:none;color:var(--gray);font-size:13px;cursor:pointer;padding:0;line-height:1;margin-left:2px">×</button>'
-      + '</span>'
-    ).join('');
-  }
-  updatePortadaSelect();
-}
-function updatePortadaSelect() {
-  const sel = document.getElementById('ent-portada');
-  if(!sel) return;
-  const current = sel.value;
-  if(!_entFotos.length) {
-    sel.innerHTML = '<option value="">— Primero seleccioná las fotos del álbum —</option>';
-    return;
-  }
-  sel.innerHTML = '<option value="">— Elegí la foto de portada —</option>'
-    + _entFotos.map(f => '<option value="'+f.driveId+'">'+f.name.replace(/\.[^.]+$/, '')+'</option>').join('');
-  if(current) sel.value = current;
+  if(!_entFotos.length) { el.innerHTML = '<span style="font-size:11px;color:var(--gray)">Sin fotos seleccionadas</span>'; return; }
+  el.innerHTML = _entFotos.map((f, i) =>
+    '<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);padding:4px 10px;margin:2px 3px;font-size:10px;letter-spacing:.5px">'
+    + f.name.replace(/\.[^.]+$/, '')
+    + '<button onclick="_entFotos.splice('+i+',1);renderEntregaFotosList()" style="background:none;border:none;color:var(--gray);font-size:13px;cursor:pointer;padding:0;line-height:1;margin-left:2px">×</button>'
+    + '</span>'
+  ).join('');
 }
 function nextEntNumId(tipo) {
   const isBook = tipo === 'Book';
@@ -5341,9 +5321,6 @@ function guardarEntrega() {
   const raw = document.getElementById('ent-folder').value.trim();
   const fid = entFolderId(raw);
   if(!fid) { toast('Ingresa la carpeta de Drive', 'error'); return; }
-  if(_entFotos.length && !document.getElementById('ent-portada').value) {
-    toast('Seleccioná la foto de portada', 'error'); return;
-  }
   const dlEl2 = document.getElementById('ent-allow-dl');
   const nombres = document.getElementById('ent-nombres').value.trim() || 'Entrega';
   const tipo = document.getElementById('ent-tipo').value;
@@ -5376,8 +5353,7 @@ function guardarEntrega() {
   const url = buildEntregaUrl(ev);
   navigator.clipboard.writeText(url).then(() => toast('Link copiado al portapapeles'));
   renderEntregasList();
-  ['ent-nombres','ent-fecha','ent-frase','ent-folder'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
-  updatePortadaSelect();
+  ['ent-nombres','ent-fecha','ent-frase','ent-folder','ent-portada'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('ent-link-preview').textContent = 'Completa los campos para generar el link';
   document.getElementById('ent-preview-btn').style.display = 'none';
 }
@@ -5530,10 +5506,7 @@ function editarEntrega(idx) {
     }
   }
   _entFotos = ev.fotos ? [...ev.fotos] : [];
-  renderEntregaFotosList(); // llama updatePortadaSelect internamente
-  // pre-seleccionar portada guardada
-  const portSel = document.getElementById('ent-portada');
-  if(portSel && ev.portadaId) portSel.value = ev.portadaId;
+  renderEntregaFotosList();
   updateEntregaPreview();
   document.querySelector('#page-entregas .settings-section').scrollIntoView({ behavior:'smooth' });
   toast('Entrega cargada — modificá y guardá');
