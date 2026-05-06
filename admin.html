@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+llas<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -1510,6 +1510,13 @@ tr:hover td{background:rgba(255,255,255,0.02);}
               <div style="color:var(--gray);font-size:12px;grid-column:1/-1">Cargando servicios...</div>
             </div>
           </div>
+          <!-- FORMA DE PAGO ITEMS -->
+          <div class="settings-section" style="margin-bottom:16px">
+            <div class="settings-section-title">Forma de pago — Items</div>
+            <div class="ct-pago-list" style="margin-top:12px"></div>
+            <button onclick="ctAddPagoItem()" class="btn-sm" style="margin-top:8px;font-size:10px">+ Agregar ítem</button>
+          </div>
+
           <!-- PRECIO -->
           <div class="settings-section" style="margin-bottom:16px">
             <div class="settings-section-title">Precio total</div>
@@ -5442,6 +5449,13 @@ function _ctBuildPage_UNUSED() {
         </div>
       </div>
 
+      <!-- FORMA DE PAGO ITEMS -->
+      <div class="settings-section" style="margin-bottom:16px">
+        <div class="settings-section-title">Forma de pago — Items</div>
+        <div class="ct-pago-list" style="margin-top:12px"></div>
+        <button onclick="ctAddPagoItem()" class="btn-sm" style="margin-top:8px;font-size:10px">+ Agregar ítem</button>
+      </div>
+
       <!-- PRECIO -->
       <div class="settings-section" style="margin-bottom:16px">
         <div class="settings-section-title">Precio total</div>
@@ -5541,6 +5555,7 @@ function ctSelTipo(tipo) {
   document.getElementById('ct-result').style.display = 'none';
   const cuotaBox = document.getElementById('ct-cuota-val-box');
   if (cuotaBox) cuotaBox.style.display = (tipo === 'XV') ? 'block' : 'none';
+  ctSetPagoDefaults(tipo);
   const url = ctGetUrl();
   if (url) {
     fetch(url, { method:'POST', redirect:'follow', body: JSON.stringify({action:'nextNumber', tipo}) })
@@ -5591,13 +5606,46 @@ function ctFmt(n) {
 
 function ctV(id) { return (document.getElementById(id)?.value || '').trim(); }
 
+// ── FORMA DE PAGO ITEMS ──
+let ctPagoItems = [];
+const CT_PAGO_DEFAULTS = {
+  BODA: [
+    '30% del valor total en concepto de seña y reserva de fecha, al momento de la firma del presente contrato.',
+    '30% del valor total faltante en concepto por la realización de la sesión en exteriores.',
+    '40% del valor total faltante una semana previa al evento.'
+  ],
+  XV: [
+    '30% del valor total en concepto de seña y reserva de fecha, al momento de la firma del presente contrato.',
+    '70% del valor total faltante una semana previa al evento.'
+  ],
+  CUMPLE: [
+    '100% del valor total al momento de la firma del presente contrato.'
+  ]
+};
+function ctSetPagoDefaults(tipo) {
+  ctPagoItems = [...(CT_PAGO_DEFAULTS[tipo] || CT_PAGO_DEFAULTS.CUMPLE)];
+  ctRenderPagoItems();
+}
+function ctRenderPagoItems() {
+  document.querySelectorAll('.ct-pago-list').forEach(list => {
+    list.innerHTML = ctPagoItems.map((item, i) =>
+      '<div style="display:flex;gap:6px;margin-bottom:6px;align-items:center">'
+      + '<input class="form-input" style="flex:1;font-size:12px" value="' + item.replace(/"/g,'&quot;') + '" oninput="ctPagoItems[' + i + ']=this.value">'
+      + '<button onclick="ctRemovePagoItem(' + i + ')" style="background:rgba(255,60,60,0.1);border:1px solid rgba(255,60,60,0.3);color:var(--red);width:28px;height:28px;flex-shrink:0;cursor:pointer;font-size:14px">✕</button>'
+      + '</div>'
+    ).join('');
+  });
+}
+function ctAddPagoItem() { ctPagoItems.push(''); ctRenderPagoItems(); }
+function ctRemovePagoItem(i) { ctPagoItems.splice(i, 1); ctRenderPagoItems(); }
+
 function ctBuildData() {
   const precio = Number(document.getElementById('ct-precio').value);
   if (!precio) { toast('Ingresá el precio total', 'error'); return null; }
   const svcSel = ctSvcData
     .filter(s => document.getElementById(`ct-svc-${s.id}`)?.checked)
     .map(s => ({ descripcion: s.descripcion, pesos: s.pesos }));
-  const base = { tipo: ctTipo, ciudad: ctV('ct-ciudad'), diaFirma: ctV('ct-dia-firma'), servicios: svcSel, precioTotal: precio };
+  const base = { tipo: ctTipo, ciudad: ctV('ct-ciudad'), diaFirma: ctV('ct-dia-firma'), servicios: svcSel, precioTotal: precio, formasPago: ctPagoItems.filter(Boolean) };
   if (ctTipo === 'BODA') return Object.assign(base, {
     novia:     { nombre: ctV('ct-b-novia-nombre'), dni: ctV('ct-b-novia-dni'), telefono: ctV('ct-b-novia-tel'), email: ctV('ct-b-novia-email') },
     novio:     { nombre: ctV('ct-b-novio-nombre'), dni: ctV('ct-b-novio-dni'), domicilio: ctV('ct-b-novio-dom'), telefono: ctV('ct-b-novio-tel'), email: ctV('ct-b-novio-email') },

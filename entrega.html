@@ -54,9 +54,14 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
 @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(8px)} }
 
 /* LOADING */
-#loading-screen { position:fixed; inset:0; z-index:500; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; transition:opacity .6s; }
+#loading-screen { position:fixed; inset:0; z-index:500; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:24px; transition:opacity .6s; }
 #loading-screen.hidden { opacity:0; pointer-events:none; }
-.loading-spinner { width:40px; height:40px; border:2px solid var(--soft); border-top-color:var(--cyan); border-radius:50%; animation:spin .8s linear infinite; }
+#preloader-logo-wrap { display:none; flex-direction:column; align-items:center; gap:20px; }
+#preloader-logo-img { width:110px; height:110px; object-fit:contain; filter:invert(1); border-radius:50%; }
+.preloader-bar { width:160px; height:1px; background:rgba(255,255,255,0.1); overflow:hidden; }
+.preloader-bar-fill { height:100%; background:linear-gradient(90deg,var(--cyan),var(--gold)); animation:preload 2s ease forwards; }
+@keyframes preload { from{width:0} to{width:100%} }
+.loading-spinner { width:36px; height:36px; border:2px solid var(--soft); border-top-color:var(--cyan); border-radius:50%; animation:spin .8s linear infinite; }
 @keyframes spin { to{transform:rotate(360deg)} }
 .loading-text { font-size:11px; letter-spacing:.4em; text-transform:uppercase; color:rgba(255,255,255,.4); }
 
@@ -205,6 +210,10 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
 
 <!-- LOADING -->
 <div id="loading-screen">
+  <div id="preloader-logo-wrap">
+    <img id="preloader-logo-img" src="" alt="Logo">
+    <div class="preloader-bar"><div class="preloader-bar-fill"></div></div>
+  </div>
   <div class="loading-spinner"></div>
   <div class="loading-text">Cargando tu entrega...</div>
 </div>
@@ -253,7 +262,6 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
     <div class="action-bar-right">
       <button class="btn-action btn-dl" id="btn-dl-folder" onclick="descargarCarpeta()" style="display:none">↓ Descargar todo</button>
       <button class="btn-action" id="btn-desel" onclick="deseleccionarTodo()" style="display:none">☐ Deseleccionar todo</button>
-      <button class="btn-action" id="btn-select" onclick="toggleSelectMode()" style="display:none">☐ Seleccionar</button>
       <button class="btn-action gold" id="btn-pedir-album" onclick="abrirPedidoAlbum()" style="display:none">✦ Pedir álbum</button>
     </div>
   </div>
@@ -611,7 +619,6 @@ async function switchTab(tab) {
   exitSelectMode();
   document.getElementById('back-btn').classList.remove('visible');
   document.getElementById('btn-dl-folder').style.display = 'none';
-  document.getElementById('btn-select').style.display = 'none';
   document.getElementById('btn-desel').style.display = 'none';
   document.getElementById('btn-pedir-album').style.display = 'none';
   const _asel = document.getElementById('album-type-selector');
@@ -642,7 +649,6 @@ function renderFotos(items, folderId, label) {
   }
 
   document.getElementById('btn-dl-folder').style.display = 'flex';
-  document.getElementById('btn-select').style.display = 'flex';
   document.getElementById('btn-pedir-album').style.display = 'flex';
   renderAlbumTypeSelector(label);
 
@@ -751,18 +757,15 @@ function toggleLbSelect() {
 function toggleSelectMode() {
   selectMode = !selectMode;
   const grid = document.getElementById('photos-grid');
-  const btn  = document.getElementById('btn-select');
   if(grid) grid.classList.toggle('select-mode', selectMode);
-  btn.classList.toggle('active', selectMode);
-  btn.textContent = selectMode ? '✕ Cancelar' : '☐ Seleccionar';
+  document.getElementById('btn-desel').style.display = selectMode ? 'flex' : 'none';
   if(!selectMode) { selectedPhotos.clear(); updateSelCount(); }
 }
 function exitSelectMode() {
   selectMode = false;
   selectedPhotos.clear();
   updateSelCount();
-  document.getElementById('btn-select').classList.remove('active');
-  document.getElementById('btn-select').textContent = '☐ Seleccionar';
+  document.getElementById('btn-desel').style.display = 'none';
 }
 function toggleSelect(fileId, idx) {
   if(selectedPhotos.has(fileId)) {
@@ -791,8 +794,6 @@ function updateSelCount() {
   const el = document.getElementById('sel-count');
   el.textContent = selectedPhotos.size + (selectedPhotos.size===1 ? ' foto seleccionada' : ' fotos seleccionadas');
   el.classList.toggle('visible', selectedPhotos.size > 0);
-  const desel = document.getElementById('btn-desel');
-  if(desel) desel.style.display = selectedPhotos.size > 0 ? 'flex' : 'none';
 }
 function deseleccionarTodo() {
   selectedPhotos.clear();
@@ -955,7 +956,10 @@ function selectAlbumOpt(idx) {
   document.querySelectorAll('.album-opt').forEach((el, i) => el.classList.toggle('selected', i===idx));
   const max = _albumOptions[idx].maxPhotos;
 
-  // Limpiar selección si supera el nuevo máximo
+  // Activar select mode automáticamente
+  if(!selectMode) toggleSelectMode();
+
+  // Limpiar selección si supera el nuevo máximo al cambiar de tipo
   if(selectedPhotos.size > max) {
     deseleccionarTodo();
     toast('Selección reiniciada. Elegí hasta ' + max + ' fotos.', 'error');
