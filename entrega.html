@@ -37,8 +37,9 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
 .hero-overlay { position:absolute; inset:0; background: radial-gradient(ellipse at 20% 80%, rgba(123,47,212,.45) 0%, transparent 55%), radial-gradient(ellipse at 80% 20%, rgba(0,212,232,.3) 0%, transparent 55%), linear-gradient(to bottom, rgba(10,10,15,.1) 0%, rgba(10,10,15,.75) 100%); }
 .hero-content { position:relative; z-index:2; text-align:center; padding:20px; animation:fadeUp 1.8s cubic-bezier(.16,1,.3,1) forwards; opacity:0; }
 @keyframes fadeUp { from{opacity:0;transform:translateY(40px)} to{opacity:1;transform:translateY(0)} }
-.hero-logo { height:clamp(44px,6vw,72px); width:auto; opacity:.55; filter:brightness(10) drop-shadow(0 0 12px rgba(0,212,232,.15)); display:block; margin:28px auto 0; transition:opacity .4s; }
-.hero-logo:hover { opacity:.8; }
+.hero-logo-seal { width:72px; height:72px; border-radius:50%; overflow:hidden; border:1px solid rgba(255,255,255,.18); margin:28px auto 0; display:none; box-shadow:0 0 24px rgba(0,212,232,.12), 0 0 0 4px rgba(255,255,255,.04); backdrop-filter:blur(2px); transition:opacity .4s; }
+.hero-logo-seal:hover { opacity:.9; }
+.hero-logo { width:100%; height:100%; object-fit:contain; background:rgba(255,255,255,.92); }
 .hero-brand { font-weight:200; font-size:clamp(9px,1.3vw,13px); letter-spacing:.5em; text-transform:uppercase; color:var(--cyan); margin-bottom:28px; opacity:.85; }
 .hero-names { font-family:'Cormorant Garamond',serif; font-weight:300; font-style:italic; font-size:clamp(48px,8vw,100px); line-height:1; color:var(--white); text-shadow:0 0 60px rgba(0,212,232,.2); margin-bottom:14px; }
 .hero-ampersand { color:var(--gold); }
@@ -212,7 +213,9 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
     <div id="hero-tipo" class="hero-tipo"></div>
     <div id="hero-fecha" class="hero-date"></div>
     <div id="hero-frase" class="hero-frase"></div>
-    <img id="hero-logo" class="hero-logo" src="" alt="Logo" style="display:none">
+    <div class="hero-logo-seal" id="hero-logo-seal">
+      <img id="hero-logo" class="hero-logo" src="" alt="Logo">
+    </div>
   </div>
   <div class="scroll-hint">
     <span>Ver fotos</span>
@@ -421,8 +424,10 @@ async function init() {
   // Cargar logo: primero localStorage, luego cloud
   function applyLogo(src) {
     if(!src) return;
-    const img = document.getElementById('hero-logo');
-    img.src = src; img.style.display = 'block';
+    const img  = document.getElementById('hero-logo');
+    const seal = document.getElementById('hero-logo-seal');
+    img.src = src;
+    if(seal) seal.style.display = 'block';
   }
   try { applyLogo(JSON.parse(localStorage.getItem('crd_site_logo'))); } catch(e) {}
   try {
