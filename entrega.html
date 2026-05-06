@@ -418,16 +418,16 @@ async function init() {
     return;
   }
 
-  // Cargar logo desde cloud
+  // Cargar logo: primero localStorage, luego cloud
+  function applyLogo(src) {
+    if(!src) return;
+    const img = document.getElementById('hero-logo');
+    img.src = src; img.style.display = 'block';
+  }
+  try { applyLogo(JSON.parse(localStorage.getItem('crd_site_logo'))); } catch(e) {}
   try {
-    const logoRaw = await fetch(CF_URL + '/crd_site_logo').then(r => r.text()).catch(() => null);
-    if(logoRaw) {
-      const logoSrc = JSON.parse(logoRaw);
-      if(logoSrc) {
-        const img = document.getElementById('hero-logo');
-        img.src = logoSrc; img.style.display = 'block';
-      }
-    }
+    const raw = await fetch(CF_URL + '/crd_site_logo').then(r => r.text()).catch(() => null);
+    if(raw) { const src = JSON.parse(raw); if(src) { localStorage.setItem('crd_site_logo', JSON.stringify(src)); applyLogo(src); } }
   } catch(e) {}
 
   // Cargar estructura del evento desde Drive
