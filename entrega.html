@@ -531,10 +531,38 @@ let tabDefs = [];
 function renderTabs(tabs) {
   tabDefs = tabs;
   const wrap = document.getElementById('tabs-wrap');
-  if(tabs.length <= 1) { wrap.style.display = 'none'; return; }
-  wrap.innerHTML = tabs.map((t, i) =>
-    `<button class="tab-btn${i===0?' active':''}" onclick="switchTab(tabDefs[${i}])" id="tab-${t.key}">${t.label}</button>`
-  ).join('');
+  if(!tabs.length) { wrap.style.display = 'none'; return; }
+
+  const fotoTabs  = tabs.filter(t => t.type === 'fotos');
+  const videoTabs = tabs.filter(t => t.type === 'videos');
+  const hasBoth   = fotoTabs.length > 0 && videoTabs.length > 0;
+
+  let html = '';
+
+  if(fotoTabs.length > 0) {
+    if(hasBoth) html += `<span style="font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 14px;align-self:center;white-space:nowrap">📷</span>`;
+    html += fotoTabs.map((t, i) => {
+      const globalIdx = tabs.indexOf(t);
+      return `<button class="tab-btn${i===0&&globalIdx===0?' active':''}" onclick="switchTab(tabDefs[${globalIdx}])" id="tab-${t.key}">${t.label}</button>`;
+    }).join('');
+  }
+
+  if(hasBoth) {
+    html += `<span style="width:1px;background:rgba(255,255,255,.12);align-self:stretch;flex-shrink:0"></span>`;
+    html += `<span style="font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 14px;align-self:center;white-space:nowrap">🎬</span>`;
+  }
+
+  if(videoTabs.length > 0) {
+    html += videoTabs.map((t) => {
+      const globalIdx = tabs.indexOf(t);
+      return `<button class="tab-btn" onclick="switchTab(tabDefs[${globalIdx}])" id="tab-${t.key}" style="color:rgba(0,212,232,.5)">${t.label}</button>`;
+    }).join('');
+  }
+
+  wrap.style.display = 'flex';
+  wrap.style.alignItems = 'center';
+  wrap.innerHTML = html;
+  wrap.style.borderRadius = '40px';
 }
 
 async function switchTab(tab) {
