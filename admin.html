@@ -441,12 +441,11 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <div class="section-header">
           <h2 class="section-h">Gestión de Portfolio</h2>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn-add" onclick="openCloudinaryWidget()" style="background:var(--gold);color:var(--black);display:flex;align-items:center;gap:8px">
-              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-              Subir fotos
+            <button class="btn-add" onclick="openDriveBrowser()" style="background:var(--gold);color:var(--black);display:flex;align-items:center;gap:8px">
+              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+              Agregar desde Drive
             </button>
-            <button class="btn-sm" onclick="openPortfolioModal()">+ Manual</button>
-            <button class="btn-sm" onclick="openCloudinaryBrowser()" style="border-color:var(--cyan);color:var(--cyan)">☁ Mis fotos</button>
+            <button class="btn-sm" onclick="openPortfolioModal()">+ URL manual</button>
           </div>
         </div>
         <!-- Bulk delete toolbar -->
@@ -5009,7 +5008,22 @@ function dbSelectFile(fileId, fileName) {
     closeDriveBrowser();
     return;
   }
-  navigator.clipboard.writeText(url).then(() => toast('URL copiada'));
+  // Sin callback → agregar al portfolio directamente
+  const items = S.get('crd_portfolio') || [];
+  if(items.find(i => i.driveId === fileId)) {
+    toast('Esta foto ya está en el portfolio', 'error');
+    return;
+  }
+  items.push({
+    id: Date.now() + Math.random(),
+    url,
+    title: fileName.replace(/\.[^.]+$/, ''),
+    category: (typeof portfolioFilter !== 'undefined' && portfolioFilter !== 'all') ? portfolioFilter : 'casamiento',
+    driveId: fileId
+  });
+  S.set('crd_portfolio', items);
+  renderPortfolioAdmin();
+  toast('Foto agregada al portfolio ✓');
 }
 
 // == ENTREGAS ==================================================
