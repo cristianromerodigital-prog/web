@@ -173,6 +173,11 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
 /* ── PORTFOLIO GRID ADMIN ── */
 .portfolio-admin-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+/* ── DRIVE BROWSER ITEMS ── */
+.db-item{cursor:pointer;position:relative;aspect-ratio:1;overflow:hidden;border:2px solid transparent;border-radius:4px;background:var(--black3);transition:border-color .15s}
+.db-item:hover{border-color:rgba(255,255,255,0.25)}
+.db-item.db-sel{border-color:var(--gold)!important}
+.db-check{position:absolute;top:4px;right:4px;background:var(--gold);color:var(--black);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;pointer-events:none;z-index:2}
 .portfolio-admin-item{position:relative;aspect-ratio:1;background:var(--black3);overflow:hidden;border:1px solid rgba(255,255,255,0.05);}
 .portfolio-admin-item img{width:100%;height:100%;object-fit:cover;}
 .portfolio-admin-item-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.7);opacity:0;transition:opacity 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;}
@@ -1730,6 +1735,13 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       <button onclick="dbLoadFolder(null)" class="btn-add" style="white-space:nowrap">Cargar</button>
     </div>
     <div id="db-breadcrumb" style="font-size:10px;color:var(--gray);margin-bottom:12px;min-height:16px;letter-spacing:1px"></div>
+    <div id="db-selection-bar" style="display:none;align-items:center;justify-content:space-between;background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);padding:10px 16px;margin-bottom:12px;border-radius:2px">
+      <span id="db-sel-count" style="font-size:12px;color:var(--gold);letter-spacing:1px"></span>
+      <div style="display:flex;gap:8px">
+        <button onclick="dbClearSelection()" style="background:none;border:1px solid rgba(255,255,255,0.2);color:var(--gray);padding:6px 14px;font-size:10px;letter-spacing:1px;cursor:pointer;font-family:inherit">Limpiar</button>
+        <button onclick="dbConfirmSelection()" style="background:var(--gold);color:var(--black);border:none;padding:6px 18px;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:inherit;font-weight:600">Agregar al portfolio</button>
+      </div>
+    </div>
     <div id="db-loading" style="text-align:center;padding:40px;color:var(--gray);font-size:11px;letter-spacing:2px">Ingresa una carpeta para comenzar</div>
     <div id="db-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px"></div>
   </div>
@@ -4929,14 +4941,20 @@ function cerrarSelectorServicios() {
 
 let _dbStack = [];
 let _dbCurrent = '';
+const _dbSelected = new Map(); // fileId → {name, url}
 
 function openDriveBrowser(callback) {
   if(callback) pendingPhotoCallback = callback;
+  _dbSelected.clear();
+  dbUpdateSelectionBar();
   document.getElementById('drive-browser-modal').style.display = 'block';
   const last = localStorage.getItem('crd_last_drive_folder');
   if(last && !_dbCurrent) { document.getElementById('db-folder-input').value = last; dbLoadFolder(last); }
 }
-function closeDriveBrowser() { document.getElementById('drive-browser-modal').style.display = 'none'; }
+function closeDriveBrowser() {
+  _dbSelected.clear();
+  document.getElementById('drive-browser-modal').style.display = 'none';
+}
 
 function dbExtractId(input) {
   const m = input.match(/folders\/([a-zA-Z0-9_-]+)/);
@@ -4975,8 +4993,10 @@ function dbRenderGrid(items) {
         + '</div>';
     }
     const thumb = 'https://drive.google.com/thumbnail?id=' + item.id + '&sz=w200';
-    return '<div onclick="dbSelectFile(\'' + item.id + '\',\'' + item.name.replace(/'/g,"\\'") + '\')" style="position:relative;aspect-ratio:1;overflow:hidden;border:2px solid transparent;border-radius:4px;cursor:pointer;background:var(--black3);transition:border-color .2s" onmouseover="this.style.borderColor=\'var(--gold)\'" onmouseout="this.style.borderColor=\'transparent\'">'
+    const isSel = _dbSelected.has(item.id);
+    return '<div id="db-item-' + item.id + '" class="db-item' + (isSel ? ' db-sel' : '') + '" onclick="dbSelectFile(\'' + item.id + '\',\'' + item.name.replace(/'/g,"\\'") + '\')">'
       + '<img src="' + thumb + '" style="width:100%;height:100%;object-fit:cover" loading="lazy">'
+      + (isSel ? '<div class="db-check">✓</div>' : '')
       + '<div style="position:absolute;bottom:0;left:0;right:0;padding:4px;background:rgba(0,0,0,.7);font-size:8px;color:rgba(255,255,255,.6);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + item.name + '</div>'
       + '</div>';
   }).join('');
@@ -5008,23 +5028,66 @@ function dbSelectFile(fileId, fileName) {
     closeDriveBrowser();
     return;
   }
-  // Sin callback → agregar al portfolio directamente
-  const items = S.get('crd_portfolio') || [];
-  if(items.find(i => i.driveId === fileId)) {
-    toast('Esta foto ya está en el portfolio', 'error');
-    return;
+  // Multi-select: toggle
+  if(_dbSelected.has(fileId)) {
+    _dbSelected.delete(fileId);
+  } else {
+    _dbSelected.set(fileId, {name: fileName, url});
   }
-  items.push({
-    id: Date.now() + Math.random(),
-    url,
-    title: fileName.replace(/\.[^.]+$/, ''),
-    category: (typeof portfolioFilter !== 'undefined' && portfolioFilter !== 'all') ? portfolioFilter : 'casamiento',
-    driveId: fileId
+  const el = document.getElementById('db-item-' + fileId);
+  if(el) {
+    const sel = _dbSelected.has(fileId);
+    el.classList.toggle('db-sel', sel);
+    const existing = el.querySelector('.db-check');
+    if(sel && !existing) {
+      const c = document.createElement('div');
+      c.className = 'db-check';
+      c.textContent = '✓';
+      el.appendChild(c);
+    } else if(!sel && existing) {
+      existing.remove();
+    }
+  }
+  dbUpdateSelectionBar();
+}
+
+function dbUpdateSelectionBar() {
+  const bar = document.getElementById('db-selection-bar');
+  if(!bar) return;
+  const n = _dbSelected.size;
+  bar.style.display = n ? 'flex' : 'none';
+  document.getElementById('db-sel-count').textContent = n + ' foto' + (n !== 1 ? 's' : '') + ' seleccionada' + (n !== 1 ? 's' : '');
+}
+
+function dbClearSelection() {
+  _dbSelected.clear();
+  document.querySelectorAll('.db-item.db-sel').forEach(el => {
+    el.classList.remove('db-sel');
+    const c = el.querySelector('.db-check');
+    if(c) c.remove();
   });
-  S.set('crd_portfolio', items);
-  renderPortfolioAdmin();
+  dbUpdateSelectionBar();
+}
+
+function dbConfirmSelection() {
+  if(!_dbSelected.size) return;
+  const items = S.get('crd_portfolio') || [];
+  let added = 0;
+  _dbSelected.forEach(({name, url}, fileId) => {
+    if(items.find(i => i.driveId === fileId)) return;
+    items.push({
+      id: Date.now() + Math.random(),
+      url,
+      title: name.replace(/\.[^.]+$/, ''),
+      category: (portfolioFilter !== 'all') ? portfolioFilter : 'casamiento',
+      driveId: fileId
+    });
+    added++;
+  });
+  const skipped = _dbSelected.size - added;
+  if(added) { S.set('crd_portfolio', items); renderPortfolioAdmin(); }
   closeDriveBrowser();
-  toast('Foto agregada al portfolio ✓');
+  toast(added + ' foto' + (added !== 1 ? 's' : '') + ' agregada' + (added !== 1 ? 's' : '') + ' ✓' + (skipped ? ' · ' + skipped + ' ya existían' : ''));
 }
 
 // == ENTREGAS ==================================================
