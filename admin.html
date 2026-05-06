@@ -920,47 +920,48 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           </div>
         </div>
         <div class="settings-section">
-          <div class="settings-section-title">🖼️ Logo del Sitio</div>
-          <p style="font-size:12px;color:var(--gray2);margin-bottom:20px;line-height:1.6">Subí dos versiones del logo — uno para invitaciones con fondo oscuro y otro para fondo claro.</p>
-          <!-- Logo fondo oscuro -->
-          <div style="margin-bottom:24px">
-            <div class="form-label" style="font-size:11px;letter-spacing:2px;color:var(--cyan);margin-bottom:12px">LOGO PARA FONDO OSCURO (paleta negra)</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px">
-              <div style="background:#111;border:1px solid rgba(255,255,255,0.07);padding:16px;display:flex;align-items:center;justify-content:center;min-height:90px">
-                <img id="logo-preview-img" style="max-height:60px;max-width:100%;object-fit:contain;display:none" alt="">
-                <span id="logo-preview-empty" style="font-size:11px;color:var(--gray);letter-spacing:1px">Sin logo</span>
-              </div>
-              <div style="border:2px dashed rgba(255,255,255,0.12);padding:20px;text-align:center;cursor:pointer;position:relative;background:var(--black3)" ondragover="event.preventDefault();this.style.borderColor='var(--gold)'" ondragleave="this.style.borderColor='rgba(255,255,255,0.12)'" ondrop="handleLogoDrop(event)">
-                <input type="file" id="logo-file-input" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="handleLogoUpload(this)">
-                <p style="font-size:11px;color:var(--gray2)">Arrastrá o hacé clic</p>
-              </div>
+          <div class="settings-section-title">Logo del Sitio</div>
+          <p style="font-size:12px;color:var(--gray2);margin-bottom:20px;line-height:1.6">Un solo logo. El color se adapta con CSS filter. Se aplica en sitio, presupuesto e invitaciones.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+            <div style="background:#111;border:1px solid rgba(255,255,255,0.07);padding:12px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:90px;gap:8px">
+              <span style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.3);text-transform:uppercase;align-self:flex-start">Original (fondo oscuro)</span>
+              <img id="logo-preview-img" style="max-height:55px;max-width:100%;object-fit:contain;display:none" alt="">
+              <span id="logo-preview-empty" style="font-size:11px;color:var(--gray);letter-spacing:1px">Sin logo</span>
             </div>
-            <div style="display:flex;gap:8px">
-              <button class="btn-add" onclick="saveLogo()">Guardar logo oscuro</button>
-              <button class="btn-sm btn-danger" onclick="clearLogo()">Quitar</button>
+            <div style="background:#f0ede8;border:1px solid rgba(0,0,0,0.1);padding:12px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:90px;gap:8px">
+              <span style="font-size:9px;letter-spacing:2px;color:rgba(0,0,0,0.3);text-transform:uppercase;align-self:flex-start">Con filtro (fondo claro)</span>
+              <img id="logo-filter-preview" style="max-height:55px;max-width:100%;object-fit:contain;display:none" alt="">
+              <span id="logo-filter-empty" style="font-size:11px;color:#aaa;letter-spacing:1px">Sin logo</span>
             </div>
           </div>
-          <!-- Logo fondo claro -->
-          <div style="margin-bottom:16px">
-            <div class="form-label" style="font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:12px">LOGO PARA FONDO CLARO (paleta blanca / champagne)</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px">
-              <div style="background:#f0f0f0;border:1px solid rgba(0,0,0,0.1);padding:16px;display:flex;align-items:center;justify-content:center;min-height:90px">
-                <img id="logo-light-preview-img" style="max-height:60px;max-width:100%;object-fit:contain;display:none" alt="">
-                <span id="logo-light-preview-empty" style="font-size:11px;color:#999;letter-spacing:1px">Sin logo</span>
-              </div>
-              <div style="border:2px dashed rgba(255,255,255,0.12);padding:20px;text-align:center;cursor:pointer;position:relative;background:var(--black3)" ondragover="event.preventDefault();this.style.borderColor='var(--gold)'" ondragleave="this.style.borderColor='rgba(255,255,255,0.12)'" ondrop="handleLogoLightDrop(event)">
-                <input type="file" id="logo-light-file-input" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="handleLogoLightUpload(this)">
-                <p style="font-size:11px;color:var(--gray2)">Arrastrá o hacé clic</p>
-              </div>
-            </div>
+          <div class="form-group" style="margin-bottom:16px">
+            <label class="form-label">Filtro CSS para fondo claro (invitaciones)</label>
             <div style="display:flex;gap:8px">
-              <button class="btn-add" onclick="saveLogoLight()">Guardar logo claro</button>
-              <button class="btn-sm btn-danger" onclick="clearLogoLight()">Quitar</button>
+              <select class="form-input" id="logo-filter-select" onchange="previewLogoFilter()" style="flex:1;font-size:12px">
+                <option value="">Sin filtro (original)</option>
+                <option value="brightness(0) invert(1)">Forzar blanco</option>
+                <option value="brightness(0)">Forzar negro</option>
+                <option value="invert(1)">Invertir</option>
+              </select>
+              <input class="form-input" id="logo-filter-custom" placeholder="CSS custom..." oninput="previewLogoFilter()" style="font-size:11px;flex:1">
             </div>
           </div>
-          <p style="font-size:11px;color:var(--gray);margin-top:12px;letter-spacing:1px">
-            💡 El logo se sincroniza automáticamente a todos los dispositivos via Cloudflare. Se aplica en el sitio, en el presupuesto y en las invitaciones.
-          </p>
+          <div class="form-group" style="margin-bottom:12px">
+            <label class="form-label">Logo desde Drive o URL</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input class="form-input" id="logo-url-input" placeholder="URL de imagen o ID de Drive..." style="font-size:11px;flex:1" oninput="previewLogoFromUrl(this.value)">
+              <button class="btn-sm" onclick="pickLogoDrive()">Drive</button>
+            </div>
+          </div>
+          <div style="border:2px dashed rgba(255,255,255,0.08);padding:12px 16px;cursor:pointer;position:relative;background:var(--black3);margin-bottom:16px;text-align:center" ondragover="event.preventDefault();this.style.borderColor='var(--gold)'" ondragleave="this.style.borderColor='rgba(255,255,255,0.08)'" ondrop="handleLogoDrop(event)">
+            <input type="file" id="logo-file-input" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="handleLogoUpload(this)">
+            <p style="font-size:11px;color:var(--gray2);pointer-events:none">O arrastrá / clic para subir archivo local (base64)</p>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn-add" onclick="saveLogoConfig()">Guardar logo</button>
+            <button class="btn-sm btn-danger" onclick="clearLogo()">Quitar</button>
+          </div>
+          <p style="font-size:11px;color:var(--gray);margin-top:12px;letter-spacing:1px">Se sincroniza via Cloudflare a todos los dispositivos.</p>
         </div>
         <button class="btn-add" onclick="saveSettings()">Guardar configuración</button>
 
@@ -1721,7 +1722,18 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           </div>
         </div>
         <div class="settings-section">
-          <div class="settings-section-title">Entregas guardadas</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+            <div class="settings-section-title" style="margin-bottom:0">Gestión de pedidos</div>
+            <div id="ent-summary" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+          </div>
+          <div style="display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,0.07);margin-bottom:20px;overflow-x:auto">
+            <button class="tab active" id="ent-tab-all" onclick="filterEntregas('all')">Todos</button>
+            <button class="tab" id="ent-tab-edicion" onclick="filterEntregas('En edición')">En edición</button>
+            <button class="tab" id="ent-tab-listo" onclick="filterEntregas('Listo p/enviar')">Listo p/enviar</button>
+            <button class="tab" id="ent-tab-enviado" onclick="filterEntregas('Enviado')">Enviado</button>
+            <button class="tab" id="ent-tab-entregado" onclick="filterEntregas('Entregado')">Entregado</button>
+            <button class="tab" id="ent-tab-revisiones" onclick="filterEntregas('Con revisiones')">Con revisiones</button>
+          </div>
           <div id="ent-list"><div style="color:var(--gray);font-size:12px">No hay entregas guardadas aun.</div></div>
         </div>
       </div>
@@ -3124,14 +3136,118 @@ function clearLogo() {
   toast('Logo quitado');
 }
 
+function driveIdToUrl(input) {
+  const m = input.match(/\/d\/([a-zA-Z0-9_-]+)/) || input.match(/id=([a-zA-Z0-9_-]+)/);
+  const id = m ? m[1] : input.trim();
+  return 'https://lh3.googleusercontent.com/d/' + id;
+}
+function saveLogoUrl(variant) {
+  const inputId = variant === 'light' ? 'logo-light-url' : 'logo-dark-url';
+  const raw = document.getElementById(inputId)?.value.trim();
+  if(!raw) { toast('Ingresá una URL o ID de Drive','error'); return; }
+  const url = raw.startsWith('http') ? raw : driveIdToUrl(raw);
+  if(variant === 'light') {
+    S.set('crd_site_logo_light', url);
+    const img = document.getElementById('logo-light-preview-img');
+    const empty = document.getElementById('logo-light-preview-empty');
+    if(img) { img.src=url; img.style.display='block'; }
+    if(empty) empty.style.display='none';
+  } else {
+    S.set('crd_site_logo', url);
+    applySidebarLogo(url);
+    const img = document.getElementById('logo-preview-img');
+    const empty = document.getElementById('logo-preview-empty');
+    if(img) { img.src=url; img.style.display='block'; }
+    if(empty) empty.style.display='none';
+  }
+  document.getElementById(inputId).value = '';
+  toast('Logo guardado desde URL ✓');
+}
+function pickLogoDrive() {
+  openDriveBrowser(selectedUrl => {
+    const m = selectedUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    const url = m ? 'https://lh3.googleusercontent.com/d/'+m[1] : selectedUrl;
+    const inp = document.getElementById('logo-url-input');
+    if(inp) inp.value = url;
+    previewLogoFromUrl(url);
+    toast('URL lista — guardá con "Guardar logo"');
+  });
+}
+function previewLogoFromUrl(url) {
+  if(!url) return;
+  const raw = url.trim();
+  const resolved = raw.startsWith('http') ? raw : driveIdToUrl(raw);
+  const img = document.getElementById('logo-preview-img');
+  const empty = document.getElementById('logo-preview-empty');
+  if(img) { img.src = resolved; img.style.display = 'block'; }
+  if(empty) empty.style.display = 'none';
+  previewLogoFilter();
+}
+function previewLogoFilter() {
+  const sel = document.getElementById('logo-filter-select');
+  const custom = document.getElementById('logo-filter-custom');
+  const filter = (custom && custom.value.trim()) ? custom.value.trim() : (sel ? sel.value : '');
+  const src = document.getElementById('logo-preview-img')?.src;
+  const fp = document.getElementById('logo-filter-preview');
+  const fe = document.getElementById('logo-filter-empty');
+  if(fp && src && !src.endsWith(location.href)) {
+    fp.src = src;
+    fp.style.filter = filter;
+    fp.style.display = 'block';
+    if(fe) fe.style.display = 'none';
+  }
+}
+function saveLogoConfig() {
+  const urlInp = document.getElementById('logo-url-input');
+  const raw = urlInp ? urlInp.value.trim() : '';
+  const sel = document.getElementById('logo-filter-select');
+  const custom = document.getElementById('logo-filter-custom');
+  const filter = (custom && custom.value.trim()) ? custom.value.trim() : (sel ? sel.value : '');
+  let logoSrc = '';
+  if(raw) {
+    logoSrc = raw.startsWith('http') ? raw : driveIdToUrl(raw);
+  } else if(pendingLogoData) {
+    logoSrc = pendingLogoData;
+    pendingLogoData = null;
+  } else {
+    const existing = S.get('crd_site_logo');
+    if(!existing) { toast('Ingresá una URL o subí un archivo','error'); return; }
+    // Solo actualizar el filtro
+    S.set('crd_site_logo_filter', filter);
+    toast('Filtro guardado ✓');
+    previewLogoFilter();
+    return;
+  }
+  S.set('crd_site_logo', logoSrc);
+  S.set('crd_site_logo_filter', filter);
+  applySidebarLogo(logoSrc);
+  if(urlInp) urlInp.value = '';
+  loadLogoPreview();
+  toast('Logo guardado ✓');
+}
 function loadLogoPreview() {
   const logo = S.get('crd_site_logo');
+  const filter = S.get('crd_site_logo_filter') || '';
   const img = document.getElementById('logo-preview-img');
   const empty = document.getElementById('logo-preview-empty');
   if(!img) return;
-  if(logo) { img.src=logo; img.style.display='block'; if(empty) empty.style.display='none'; }
-  else { img.style.display='none'; if(empty) empty.style.display='block'; }
-  if(logo) applySidebarLogo(logo);
+  if(logo) {
+    img.src = logo; img.style.display = 'block';
+    if(empty) empty.style.display = 'none';
+    applySidebarLogo(logo);
+    // restore filter select
+    const sel = document.getElementById('logo-filter-select');
+    const custom = document.getElementById('logo-filter-custom');
+    if(sel && custom) {
+      const presets = ['','brightness(0) invert(1)','brightness(0)','invert(1)'];
+      if(presets.includes(filter)) { sel.value = filter; custom.value = ''; }
+      else { sel.value = ''; custom.value = filter; }
+    }
+    previewLogoFilter();
+  } else {
+    img.style.display = 'none';
+    if(empty) empty.style.display = 'block';
+  }
 }
 
 // ── HERO VIDEO ──
@@ -4223,7 +4339,8 @@ function readInviteForm() {
       color_esquema: document.getElementById('inv-color-esquema').value,
       estilo_aero: document.getElementById('inv-estilo-aero').checked,
       logo_dark: S.get('crd_site_logo') || '',
-      logo_light: S.get('crd_site_logo_light') || ''
+      logo_light: S.get('crd_site_logo') || '',
+      logo_filter: S.get('crd_site_logo_filter') || ''
     },
     slug: document.getElementById('inv-slug').value.trim() || toSlug(document.getElementById('inv-novios').value.trim()) || 'invitacion'
   };
@@ -5143,11 +5260,13 @@ function guardarEntrega() {
   const fid = entFolderId(raw);
   if(!fid) { toast('Ingresa la carpeta de Drive', 'error'); return; }
   const dlEl2 = document.getElementById('ent-allow-dl');
-  const ev = { id: Date.now().toString(36), folderId: fid, nombres: document.getElementById('ent-nombres').value.trim() || 'Entrega', fecha: document.getElementById('ent-fecha').value.trim(), tipo: document.getElementById('ent-tipo').value, frase: document.getElementById('ent-frase').value.trim(), portadaId: document.getElementById('ent-portada').value.trim(), allowDownload: dlEl2 ? dlEl2.checked : true, creado: new Date().toLocaleDateString('es-AR') };
+  const ev = { id: Date.now().toString(36), folderId: fid, nombres: document.getElementById('ent-nombres').value.trim() || 'Entrega', fecha: document.getElementById('ent-fecha').value.trim(), tipo: document.getElementById('ent-tipo').value, frase: document.getElementById('ent-frase').value.trim(), portadaId: document.getElementById('ent-portada').value.trim(), allowDownload: dlEl2 ? dlEl2.checked : true, creado: new Date().toLocaleDateString('es-AR'), estado: 'En edición', notas: '' };
   const entregas = getEntregas();
   if(_editingEntregaIdx >= 0 && entregas[_editingEntregaIdx]) {
     ev.id = entregas[_editingEntregaIdx].id;
     ev.creado = entregas[_editingEntregaIdx].creado;
+    ev.estado = entregas[_editingEntregaIdx].estado || 'En edición';
+    ev.notas = entregas[_editingEntregaIdx].notas || '';
     entregas[_editingEntregaIdx] = ev;
     _editingEntregaIdx = -1;
   } else {
@@ -5161,23 +5280,107 @@ function guardarEntrega() {
   document.getElementById('ent-link-preview').textContent = 'Completa los campos para generar el link';
   document.getElementById('ent-preview-btn').style.display = 'none';
 }
+const _ENT_COLORS = {'En edición':'#f5a623','Listo p/enviar':'#00d4e8','Enviado':'#7b2fd4','Entregado':'#4caf50','Con revisiones':'#e05555'};
+const _ENT_ESTADOS = ['En edición','Listo p/enviar','Enviado','Entregado','Con revisiones'];
+let _entregasFilter = 'all';
+
+function filterEntregas(estado) {
+  _entregasFilter = estado;
+  // update tabs
+  const tabMap = {'all':'all','En edición':'edicion','Listo p/enviar':'listo','Enviado':'enviado','Entregado':'entregado','Con revisiones':'revisiones'};
+  document.querySelectorAll('[id^="ent-tab-"]').forEach(t => t.classList.remove('active'));
+  const activeId = 'ent-tab-' + (tabMap[estado] || estado);
+  const activeEl = document.getElementById(activeId);
+  if(activeEl) activeEl.classList.add('active');
+  renderEntregasList();
+}
+
 function renderEntregasList() {
   const entregas = getEntregas();
   const el = document.getElementById('ent-list');
   if(!el) return;
-  if(!entregas.length) { el.innerHTML = '<div style="color:var(--gray);font-size:12px">No hay entregas guardadas aun.</div>'; return; }
-  el.innerHTML = entregas.map((ev, i) => {
+  // summary badges
+  const sumEl = document.getElementById('ent-summary');
+  if(sumEl) {
+    const counts = {};
+    entregas.forEach(e => { const s = e.estado||'En edición'; counts[s]=(counts[s]||0)+1; });
+    sumEl.innerHTML = _ENT_ESTADOS.filter(s=>counts[s]).map(s =>
+      '<span style="font-size:10px;padding:3px 10px;border-radius:20px;border:1px solid '+_ENT_COLORS[s]+';color:'+_ENT_COLORS[s]+';letter-spacing:.5px;cursor:pointer" onclick="filterEntregas(\''+s+'\')">'+s+' '+counts[s]+'</span>'
+    ).join('') + (entregas.length ? '<span style="font-size:10px;color:var(--gray);padding:3px 4px">'+entregas.length+' total</span>' : '');
+  }
+  // filter
+  const visible = _entregasFilter === 'all' ? entregas : entregas.filter(e => (e.estado||'En edición') === _entregasFilter);
+  if(!visible.length) { el.innerHTML = '<div style="color:var(--gray);font-size:12px">No hay entregas'+(entregas.length?' con este estado':' guardadas aun')+'.</div>'; return; }
+  el.innerHTML = visible.map((ev) => {
+    const realIdx = entregas.indexOf(ev);
     const url = buildEntregaUrl(ev);
-    const safeUrl = url.replace(/'/g, "\\'");
-    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);margin-bottom:8px;gap:12px;flex-wrap:wrap">'
-      + '<div><div style="font-size:13px;font-weight:500;color:var(--white)">' + ev.nombres + '</div><div style="font-size:10px;color:var(--gray);letter-spacing:1px;margin-top:2px">' + ev.tipo + ' - ' + ev.fecha + ' - creado ' + ev.creado + '</div></div>'
-      + '<div style="display:flex;gap:8px;flex-shrink:0">'
-      + '<button onclick="navigator.clipboard.writeText(\'' + safeUrl + '\').then(()=>toast(\'Link copiado\'))" class="btn-sm" style="font-size:10px">Copiar link</button>'
-      + '<a href="' + url + '" target="_blank" class="btn-sm" style="font-size:10px">Abrir</a>'
-      + '<button onclick="editarEntrega(' + i + ')" class="btn-sm" style="font-size:10px">Editar</button>'
-      + '<button onclick="eliminarEntrega(' + i + ')" class="btn-sm" style="font-size:10px;color:var(--red);border-color:rgba(224,85,85,.3)">Eliminar</button>'
-      + '</div></div>';
+    const safeUrl = url.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const est = ev.estado || 'En edición';
+    const ec = _ENT_COLORS[est] || 'rgba(255,255,255,0.5)';
+    const notasPrev = ev.notas ? (ev.notas.length > 70 ? ev.notas.substring(0,70)+'…' : ev.notas) : '';
+    const opts = _ENT_ESTADOS.map(s => '<option value="'+s+'"'+(est===s?' selected':'')+'>'+s+'</option>').join('');
+    return '<div id="ent-card-'+ev.id+'" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);margin-bottom:8px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:12px 14px;gap:12px;flex-wrap:wrap">'
+        +'<div style="flex:1;min-width:180px">'
+          +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">'
+            +'<span style="width:7px;height:7px;border-radius:50%;background:'+ec+';flex-shrink:0;display:inline-block"></span>'
+            +'<span style="font-size:13px;font-weight:500;color:var(--white)">'+ev.nombres+'</span>'
+          +'</div>'
+          +'<div style="font-size:10px;color:var(--gray);letter-spacing:1px;padding-left:15px">'+ev.tipo+' — '+ev.fecha+(ev.creado?' — creado '+ev.creado:'')+'</div>'
+          +(notasPrev?'<div style="font-size:11px;color:rgba(255,255,255,.4);padding-left:15px;margin-top:4px;font-style:italic">'+notasPrev+'</div>':'')
+        +'</div>'
+        +'<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0">'
+          +'<select onchange="setEntregaEstado(\''+ev.id+'\',this.value)" style="background:rgba(0,0,0,.5);border:1px solid '+ec+';color:'+ec+';padding:4px 8px;font-size:10px;letter-spacing:.5px;font-family:inherit;outline:none;cursor:pointer">'+opts+'</select>'
+          +'<button onclick="toggleEntregaNotas(\''+ev.id+'\')" class="btn-sm" style="font-size:10px">'+(ev.notas?'Notas':'+ Nota')+'</button>'
+          +'<button onclick="navigator.clipboard.writeText(\''+safeUrl+'\').then(()=>toast(\'Link copiado\'))" class="btn-sm" style="font-size:10px">Copiar link</button>'
+          +'<a href="'+url+'" target="_blank" class="btn-sm" style="font-size:10px">Abrir</a>'
+          +'<button onclick="editarEntrega('+realIdx+')" class="btn-sm" style="font-size:10px">Editar</button>'
+          +'<button onclick="eliminarEntrega('+realIdx+')" class="btn-sm" style="font-size:10px;color:var(--red);border-color:rgba(224,85,85,.3)">Eliminar</button>'
+        +'</div>'
+      +'</div>'
+      +'<div id="ent-notas-'+ev.id+'" style="display:none;border-top:1px solid rgba(255,255,255,0.04);padding:10px 14px 12px">'
+        +'<textarea id="ent-notas-txt-'+ev.id+'" style="width:100%;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.08);color:var(--white);font-family:inherit;font-size:12px;padding:10px;resize:vertical;min-height:80px;letter-spacing:.5px" placeholder="Anotaciones internas (no visibles al cliente)...">'+(ev.notas||'')+'</textarea>'
+        +'<div style="display:flex;gap:8px;margin-top:8px">'
+          +'<button onclick="setEntregaNotas(\''+ev.id+'\')" class="btn-sm" style="font-size:10px">Guardar</button>'
+          +'<button onclick="toggleEntregaNotas(\''+ev.id+'\')" class="btn-sm" style="font-size:10px;color:var(--gray)">Cerrar</button>'
+        +'</div>'
+      +'</div>'
+    +'</div>';
   }).join('');
+}
+function setEntregaEstado(id, estado) {
+  const entregas = getEntregas();
+  const ev = entregas.find(e => e.id === id);
+  if(!ev) return;
+  ev.estado = estado;
+  setEntregas(entregas);
+  const ec = _ENT_COLORS[estado] || 'rgba(255,255,255,0.5)';
+  const card = document.getElementById('ent-card-'+id);
+  if(card) {
+    const dot = card.querySelector('span[style*="border-radius:50%"]');
+    if(dot) dot.style.background = ec;
+    const sel = card.querySelector('select');
+    if(sel) { sel.style.borderColor = ec; sel.style.color = ec; }
+  }
+  toast('Estado: '+estado);
+}
+function setEntregaNotas(id) {
+  const entregas = getEntregas();
+  const ev = entregas.find(e => e.id === id);
+  if(!ev) return;
+  const txtEl = document.getElementById('ent-notas-txt-'+id);
+  if(!txtEl) return;
+  ev.notas = txtEl.value;
+  setEntregas(entregas);
+  renderEntregasList();
+  const panel = document.getElementById('ent-notas-'+id);
+  if(panel) panel.style.display = 'block';
+  toast('Nota guardada');
+}
+function toggleEntregaNotas(id) {
+  const el = document.getElementById('ent-notas-'+id);
+  if(!el) return;
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
 let _editingEntregaIdx = -1;
 function editarEntrega(idx) {
