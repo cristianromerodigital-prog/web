@@ -5552,8 +5552,8 @@ function loadEntregasPage() {
   updateEntregaPreview();
   // Cargar pedidos frescos desde Cloudflare
   fetch(CF_URL + '/crd_pedidos', { headers: { 'Authorization': CF_AUTH } })
-    .then(r => r.ok ? r.json() : [])
-    .then(arr => { if(Array.isArray(arr)) { localStorage.setItem('crd_pedidos', JSON.stringify(arr)); renderEntregasList(); } })
+    .then(r => r.ok ? r.json() : null)
+    .then(arr => { const list = Array.isArray(arr) ? arr : []; localStorage.setItem('crd_pedidos', JSON.stringify(list)); renderEntregasList(); })
     .catch(() => {});
 }
 function pickPortadaDrive() {

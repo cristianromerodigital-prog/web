@@ -906,7 +906,7 @@ async function enviarPedidoAlbum() {
     const CF = 'https://web.cristian-romero-digital.workers.dev';
     const AUTH = 'crd2025';
     const res = await fetch(CF + '/crd_pedidos', { headers: { 'Authorization': AUTH } });
-    const arr = res.ok ? await res.json() : [];
+    const arr = (res.ok ? await res.json() : null) || [];
     arr.unshift(pedidoRecord);
     await fetch(CF + '/crd_pedidos', {
       method: 'POST',
@@ -923,6 +923,23 @@ async function enviarPedidoAlbum() {
 // ═══════════════════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════════════════
+let _toastTimer;
+function toast(msg, type) {
+  let el = document.getElementById('ent-toast');
+  if(!el) {
+    el = document.createElement('div');
+    el.id = 'ent-toast';
+    el.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1a2e;border:1px solid rgba(0,212,232,.3);color:#fff;padding:10px 20px;font-size:12px;letter-spacing:1px;z-index:9999;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap';
+    document.body.appendChild(el);
+  }
+  if(type === 'error') el.style.borderColor = 'rgba(232,0,61,.4)';
+  else el.style.borderColor = 'rgba(0,212,232,.3)';
+  el.textContent = msg;
+  el.style.opacity = '1';
+  el.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => { el.style.opacity='0'; el.style.transform='translateX(-50%) translateY(20px)'; }, 3000);
+}
 function showError(msg) {
   hideLoading();
   document.getElementById('panels-container').innerHTML =
