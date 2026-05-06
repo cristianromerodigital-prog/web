@@ -338,7 +338,7 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
     </div>
     <div id="album-exists" style="display:none;text-align:center;padding:12px 0 8px">
       <div style="font-size:36px;margin-bottom:16px">📋</div>
-      <h3 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:24px;margin-bottom:12px">Ya tenés un pedido en marcha</h3>
+      <h3 id="album-exists-title" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:24px;margin-bottom:12px">Ya tenés un pedido en marcha</h3>
       <p style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.7;margin-bottom:20px">Tu pedido de álbum está siendo procesado.<br>Si necesitás hacer algún cambio o consultar el estado,<br>comunicate con Cristian Romero.</p>
       <a href="https://wa.me/5491162557763?text=Hola%20Cristian%2C%20quiero%20consultar%20sobre%20mi%20pedido%20de%20álbum" target="_blank" style="display:inline-block;background:var(--gold);color:#000;padding:10px 24px;font-size:11px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;margin-bottom:12px">WhatsApp</a>
       <div><button onclick="cerrarPedidoAlbum()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;letter-spacing:1px;margin-top:8px;font-family:inherit">Cerrar</button></div>
@@ -841,12 +841,15 @@ function abrirPedidoAlbum() {
   if(_albumOptions.length > 0 && selectedPhotos.size === 0) {
     toast('Seleccioná las fotos antes de pedir el álbum', 'error'); return;
   }
-  // Chequear si ya tiene un pedido en marcha
-  if(_pedidoExistente) {
+  // Chequear si ya tiene un pedido en marcha para este tipo
+  const tipo = tipoTabActual();
+  if(_pedidosExistentes[tipo]) {
     document.getElementById('album-modal').classList.add('active');
     document.getElementById('album-form-body').style.display = 'none';
     document.getElementById('album-success').style.display = 'none';
     document.getElementById('album-exists').style.display = 'block';
+    const t = document.getElementById('album-exists-title');
+    if(t) t.textContent = 'Ya tenés un pedido de ' + (tipo === 'book' ? 'Book' : 'Fiesta') + ' en marcha';
     return;
   }
   const fotos = selectedPhotos.size > 0
@@ -894,6 +897,7 @@ async function enviarPedidoAlbum() {
   const tapa   = document.getElementById('af-tapa')?.value || '';
   if(!nombre || !tel || !size) { alert('Completá nombre, WhatsApp y tamaño'); return; }
   if(!tapa) { alert('Elegí la foto de tapa'); return; }
+  const tipoAlbum = tipoTabActual();
   const fotosObj = selectedPhotos.size > 0
     ? currentPhotos.filter(f => selectedPhotos.has(f.id))
     : currentPhotos;
@@ -901,6 +905,7 @@ async function enviarPedidoAlbum() {
   const pedido = {
     action: 'pedidoAlbum',
     evento: CFG.nombres,
+    tipoAlbum,
     nombre, tel, size,
     finish:    document.getElementById('af-finish').value,
     qty:       document.getElementById('af-qty').value,
@@ -926,7 +931,7 @@ async function enviarPedidoAlbum() {
       body: JSON.stringify(arr.slice(0, 300))
     });
   } catch(e) {}
-  _pedidoExistente = true; // bloquear nuevo pedido en esta sesión
+  _pedidosExistentes[tipoAlbum] = true; // bloquear nuevo pedido de este tipo
   // Mostrar éxito aunque falle (GAS puede tardar)
   document.getElementById('album-form-body').style.display = 'none';
   document.getElementById('album-success').style.display   = 'block';
@@ -1044,13 +1049,18 @@ document.addEventListener('keydown', e => {
 // ═══════════════════════════════════════════════════════════
 // ARRANQUE
 // ═══════════════════════════════════════════════════════════
-let _pedidoExistente = false;
+const _pedidosExistentes = { book: false, fiesta: false };
+function tipoTabActual() {
+  const def = tabDefs.find(t => t.key === currentTab);
+  return (def && def.label.toLowerCase().includes('book')) ? 'book' : 'fiesta';
+}
 async function checkPedidoExistente() {
   if(!CFG.nombres) return;
   try {
     const res = await fetch('https://web.cristian-romero-digital.workers.dev/crd_pedidos', { headers: { 'Authorization': 'crd2025' } });
     const arr = (res.ok ? await res.json() : null) || [];
-    _pedidoExistente = arr.some(p => p.evento === CFG.nombres);
+    _pedidosExistentes.book   = arr.some(p => p.evento === CFG.nombres && p.tipoAlbum === 'book');
+    _pedidosExistentes.fiesta = arr.some(p => p.evento === CFG.nombres && p.tipoAlbum === 'fiesta');
   } catch(e) {}
 }
 init();
