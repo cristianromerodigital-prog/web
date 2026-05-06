@@ -465,42 +465,63 @@ async function buildStructure(rootItems) {
 
   for(const item of rootItems) {
     if(item.type !== 'folder') continue;
-    const nameLower = item.name.toLowerCase();
+    const nl = item.name.toLowerCase();
+    const isPhotoRoot = nl.includes('foto') || nl.includes('photo') || nl.includes('image');
+    const isVideoRoot = nl.includes('video') || nl.includes('clip') || nl.includes('film');
 
-    if(nameLower.includes('foto')) {
-      // Carpeta Fotos → buscar subcarpetas Exteriores / Evento
-      const subItems = await gasCall({ action: 'getDriveFolder', folder: item.id });
-      const subFolders = (subItems || []).filter(i => i.type === 'folder');
+    if(isPhotoRoot) {
+      // Lee subCarpetas — cada una se convierte en un tab con su nombre real
+      const sub = await gasCall({ action: 'getDriveFolder', folder: item.id });
+      const subFolders = (sub || []).filter(i => i.type === 'folder');
+      const rootImgs   = (sub || []).filter(i => i.type === 'image');
 
       if(subFolders.length > 0) {
-        // Tiene subcarpetas → tab por subcarpeta
         for(const sf of subFolders) {
           const key = 'foto_' + sf.id;
           tabs.push({ key, label: sf.name, type: 'fotos', folderId: sf.id });
-          panels[key] = null; // lazy load
+          panels[key] = null; // lazy
+        }
+        // Si además hay fotos en la raíz de "Fotos", agrega tab extra
+        if(rootImgs.length > 0) {
+          const key = 'foto_root_' + item.id;
+          tabs.push({ key, label: 'General', type: 'fotos', folderId: item.id });
+          panels[key] = rootImgs;
         }
       } else {
-        // Sin subcarpetas → una sola sección Fotos
-        const fotos = (subItems || []).filter(i => i.type === 'image');
+        // Sin subcarpetas → tab directo con el nombre de la carpeta
         const key = 'foto_' + item.id;
         tabs.push({ key, label: item.name, type: 'fotos', folderId: item.id });
-        panels[key] = fotos;
+        panels[key] = rootImgs;
       }
-    } else if(nameLower.includes('video')) {
-      const videoItems = await gasCall({ action: 'getDriveFolder', folder: item.id });
-      const videos = (videoItems || []).filter(i => i.type === 'video' || i.type === 'folder');
-      const key = 'video_' + item.id;
-      tabs.push({ key, label: 'Video', type: 'videos', folderId: item.id });
-      panels[key] = videos;
+
+    } else if(isVideoRoot) {
+      // Lee subCarpetas de Video — cada una = una sección con su nombre real
+      const sub = await gasCall({ action: 'getDriveFolder', folder: item.id });
+      const subFolders = (sub || []).filter(i => i.type === 'folder');
+      const rootVids   = (sub || []).filter(i => i.type === 'video');
+
+      if(subFolders.length > 0) {
+        for(const sf of subFolders) {
+          const key = 'video_' + sf.id;
+          tabs.push({ key, label: sf.name, type: 'videos', folderId: sf.id });
+          panels[key] = null; // lazy
+        }
+        if(rootVids.length > 0) {
+          const key = 'video_root_' + item.id;
+          tabs.push({ key, label: 'Video', type: 'videos', folderId: item.id });
+          panels[key] = rootVids;
+        }
+      } else {
+        const key = 'video_' + item.id;
+        tabs.push({ key, label: item.name, type: 'videos', folderId: item.id });
+        panels[key] = sub || [];
+      }
     }
   }
 
   allPanels = panels;
   renderTabs(tabs);
-
-  if(tabs.length > 0) {
-    await switchTab(tabs[0]);
-  }
+  if(tabs.length > 0) await switchTab(tabs[0]);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -527,7 +548,10 @@ async function switchTab(tab) {
   if(allPanels[tab.key] === null) {
     document.getElementById('panels-container').innerHTML = '<div style="text-align:center;padding:60px;color:rgba(255,255,255,.3);font-size:11px;letter-spacing:.3em">Cargando...</div>';
     const items = await gasCall({ action: 'getDriveFolder', folder: tab.folderId });
-    allPanels[tab.key] = (items || []).filter(i => i.type === 'image');
+    // Filtrar según tipo del tab
+    allPanels[tab.key] = (items || []).filter(i =>
+      tab.type === 'videos' ? i.type === 'video' : i.type === 'image'
+    );
   }
 
   exitSelectMode();
