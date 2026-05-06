@@ -1712,14 +1712,6 @@ tr:hover td{background:rgba(255,255,255,0.02);}
               Permitir descarga de fotos y videos al cliente
             </label>
           </div>
-          <div class="form-group">
-            <label class="form-label">Fotos del álbum</label>
-            <div style="display:flex;gap:8px;margin-bottom:8px">
-              <button class="btn-sm" onclick="abrirDriveBrowserEntrega()">+ Agregar desde Drive</button>
-              <button class="btn-sm" onclick="_entFotos=[];renderEntregaFotosList()" style="color:var(--gray)">Limpiar</button>
-            </div>
-            <div id="ent-fotos-chips" style="min-height:20px"></div>
-          </div>
           <div style="background:rgba(0,212,232,.04);border:1px solid rgba(0,212,232,.15);padding:14px 16px;margin-bottom:16px">
             <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);margin-bottom:6px">Link generado</div>
             <div id="ent-link-preview" style="font-size:11px;color:rgba(255,255,255,.5);word-break:break-all;line-height:1.6">Completa los campos para generar el link</div>
@@ -5088,6 +5080,11 @@ function openDriveBrowser(callback) {
 function closeDriveBrowser() {
   _dbSelected.clear();
   document.getElementById('drive-browser-modal').style.display = 'none';
+  const btnP = document.getElementById('db-btn-portfolio');
+  const btnE = document.getElementById('db-btn-entrega');
+  if(btnP) btnP.style.display = 'inline-block';
+  if(btnE) btnE.style.display = 'none';
+  pendingPhotoCallback = null;
 }
 
 function dbExtractId(input) {
@@ -5292,13 +5289,29 @@ function dbConfirmEntregaFotos() {
 function renderEntregaFotosList() {
   const el = document.getElementById('ent-fotos-chips');
   if(!el) return;
-  if(!_entFotos.length) { el.innerHTML = '<span style="font-size:11px;color:var(--gray)">Sin fotos seleccionadas</span>'; return; }
-  el.innerHTML = _entFotos.map((f, i) =>
-    '<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);padding:4px 10px;margin:2px 3px;font-size:10px;letter-spacing:.5px">'
-    + f.name.replace(/\.[^.]+$/, '')
-    + '<button onclick="_entFotos.splice('+i+',1);renderEntregaFotosList()" style="background:none;border:none;color:var(--gray);font-size:13px;cursor:pointer;padding:0;line-height:1;margin-left:2px">×</button>'
-    + '</span>'
-  ).join('');
+  if(!_entFotos.length) {
+    el.innerHTML = '<span style="font-size:11px;color:var(--gray)">Sin fotos seleccionadas</span>';
+  } else {
+    el.innerHTML = _entFotos.map((f, i) =>
+      '<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);padding:4px 10px;margin:2px 3px;font-size:10px;letter-spacing:.5px">'
+      + f.name.replace(/\.[^.]+$/, '')
+      + '<button onclick="_entFotos.splice('+i+',1);renderEntregaFotosList()" style="background:none;border:none;color:var(--gray);font-size:13px;cursor:pointer;padding:0;line-height:1;margin-left:2px">×</button>'
+      + '</span>'
+    ).join('');
+  }
+  updatePortadaSelect();
+}
+function updatePortadaSelect() {
+  const sel = document.getElementById('ent-portada');
+  if(!sel) return;
+  const current = sel.value;
+  if(!_entFotos.length) {
+    sel.innerHTML = '<option value="">— Primero seleccioná las fotos del álbum —</option>';
+    return;
+  }
+  sel.innerHTML = '<option value="">— Elegí la foto de portada —</option>'
+    + _entFotos.map(f => '<option value="'+f.driveId+'">'+f.name.replace(/\.[^.]+$/, '')+'</option>').join('');
+  if(current) sel.value = current;
 }
 function nextEntNumId(tipo) {
   const isBook = tipo === 'Book';
@@ -5324,7 +5337,7 @@ function guardarEntrega() {
   const dlEl2 = document.getElementById('ent-allow-dl');
   const nombres = document.getElementById('ent-nombres').value.trim() || 'Entrega';
   const tipo = document.getElementById('ent-tipo').value;
-  const ev = { id: 0, folderId: fid, nombres, fecha: document.getElementById('ent-fecha').value.trim(), tipo, frase: document.getElementById('ent-frase').value.trim(), portadaId: document.getElementById('ent-portada').value.trim(), allowDownload: dlEl2 ? dlEl2.checked : true, creado: new Date().toLocaleDateString('es-AR'), estado: 'En edición', notas: '', fotos: [] };
+  const ev = { id: 0, folderId: fid, nombres, fecha: document.getElementById('ent-fecha').value.trim(), tipo, frase: document.getElementById('ent-frase').value.trim(), portadaId: document.getElementById('ent-portada').value.trim(), allowDownload: dlEl2 ? dlEl2.checked : true, creado: new Date().toLocaleDateString('es-AR'), estado: 'En edición', notas: '' };
   const entregas = getEntregas();
   if(_editingEntregaIdx >= 0 && entregas[_editingEntregaIdx]) {
     ev.id = entregas[_editingEntregaIdx].id;
@@ -5332,7 +5345,6 @@ function guardarEntrega() {
     ev.creado = entregas[_editingEntregaIdx].creado;
     ev.estado = entregas[_editingEntregaIdx].estado || 'En edición';
     ev.notas = entregas[_editingEntregaIdx].notas || '';
-    ev.fotos = _entFotos.length ? _entFotos : (entregas[_editingEntregaIdx].fotos || []);
     entregas[_editingEntregaIdx] = ev;
     _editingEntregaIdx = -1;
   } else {
@@ -5344,11 +5356,8 @@ function guardarEntrega() {
     }
     ev.id = nextEntSysId();
     ev.numId = nextEntNumId(tipo);
-    ev.fotos = [..._entFotos];
     entregas.unshift(ev);
   }
-  _entFotos = [];
-  renderEntregaFotosList();
   setEntregas(entregas);
   const url = buildEntregaUrl(ev);
   navigator.clipboard.writeText(url).then(() => toast('Link copiado al portapapeles'));
@@ -5505,8 +5514,7 @@ function editarEntrega(idx) {
       }
     }
   }
-  _entFotos = ev.fotos ? [...ev.fotos] : [];
-  renderEntregaFotosList();
+  document.getElementById('ent-portada').value = ev.portadaId || '';
   updateEntregaPreview();
   document.querySelector('#page-entregas .settings-section').scrollIntoView({ behavior:'smooth' });
   toast('Entrega cargada — modificá y guardá');

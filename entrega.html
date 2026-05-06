@@ -301,6 +301,10 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
     <div class="subtitle">Fotos seleccionadas para imprimir</div>
     <div class="album-form-body" id="album-form-body">
       <div class="selected-preview" id="album-preview"></div>
+      <label>Foto de tapa <span style="color:var(--gold)">*</span></label>
+      <select id="af-tapa" required>
+        <option value="">— Elegí la foto de tapa —</option>
+      </select>
       <label>Tu nombre</label>
       <input type="text" id="af-nombre" placeholder="Nombre y apellido">
       <label>WhatsApp</label>
@@ -840,6 +844,12 @@ function abrirPedidoAlbum() {
   preview.innerHTML = fotos.slice(0,12).map(f =>
     `<img class="sel-prev-item" src="${thumbUrl(f.id, 80)}" alt="${f.name}">`
   ).join('') + (fotos.length > 12 ? `<span style="font-size:11px;color:rgba(255,255,255,.4);align-self:center">+${fotos.length-12} más</span>` : '');
+  // Poblar selector de tapa
+  const tapaEl = document.getElementById('af-tapa');
+  if(tapaEl) {
+    tapaEl.innerHTML = '<option value="">— Elegí la foto de tapa —</option>'
+      + fotos.map(f => `<option value="${f.id}">${f.name.replace(/\.[^.]+$/, '')}</option>`).join('');
+  }
   document.getElementById('album-modal').classList.add('active');
   document.getElementById('album-success').style.display = 'none';
   document.getElementById('album-form-body').style.display = 'block';
@@ -869,19 +879,25 @@ async function enviarPedidoAlbum() {
   const nombre = document.getElementById('af-nombre').value.trim();
   const tel    = document.getElementById('af-tel').value.trim();
   const size   = document.getElementById('af-size').value;
+  const tapa   = document.getElementById('af-tapa')?.value || '';
   if(!nombre || !tel || !size) { alert('Completá nombre, WhatsApp y tamaño'); return; }
-  const fotos = selectedPhotos.size > 0
-    ? currentPhotos.filter(f => selectedPhotos.has(f.id)).map(f => f.id)
-    : currentPhotos.map(f => f.id);
+  if(!tapa) { alert('Elegí la foto de tapa'); return; }
+  const fotosObj = selectedPhotos.size > 0
+    ? currentPhotos.filter(f => selectedPhotos.has(f.id))
+    : currentPhotos;
+  const tapaFoto = fotosObj.find(f => f.id === tapa);
   const pedido = {
     action: 'pedidoAlbum',
     evento: CFG.nombres,
     nombre, tel, size,
-    finish: document.getElementById('af-finish').value,
-    qty:    document.getElementById('af-qty').value,
-    notas:  document.getElementById('af-notas').value,
-    fotos:  fotos.join(','),
-    total:  fotos.length
+    finish:    document.getElementById('af-finish').value,
+    qty:       document.getElementById('af-qty').value,
+    notas:     document.getElementById('af-notas').value,
+    tapa:      tapaFoto ? tapaFoto.name.replace(/\.[^.]+$/, '') : tapa,
+    tapaId:    tapa,
+    fotos:     fotosObj.map(f => f.id).join(','),
+    fotosNombres: fotosObj.map(f => f.name.replace(/\.[^.]+$/, '')).join(', '),
+    total:     fotosObj.length
   };
   try {
     await gasCall(pedido);
