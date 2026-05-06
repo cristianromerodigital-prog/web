@@ -252,6 +252,7 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
     </div>
     <div class="action-bar-right">
       <button class="btn-action btn-dl" id="btn-dl-folder" onclick="descargarCarpeta()" style="display:none">↓ Descargar todo</button>
+      <button class="btn-action" id="btn-desel" onclick="deseleccionarTodo()" style="display:none">☐ Deseleccionar todo</button>
       <button class="btn-action" id="btn-select" onclick="toggleSelectMode()" style="display:none">☐ Seleccionar</button>
       <button class="btn-action gold" id="btn-pedir-album" onclick="abrirPedidoAlbum()" style="display:none">✦ Pedir álbum</button>
     </div>
@@ -610,6 +611,8 @@ async function switchTab(tab) {
   exitSelectMode();
   document.getElementById('back-btn').classList.remove('visible');
   document.getElementById('btn-dl-folder').style.display = 'none';
+  document.getElementById('btn-select').style.display = 'none';
+  document.getElementById('btn-desel').style.display = 'none';
   document.getElementById('btn-pedir-album').style.display = 'none';
   const _asel = document.getElementById('album-type-selector');
   if(_asel) _asel.style.display = 'none';
@@ -639,17 +642,10 @@ function renderFotos(items, folderId, label) {
   }
 
   document.getElementById('btn-dl-folder').style.display = 'flex';
-  document.getElementById('btn-pedir-album').style.display = 'none';  // shown after album type chosen
+  document.getElementById('btn-select').style.display = 'flex';
+  document.getElementById('btn-pedir-album').style.display = 'flex';
   renderAlbumTypeSelector(label);
 
-  // If album options exist, defer showing photos until type is selected
-  if(_albumOptions.length > 0) {
-    _deferredPhotos = items;
-    container.innerHTML = '<div style="text-align:center;padding:60px;color:rgba(255,255,255,.3);font-size:11px;letter-spacing:.3em">Elige el tipo de album para ver las fotos</div>';
-    return;
-  }
-
-  _deferredPhotos = null;
   container.innerHTML = `
     <div class="photos-grid" id="photos-grid">
       ${items.map((f, i) => `
@@ -795,6 +791,17 @@ function updateSelCount() {
   const el = document.getElementById('sel-count');
   el.textContent = selectedPhotos.size + (selectedPhotos.size===1 ? ' foto seleccionada' : ' fotos seleccionadas');
   el.classList.toggle('visible', selectedPhotos.size > 0);
+  const desel = document.getElementById('btn-desel');
+  if(desel) desel.style.display = selectedPhotos.size > 0 ? 'flex' : 'none';
+}
+function deseleccionarTodo() {
+  selectedPhotos.clear();
+  document.querySelectorAll('.photo-item.selected').forEach(el => {
+    el.classList.remove('selected');
+    const chk = el.querySelector('.photo-check');
+    if(chk) { chk.classList.remove('checked'); chk.textContent = ''; }
+  });
+  updateSelCount();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -909,7 +916,6 @@ document.addEventListener('mousemove', e => { tx=e.clientX; ty=e.clientY; cur.st
 
 let _albumOptions = [];
 let _selectedAlbumOpt = -1;
-let _deferredPhotos = null;
 
 function getAlbumOptions(tabLabel) {
   const nl = (tabLabel||'').toLowerCase();
@@ -949,37 +955,11 @@ function selectAlbumOpt(idx) {
   document.querySelectorAll('.album-opt').forEach((el, i) => el.classList.toggle('selected', i===idx));
   const max = _albumOptions[idx].maxPhotos;
 
-  // Si las fotos estaban diferidas, renderizarlas ahora
-  if(_deferredPhotos !== null) {
-    const items = _deferredPhotos;
-    _deferredPhotos = null;
-    currentPhotos = items;
-    const container = document.getElementById('panels-container');
-    container.innerHTML = '<div class="photos-grid" id="photos-grid">'
-      + items.map((f, i) =>
-          '<div class="photo-item' + (selectMode ? ' select-mode' : '') + '" id="pi-' + f.id + '" onclick="openPhoto(' + i + ')">'
-          + '<img src="' + thumbUrl(f.id) + '" alt="' + f.name + '" loading="lazy">'
-          + '<div class="photo-check" id="chk-' + f.id + '" onclick="event.stopPropagation();toggleSelect(\'' + f.id + '\',' + i + ')"></div>'
-          + '</div>').join('')
-      + '</div>';
-    document.getElementById('btn-pedir-album').style.display = 'flex';
-    applyDownloadPolicy();
-  }
-
   // Limpiar selección si supera el nuevo máximo
   if(selectedPhotos.size > max) {
-    selectedPhotos.clear();
-    document.querySelectorAll('.photo-item.selected').forEach(el => {
-      el.classList.remove('selected');
-      const chk = el.querySelector('.photo-check');
-      if(chk) { chk.classList.remove('checked'); chk.textContent=''; }
-    });
-    updateSelCount();
+    deseleccionarTodo();
     toast('Selección reiniciada. Elegí hasta ' + max + ' fotos.', 'error');
   }
-
-  // Activar modo selección automáticamente
-  if(!selectMode) toggleSelectMode();
 }
 
 // ═══════════════════════════════════════════════════════════
