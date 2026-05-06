@@ -4941,7 +4941,8 @@ function cerrarSelectorServicios() {
 
 let _dbStack = [];
 let _dbCurrent = '';
-const _dbSelected = new Map(); // fileId → {name, url}
+let pendingPhotoCallback = null;
+const _dbSelected = new Map();
 
 function openDriveBrowser(callback) {
   if(callback) pendingPhotoCallback = callback;
