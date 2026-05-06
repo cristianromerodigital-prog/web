@@ -899,8 +899,20 @@ async function enviarPedidoAlbum() {
     fotosNombres: fotosObj.map(f => f.name.replace(/\.[^.]+$/, '')).join(', '),
     total:     fotosObj.length
   };
+  try { await gasCall(pedido); } catch(e) {}
+  // Guardar en Cloudflare KV para que admin lo vea
+  const pedidoRecord = { ...pedido, id: Date.now().toString(36), fecha: new Date().toLocaleDateString('es-AR'), hora: new Date().toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}) };
   try {
-    await gasCall(pedido);
+    const CF = 'https://web.cristian-romero-digital.workers.dev';
+    const AUTH = 'crd2025';
+    const res = await fetch(CF + '/crd_pedidos', { headers: { 'Authorization': AUTH } });
+    const arr = res.ok ? await res.json() : [];
+    arr.unshift(pedidoRecord);
+    await fetch(CF + '/crd_pedidos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': AUTH },
+      body: JSON.stringify(arr.slice(0, 300))
+    });
   } catch(e) {}
   // Mostrar éxito aunque falle (GAS puede tardar)
   document.getElementById('album-form-body').style.display = 'none';

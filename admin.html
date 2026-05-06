@@ -2058,7 +2058,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 // ── CLOUDFLARE SYNC ──
 const CF_URL = 'https://web.cristian-romero-digital.workers.dev';
 const CF_AUTH = 'crd2025';
-const CF_SYNC_KEYS = ["crd_portfolio","crd_testimonials","crd_posts","crd_settings","crd_content","crd_site_photos","crd_hero_video_url","crd_invites","crd_messages","crd_inv_base","crd_admin_creds","crd_presupuesto","crd_editable","crd_opcionales","crd_entregas"];
+const CF_SYNC_KEYS = ["crd_portfolio","crd_testimonials","crd_posts","crd_settings","crd_content","crd_site_photos","crd_hero_video_url","crd_invites","crd_messages","crd_inv_base","crd_admin_creds","crd_presupuesto","crd_editable","crd_opcionales","crd_entregas","crd_pedidos"];
 
 async function syncToCloud(key, value) {
   if (!CF_SYNC_KEYS.includes(key)) return;
@@ -5437,12 +5437,33 @@ function renderEntregasList() {
           +(ev.frase?'<div style="grid-column:1/-1"><span style="color:var(--gray);letter-spacing:1px">Frase</span><div style="color:rgba(255,255,255,.7);margin-top:2px;font-style:italic">'+ev.frase+'</div></div>':'')
           +(driveUrl?'<div style="grid-column:1/-1"><span style="color:var(--gray);letter-spacing:1px">Carpeta Drive</span><div style="margin-top:2px"><a href="'+driveUrl+'" target="_blank" style="color:var(--cyan);font-size:10px;word-break:break-all">'+driveUrl+'</a></div></div>':'')
           +(ev.portadaId?'<div style="grid-column:1/-1"><span style="color:var(--gray);letter-spacing:1px">ID portada</span><div style="color:rgba(255,255,255,.6);font-family:monospace;margin-top:2px">'+ev.portadaId+'</div></div>':'')
-          +(ev.fotos && ev.fotos.length
-            ? '<div style="grid-column:1/-1"><span style="color:var(--gray);letter-spacing:1px">Fotos del álbum ('+ev.fotos.length+')</span><div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">'
-              + ev.fotos.map(f => '<span style="font-size:10px;padding:3px 8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);letter-spacing:.5px">'+f.name.replace(/\.[^.]+$/,'')+'</span>').join('')
-              + '</div></div>'
-            : '')
         +'</div>'
+        // Pedidos del cliente
+        + (function(){
+            const peds = getPedidos().filter(p => p.evento === ev.nombres);
+            if(!peds.length) return '';
+            return '<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(0,212,232,.15)">'
+              +'<div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);margin-bottom:10px">Pedidos de álbum recibidos ('+peds.length+')</div>'
+              + peds.map(p =>
+                  '<div style="background:rgba(0,212,232,.04);border:1px solid rgba(0,212,232,.12);padding:12px;margin-bottom:8px">'
+                    +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;flex-wrap:wrap;gap:6px">'
+                      +'<span style="font-size:12px;font-weight:500;color:var(--white)">'+p.nombre+'</span>'
+                      +'<span style="font-size:10px;color:var(--gray)">'+p.fecha+' '+p.hora+'</span>'
+                    +'</div>'
+                    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px 16px;font-size:11px;margin-bottom:8px">'
+                      +'<div><span style="color:var(--gray)">WhatsApp</span><div style="color:var(--white);margin-top:1px">'+p.tel+'</div></div>'
+                      +'<div><span style="color:var(--gray)">Tamaño</span><div style="color:var(--white);margin-top:1px">'+p.size+'</div></div>'
+                      +'<div><span style="color:var(--gray)">Terminación</span><div style="color:var(--white);margin-top:1px">'+p.finish+'</div></div>'
+                      +'<div><span style="color:var(--gray)">Copias</span><div style="color:var(--white);margin-top:1px">'+p.qty+'</div></div>'
+                      +'<div><span style="color:var(--gold)">Tapa</span><div style="color:var(--gold);margin-top:1px;font-weight:500">'+(p.tapa||'—')+'</div></div>'
+                      +'<div><span style="color:var(--gray)">Total fotos</span><div style="color:var(--white);margin-top:1px">'+(p.total||'—')+'</div></div>'
+                    +'</div>'
+                    +(p.fotosNombres?'<div style="font-size:10px;color:rgba(255,255,255,.55);line-height:1.6"><span style="color:var(--gray);letter-spacing:1px;display:block;margin-bottom:3px">FOTOS ELEGIDAS</span>'+p.fotosNombres+'</div>':'')
+                    +(p.notas?'<div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:8px;font-style:italic;border-top:1px solid rgba(255,255,255,.06);padding-top:8px">'+p.notas+'</div>':'')
+                  +'</div>'
+                ).join('')
+              +'</div>';
+          })()
       +'</div>'
       +'<div id="ent-notas-'+ev.id+'" style="display:none;border-top:1px solid rgba(255,255,255,0.04);padding:10px 14px 12px">'
         +'<textarea id="ent-notas-txt-'+ev.id+'" style="width:100%;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.08);color:var(--white);font-family:inherit;font-size:12px;padding:10px;resize:vertical;min-height:80px;letter-spacing:.5px" placeholder="Anotaciones internas (no visibles al cliente)...">'+(ev.notas||'')+'</textarea>'
@@ -5524,7 +5545,17 @@ function eliminarEntrega(idx) {
   if(!confirm('Eliminar esta entrega?')) return;
   const entregas = getEntregas(); entregas.splice(idx, 1); setEntregas(entregas); renderEntregasList();
 }
-function loadEntregasPage() { renderEntregasList(); updateEntregaPreview(); }
+function getPedidos() { try { return JSON.parse(localStorage.getItem('crd_pedidos')) || []; } catch(e) { return []; } }
+
+function loadEntregasPage() {
+  renderEntregasList();
+  updateEntregaPreview();
+  // Cargar pedidos frescos desde Cloudflare
+  fetch(CF_URL + '/crd_pedidos', { headers: { 'Authorization': CF_AUTH } })
+    .then(r => r.ok ? r.json() : [])
+    .then(arr => { if(Array.isArray(arr)) { localStorage.setItem('crd_pedidos', JSON.stringify(arr)); renderEntregasList(); } })
+    .catch(() => {});
+}
 function pickPortadaDrive() {
   openDriveBrowser(url => {
     const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
