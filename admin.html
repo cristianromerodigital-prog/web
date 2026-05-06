@@ -1674,7 +1674,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
             <div class="form-group"><label class="form-label">Nombres / Evento</label><input class="form-input" id="ent-nombres" placeholder="Pablo &amp; Vero" oninput="updateEntregaPreview()"></div>
             <div class="form-group"><label class="form-label">Tipo</label>
               <select class="form-input" id="ent-tipo" onchange="updateEntregaPreview()">
-                <option>Boda</option><option>XV Anos</option><option>Cumpleanos</option><option>Book</option><option>Evento</option>
+                <option>Boda</option><option>XV A&#241;os</option><option>Cumplea&#241;os</option><option>Book</option><option>Evento</option>
               </select>
             </div>
           </div>
@@ -5059,7 +5059,14 @@ function guardarEntrega() {
   const dlEl2 = document.getElementById('ent-allow-dl');
   const ev = { id: Date.now().toString(36), folderId: fid, nombres: document.getElementById('ent-nombres').value.trim() || 'Entrega', fecha: document.getElementById('ent-fecha').value.trim(), tipo: document.getElementById('ent-tipo').value, frase: document.getElementById('ent-frase').value.trim(), portadaId: document.getElementById('ent-portada').value.trim(), allowDownload: dlEl2 ? dlEl2.checked : true, creado: new Date().toLocaleDateString('es-AR') };
   const entregas = getEntregas();
-  entregas.unshift(ev);
+  if(_editingEntregaIdx >= 0 && entregas[_editingEntregaIdx]) {
+    ev.id = entregas[_editingEntregaIdx].id;
+    ev.creado = entregas[_editingEntregaIdx].creado;
+    entregas[_editingEntregaIdx] = ev;
+    _editingEntregaIdx = -1;
+  } else {
+    entregas.unshift(ev);
+  }
   setEntregas(entregas);
   const url = buildEntregaUrl(ev);
   navigator.clipboard.writeText(url).then(() => toast('Link copiado al portapapeles'));
@@ -5081,10 +5088,38 @@ function renderEntregasList() {
       + '<div style="display:flex;gap:8px;flex-shrink:0">'
       + '<button onclick="navigator.clipboard.writeText(\'' + safeUrl + '\').then(()=>toast(\'Link copiado\'))" class="btn-sm" style="font-size:10px">Copiar link</button>'
       + '<a href="' + url + '" target="_blank" class="btn-sm" style="font-size:10px">Abrir</a>'
+      + '<button onclick="editarEntrega(' + i + ')" class="btn-sm" style="font-size:10px">Editar</button>'
       + '<button onclick="eliminarEntrega(' + i + ')" class="btn-sm" style="font-size:10px;color:var(--red);border-color:rgba(224,85,85,.3)">Eliminar</button>'
       + '</div></div>';
   }).join('');
 }
+let _editingEntregaIdx = -1;
+function editarEntrega(idx) {
+  const ev = getEntregas()[idx];
+  if(!ev) return;
+  _editingEntregaIdx = idx;
+  document.getElementById('ent-nombres').value  = ev.nombres || '';
+  document.getElementById('ent-fecha').value    = ev.fecha   || '';
+  document.getElementById('ent-frase').value    = ev.frase   || '';
+  document.getElementById('ent-folder').value   = ev.folderId|| '';
+  document.getElementById('ent-portada').value  = ev.portadaId||'';
+  const dlEl = document.getElementById('ent-allow-dl');
+  if(dlEl) dlEl.checked = ev.allowDownload !== false;
+  // Set tipo
+  const tipoEl = document.getElementById('ent-tipo');
+  if(tipoEl) {
+    for(const opt of tipoEl.options) {
+      if(opt.text.normalize('NFD').replace(/[̀-ͯ]/g,'') === (ev.tipo||'').normalize('NFD').replace(/[̀-ͯ]/g,'') || opt.value === ev.tipo) {
+        tipoEl.value = opt.value; break;
+      }
+    }
+  }
+  updateEntregaPreview();
+  // Scroll al form
+  document.querySelector('#page-entregas .settings-section').scrollIntoView({ behavior:'smooth' });
+  toast('Entrega cargada — modificá y guardá');
+}
+
 function eliminarEntrega(idx) {
   if(!confirm('Eliminar esta entrega?')) return;
   const entregas = getEntregas(); entregas.splice(idx, 1); setEntregas(entregas); renderEntregasList();
