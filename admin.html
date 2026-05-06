@@ -5255,49 +5255,21 @@ function updateEntregaPreview() {
   linkEl.textContent = url;
   prevBtn.href = url; prevBtn.style.display = 'inline-flex';
 }
-function nextEntNumId(tipo) {
-  const isBook = tipo === 'Book';
-  const key = isBook ? 'crd_ent_ctr_bk' : 'crd_ent_ctr_ev';
-  const prefix = isBook ? 'BK' : 'EV';
-  const n = (parseInt(localStorage.getItem(key) || '0')) + 1;
-  localStorage.setItem(key, n);
-  return prefix + '-' + String(n).padStart(3, '0');
-}
-function checkEntregaDuplicate(tipo, nombres, excludeId) {
-  const isBook = tipo === 'Book';
-  return getEntregas().filter(e =>
-    e.id !== excludeId &&
-    (e.nombres || '').trim().toLowerCase() === nombres.trim().toLowerCase() &&
-    (isBook ? e.tipo === 'Book' : e.tipo !== 'Book') &&
-    (e.estado || 'En edición') !== 'Entregado'
-  );
-}
 function guardarEntrega() {
   const raw = document.getElementById('ent-folder').value.trim();
   const fid = entFolderId(raw);
   if(!fid) { toast('Ingresa la carpeta de Drive', 'error'); return; }
   const dlEl2 = document.getElementById('ent-allow-dl');
-  const nombres = document.getElementById('ent-nombres').value.trim() || 'Entrega';
-  const tipo = document.getElementById('ent-tipo').value;
-  const ev = { id: Date.now().toString(36), folderId: fid, nombres, fecha: document.getElementById('ent-fecha').value.trim(), tipo, frase: document.getElementById('ent-frase').value.trim(), portadaId: document.getElementById('ent-portada').value.trim(), allowDownload: dlEl2 ? dlEl2.checked : true, creado: new Date().toLocaleDateString('es-AR'), estado: 'En edición', notas: '' };
+  const ev = { id: Date.now().toString(36), folderId: fid, nombres: document.getElementById('ent-nombres').value.trim() || 'Entrega', fecha: document.getElementById('ent-fecha').value.trim(), tipo: document.getElementById('ent-tipo').value, frase: document.getElementById('ent-frase').value.trim(), portadaId: document.getElementById('ent-portada').value.trim(), allowDownload: dlEl2 ? dlEl2.checked : true, creado: new Date().toLocaleDateString('es-AR'), estado: 'En edición', notas: '' };
   const entregas = getEntregas();
   if(_editingEntregaIdx >= 0 && entregas[_editingEntregaIdx]) {
     ev.id = entregas[_editingEntregaIdx].id;
-    ev.numId = entregas[_editingEntregaIdx].numId || '';
     ev.creado = entregas[_editingEntregaIdx].creado;
     ev.estado = entregas[_editingEntregaIdx].estado || 'En edición';
     ev.notas = entregas[_editingEntregaIdx].notas || '';
     entregas[_editingEntregaIdx] = ev;
     _editingEntregaIdx = -1;
   } else {
-    // Validar límite: 1 Book + 1 Fiesta activo por cliente
-    const dupes = checkEntregaDuplicate(tipo, nombres, null);
-    if(dupes.length) {
-      const tipLabel = tipo === 'Book' ? 'Book' : 'de evento';
-      toast('Ya hay un álbum ' + tipLabel + ' activo para "' + nombres + '". El cliente debe solicitar que se elimine el anterior.', 'error');
-      return;
-    }
-    ev.numId = nextEntNumId(tipo);
     entregas.unshift(ev);
   }
   setEntregas(entregas);
@@ -5345,16 +5317,13 @@ function renderEntregasList() {
     const safeUrl = url.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     const est = ev.estado || 'En edición';
     const ec = _ENT_COLORS[est] || 'rgba(255,255,255,0.5)';
-    const numId = ev.numId || '—';
     const notasPrev = ev.notas ? (ev.notas.length > 70 ? ev.notas.substring(0,70)+'…' : ev.notas) : '';
     const opts = _ENT_ESTADOS.map(s => '<option value="'+s+'"'+(est===s?' selected':'')+'>'+s+'</option>').join('');
-    const driveUrl = ev.folderId ? 'https://drive.google.com/drive/folders/'+ev.folderId : '';
     return '<div id="ent-card-'+ev.id+'" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);margin-bottom:8px">'
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:12px 14px;gap:12px;flex-wrap:wrap">'
         +'<div style="flex:1;min-width:180px">'
-          +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'
+          +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">'
             +'<span style="width:7px;height:7px;border-radius:50%;background:'+ec+';flex-shrink:0;display:inline-block"></span>'
-            +'<span style="font-size:10px;font-weight:600;letter-spacing:2px;color:var(--gold);font-family:monospace">#'+numId+'</span>'
             +'<span style="font-size:13px;font-weight:500;color:var(--white)">'+ev.nombres+'</span>'
           +'</div>'
           +'<div style="font-size:10px;color:var(--gray);letter-spacing:1px;padding-left:15px">'+ev.tipo+' — '+ev.fecha+(ev.creado?' — creado '+ev.creado:'')+'</div>'
@@ -5362,23 +5331,11 @@ function renderEntregasList() {
         +'</div>'
         +'<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0">'
           +'<select onchange="setEntregaEstado(\''+ev.id+'\',this.value)" style="background:rgba(0,0,0,.5);border:1px solid '+ec+';color:'+ec+';padding:4px 8px;font-size:10px;letter-spacing:.5px;font-family:inherit;outline:none;cursor:pointer">'+opts+'</select>'
-          +'<button onclick="toggleEntregaDetalle(\''+ev.id+'\')" class="btn-sm" style="font-size:10px">Detalle</button>'
           +'<button onclick="toggleEntregaNotas(\''+ev.id+'\')" class="btn-sm" style="font-size:10px">'+(ev.notas?'Notas':'+ Nota')+'</button>'
           +'<button onclick="navigator.clipboard.writeText(\''+safeUrl+'\').then(()=>toast(\'Link copiado\'))" class="btn-sm" style="font-size:10px">Copiar link</button>'
           +'<a href="'+url+'" target="_blank" class="btn-sm" style="font-size:10px">Abrir</a>'
           +'<button onclick="editarEntrega('+realIdx+')" class="btn-sm" style="font-size:10px">Editar</button>'
           +'<button onclick="eliminarEntrega('+realIdx+')" class="btn-sm" style="font-size:10px;color:var(--red);border-color:rgba(224,85,85,.3)">Eliminar</button>'
-        +'</div>'
-      +'</div>'
-      +'<div id="ent-detalle-'+ev.id+'" style="display:none;border-top:1px solid rgba(255,255,255,0.05);padding:12px 14px;background:rgba(0,0,0,.2)">'
-        +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px 20px;font-size:11px">'
-          +'<div><span style="color:var(--gray);letter-spacing:1px">ID sistema</span><div style="color:rgba(255,255,255,.6);font-family:monospace;margin-top:2px">'+ev.id+'</div></div>'
-          +'<div><span style="color:var(--gray);letter-spacing:1px">Tipo</span><div style="color:var(--white);margin-top:2px">'+ev.tipo+'</div></div>'
-          +'<div><span style="color:var(--gray);letter-spacing:1px">Fecha evento</span><div style="color:var(--white);margin-top:2px">'+(ev.fecha||'—')+'</div></div>'
-          +'<div><span style="color:var(--gray);letter-spacing:1px">Descarga</span><div style="color:'+(ev.allowDownload!==false?'#4caf50':'#e05555')+';margin-top:2px">'+(ev.allowDownload!==false?'Permitida':'Bloqueada')+'</div></div>'
-          +(ev.frase?'<div style="grid-column:1/-1"><span style="color:var(--gray);letter-spacing:1px">Frase</span><div style="color:rgba(255,255,255,.7);margin-top:2px;font-style:italic">'+ev.frase+'</div></div>':'')
-          +(driveUrl?'<div style="grid-column:1/-1"><span style="color:var(--gray);letter-spacing:1px">Carpeta Drive</span><div style="margin-top:2px"><a href="'+driveUrl+'" target="_blank" style="color:var(--cyan);font-size:10px;word-break:break-all">'+driveUrl+'</a></div></div>':'')
-          +(ev.portadaId?'<div style="grid-column:1/-1"><span style="color:var(--gray);letter-spacing:1px">ID portada</span><div style="color:rgba(255,255,255,.6);font-family:monospace;margin-top:2px">'+ev.portadaId+'</div></div>':'')
         +'</div>'
       +'</div>'
       +'<div id="ent-notas-'+ev.id+'" style="display:none;border-top:1px solid rgba(255,255,255,0.04);padding:10px 14px 12px">'
@@ -5422,11 +5379,6 @@ function setEntregaNotas(id) {
 }
 function toggleEntregaNotas(id) {
   const el = document.getElementById('ent-notas-'+id);
-  if(!el) return;
-  el.style.display = el.style.display === 'none' ? 'block' : 'none';
-}
-function toggleEntregaDetalle(id) {
-  const el = document.getElementById('ent-detalle-'+id);
   if(!el) return;
   el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
