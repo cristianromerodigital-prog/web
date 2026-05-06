@@ -336,6 +336,13 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
       <div class="icon">✦</div>
       <p>¡Pedido recibido!<br>Te contactamos en las próximas horas para confirmar detalles y presupuesto.</p>
     </div>
+    <div id="album-exists" style="display:none;text-align:center;padding:12px 0 8px">
+      <div style="font-size:36px;margin-bottom:16px">📋</div>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:24px;margin-bottom:12px">Ya tenés un pedido en marcha</h3>
+      <p style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.7;margin-bottom:20px">Tu pedido de álbum está siendo procesado.<br>Si necesitás hacer algún cambio o consultar el estado,<br>comunicate con Cristian Romero.</p>
+      <a href="https://wa.me/5491162557763?text=Hola%20Cristian%2C%20quiero%20consultar%20sobre%20mi%20pedido%20de%20álbum" target="_blank" style="display:inline-block;background:var(--gold);color:#000;padding:10px 24px;font-size:11px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;margin-bottom:12px">WhatsApp</a>
+      <div><button onclick="cerrarPedidoAlbum()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;letter-spacing:1px;margin-top:8px;font-family:inherit">Cerrar</button></div>
+    </div>
   </div>
 </div>
 
@@ -828,13 +835,18 @@ function descargarCarpeta() {
 // PEDIDO ÁLBUM
 // ═══════════════════════════════════════════════════════════
 function abrirPedidoAlbum() {
-  // Require album type selection if options are available
   if(_albumOptions.length > 0 && _selectedAlbumOpt < 0) {
-    toast('Elegí primero el tipo de álbum arriba', 'error');
-    return;
+    toast('Elegí primero el tipo de álbum arriba', 'error'); return;
   }
   if(_albumOptions.length > 0 && selectedPhotos.size === 0) {
-    toast('Seleccioná las fotos antes de pedir el álbum', 'error');
+    toast('Seleccioná las fotos antes de pedir el álbum', 'error'); return;
+  }
+  // Chequear si ya tiene un pedido en marcha
+  if(_pedidoExistente) {
+    document.getElementById('album-modal').classList.add('active');
+    document.getElementById('album-form-body').style.display = 'none';
+    document.getElementById('album-success').style.display = 'none';
+    document.getElementById('album-exists').style.display = 'block';
     return;
   }
   const fotos = selectedPhotos.size > 0
@@ -914,6 +926,7 @@ async function enviarPedidoAlbum() {
       body: JSON.stringify(arr.slice(0, 300))
     });
   } catch(e) {}
+  _pedidoExistente = true; // bloquear nuevo pedido en esta sesión
   // Mostrar éxito aunque falle (GAS puede tardar)
   document.getElementById('album-form-body').style.display = 'none';
   document.getElementById('album-success').style.display   = 'block';
@@ -1031,7 +1044,17 @@ document.addEventListener('keydown', e => {
 // ═══════════════════════════════════════════════════════════
 // ARRANQUE
 // ═══════════════════════════════════════════════════════════
+let _pedidoExistente = false;
+async function checkPedidoExistente() {
+  if(!CFG.nombres) return;
+  try {
+    const res = await fetch('https://web.cristian-romero-digital.workers.dev/crd_pedidos', { headers: { 'Authorization': 'crd2025' } });
+    const arr = (res.ok ? await res.json() : null) || [];
+    _pedidoExistente = arr.some(p => p.evento === CFG.nombres);
+  } catch(e) {}
+}
 init();
+checkPedidoExistente();
 </script>
 </body>
 </html>

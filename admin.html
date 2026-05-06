@@ -5460,6 +5460,7 @@ function renderEntregasList() {
                     +'</div>'
                     +(p.fotosNombres?'<div style="font-size:10px;color:rgba(255,255,255,.55);line-height:1.6"><span style="color:var(--gray);letter-spacing:1px;display:block;margin-bottom:3px">FOTOS ELEGIDAS</span>'+p.fotosNombres+'</div>':'')
                     +(p.notas?'<div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:8px;font-style:italic;border-top:1px solid rgba(255,255,255,.06);padding-top:8px">'+p.notas+'</div>':'')
+                    +'<div style="margin-top:10px;text-align:right"><button onclick="eliminarPedido(\''+p.id+'\')" class="btn-sm" style="font-size:10px;color:var(--red);border-color:rgba(224,85,85,.3)">Eliminar pedido</button></div>'
                   +'</div>'
                 ).join('')
               +'</div>';
@@ -5546,6 +5547,15 @@ function eliminarEntrega(idx) {
   const entregas = getEntregas(); entregas.splice(idx, 1); setEntregas(entregas); renderEntregasList();
 }
 function getPedidos() { try { return JSON.parse(localStorage.getItem('crd_pedidos')) || []; } catch(e) { return []; } }
+function eliminarPedido(id) {
+  if(!confirm('Eliminar este pedido? El cliente podrá enviar uno nuevo.')) return;
+  const lista = getPedidos().filter(p => p.id !== id);
+  const str = JSON.stringify(lista);
+  localStorage.setItem('crd_pedidos', str);
+  syncToCloud('crd_pedidos', str);
+  renderEntregasList();
+  toast('Pedido eliminado — el cliente puede enviar uno nuevo');
+}
 
 function loadEntregasPage() {
   renderEntregasList();
