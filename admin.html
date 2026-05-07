@@ -847,13 +847,49 @@ tr:hover td{background:rgba(255,255,255,0.02);}
               </div>
             </div>
 
-            <!-- AUDIO -->
+            <!-- AUDIO / SOBRE -->
             <div class="inv-modal-section">
-              <div class="inv-modal-section-title">Música de Fondo (opcional)</div>
+              <div class="inv-modal-section-title">Sobre & Música de Fondo</div>
               <div class="form-group">
-                <label class="form-label">Link de YouTube</label>
+                <label class="form-label">Link de YouTube (música de fondo)</label>
                 <input class="form-input" id="inv-youtube-audio" placeholder="https://youtu.be/... o https://www.youtube.com/watch?v=...">
-                <small style="color:var(--gray);font-size:10px;margin-top:4px;display:block">Suena automáticamente al primer clic o scroll. Aparece un botón flotante para silenciar.</small>
+                <small style="color:var(--gray);font-size:10px;margin-top:4px;display:block">Si hay link, aparece el sobre al entrar (o suena al primer scroll si desactivás el sobre).</small>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+                <input type="checkbox" id="inv-env-mostrar" style="accent-color:var(--gold);width:15px;height:15px" checked>
+                <label for="inv-env-mostrar" style="font-size:12px;color:var(--gray2);cursor:pointer">Mostrar sobre al entrar (si no, la música arranca al primer scroll)</label>
+              </div>
+              <div id="inv-env-sobre-opts">
+                <div class="form-group">
+                  <label class="form-label">Slogan (bajo el nombre en el sobre)</label>
+                  <input class="form-input" id="inv-env-slogan" placeholder="Compartí este momento especial con nosotros">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Color del sobre</label>
+                  <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
+                    <div onclick="selectEnvColor('negro')" data-ecolor="negro" style="cursor:pointer;text-align:center">
+                      <div style="width:62px;height:40px;border-radius:7px;background:linear-gradient(135deg,#1c1913,#2a2520);border:2px solid var(--gold);transition:border .2s"></div>
+                      <span style="font-size:9px;letter-spacing:2px;color:var(--gray2);display:block;margin-top:4px">NEUTRO</span>
+                    </div>
+                    <div onclick="selectEnvColor('violeta')" data-ecolor="violeta" style="cursor:pointer;text-align:center">
+                      <div style="width:62px;height:40px;border-radius:7px;background:linear-gradient(135deg,#3a2a7e,#6a4ac8);border:2px solid transparent;transition:border .2s"></div>
+                      <span style="font-size:9px;letter-spacing:2px;color:var(--gray2);display:block;margin-top:4px">VIOLETA</span>
+                    </div>
+                    <div onclick="selectEnvColor('dorado')" data-ecolor="dorado" style="cursor:pointer;text-align:center">
+                      <div style="width:62px;height:40px;border-radius:7px;background:linear-gradient(135deg,#8a6010,#c49a20);border:2px solid transparent;transition:border .2s"></div>
+                      <span style="font-size:9px;letter-spacing:2px;color:var(--gray2);display:block;margin-top:4px">DORADO</span>
+                    </div>
+                    <div onclick="selectEnvColor('rosa')" data-ecolor="rosa" style="cursor:pointer;text-align:center">
+                      <div style="width:62px;height:40px;border-radius:7px;background:linear-gradient(135deg,#8a2048,#c05878);border:2px solid transparent;transition:border .2s"></div>
+                      <span style="font-size:9px;letter-spacing:2px;color:var(--gray2);display:block;margin-top:4px">ROSA</span>
+                    </div>
+                    <div onclick="selectEnvColor('verde')" data-ecolor="verde" style="cursor:pointer;text-align:center">
+                      <div style="width:62px;height:40px;border-radius:7px;background:linear-gradient(135deg,#1a3a1e,#2d6a35);border:2px solid transparent;transition:border .2s"></div>
+                      <span style="font-size:9px;letter-spacing:2px;color:var(--gray2);display:block;margin-top:4px">VERDE</span>
+                    </div>
+                  </div>
+                  <input type="hidden" id="inv-env-color" value="negro">
+                </div>
               </div>
             </div>
 
@@ -4329,6 +4365,9 @@ function openInviteModal(id) {
     document.getElementById('inv-regalo-titulo').value = c.regalo_titulo || '';
     document.getElementById('inv-regalo-texto').value = c.regalo_texto || '';
     document.getElementById('inv-youtube-audio').value = c.youtube_audio || '';
+    document.getElementById('inv-env-mostrar').checked = c.env_mostrar !== false;
+    document.getElementById('inv-env-slogan').value = c.env_slogan || '';
+    selectEnvColor(c.env_color || 'negro');
     document.getElementById('inv-color-esquema').value = c.color_esquema || 'negro';
     document.getElementById('inv-estilo-aero').checked = !!c.estilo_aero;
     const slugEl = document.getElementById('inv-slug');
@@ -4343,13 +4382,15 @@ function openInviteModal(id) {
      'inv-ceremonia-hora','inv-ceremonia-lugar','inv-ceremonia-dir','inv-recepcion-hora','inv-fin-fiesta-hora','inv-recepcion-lugar',
      'inv-lugar-nombre','inv-lugar-dir','inv-lugar-maps','inv-dresscode','inv-dresscode-nota',
      'inv-alias','inv-alias-banco','inv-alias-titular','inv-cbu','inv-rsvp-limite',
-     'inv-gsheet-url','inv-emailjs-template','inv-spotify','inv-youtube-audio','inv-slug'].forEach(id => {
+     'inv-gsheet-url','inv-emailjs-template','inv-spotify','inv-youtube-audio','inv-env-slogan','inv-slug'].forEach(id => {
       const el = document.getElementById(id);
       if (el) { el.value = ''; if (el.dataset) el.dataset.manual = ''; }
     });
     document.getElementById('inv-regalo-label').value = '';
     document.getElementById('inv-regalo-titulo').value = '';
     document.getElementById('inv-regalo-texto').value = '';
+    document.getElementById('inv-env-mostrar').checked = true;
+    selectEnvColor('negro');
     document.getElementById('inv-rsvp-activo').checked = true;
     document.getElementById('inv-fecha-iso').value = '';
     document.getElementById('inv-media-type').value = 'image';
@@ -4406,6 +4447,9 @@ function readInviteForm() {
       regalo_titulo: document.getElementById('inv-regalo-titulo').value.trim(),
       regalo_texto: document.getElementById('inv-regalo-texto').value.trim(),
       youtube_audio: document.getElementById('inv-youtube-audio').value.trim(),
+      env_mostrar: document.getElementById('inv-env-mostrar').checked,
+      env_slogan: document.getElementById('inv-env-slogan').value.trim(),
+      env_color: document.getElementById('inv-env-color').value,
       color_esquema: document.getElementById('inv-color-esquema').value,
       estilo_aero: document.getElementById('inv-estilo-aero').checked,
       logo_dark: S.get('crd_site_logo') || '',
@@ -4515,6 +4559,13 @@ const INV_SUBTITULO_PRESETS = {
   boda_civil: 'Nos casamos por civil y queremos que lo <em>festejés</em> con nosotros',
   aniv: 'Con alegría celebramos un nuevo <em>aniversario</em> junto a quienes más queremos',
 };
+
+function selectEnvColor(c) {
+  document.getElementById('inv-env-color').value = c;
+  document.querySelectorAll('[data-ecolor] > div').forEach(el => el.style.border = '2px solid transparent');
+  const sel = document.querySelector(`[data-ecolor="${c}"] > div`);
+  if (sel) sel.style.border = '2px solid var(--gold)';
+}
 
 function invApplySubtiuloPreset(val) {
   if (!val || val === 'custom') return;
