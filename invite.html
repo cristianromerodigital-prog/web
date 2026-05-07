@@ -262,9 +262,9 @@ footer small a{color:inherit}
 
 <!-- REGALO -->
 <section id="regalo" style="max-width:780px;border-radius:0">
-  <span class="sec-label">Si querés hacernos un regalo</span>
-  <h2 class="sec-title">Transferencia</h2>
-  <p class="sec-body" style="margin-bottom:0">Tu presencia es el mejor regalo que podemos recibir. Pero si insistís, acá está el dato:</p>
+  <span class="sec-label" id="regalo-label">Si querés hacernos un regalo</span>
+  <h2 class="sec-title" id="regalo-titulo">Transferencia</h2>
+  <p class="sec-body" id="regalo-texto" style="margin-bottom:0">Tu presencia es el mejor regalo que podemos recibir. Pero si insistís, acá está el dato:</p>
   <div id="regalo-alias-wrap">
     <div class="regalo-alias" id="regalo-alias"></div>
     <div class="regalo-bank" id="regalo-bank"></div>
@@ -573,6 +573,9 @@ function renderDresscode(c) {
 function renderRegalo(c) {
   const sec = document.getElementById('regalo');
   if (c.tipo === 'save_the_date' || (!c.alias_mp && !c.cbu)) { sec.style.display = 'none'; return; }
+  document.getElementById('regalo-label').textContent = c.regalo_label || 'Si querés hacernos un regalo';
+  document.getElementById('regalo-titulo').textContent = c.regalo_titulo || 'Transferencia';
+  document.getElementById('regalo-texto').textContent = c.regalo_texto || 'Tu presencia es el mejor regalo que podemos recibir. Pero si insistís, acá está el dato:';
   if (c.alias_mp) {
     document.getElementById('regalo-alias').textContent = c.alias_mp;
     document.getElementById('regalo-bank').textContent = c.alias_banco || 'Mercado Pago';
@@ -685,11 +688,73 @@ async function init() {
   renderRSVP(cfg);
   renderSpotify(cfg);
   renderNav(cfg);
+  if (cfg.youtube_audio) initYoutubeAudio(cfg.youtube_audio);
   const logoSrc = cfg.logo_dark || localStorage.getItem('crd_site_logo');
   if (logoSrc) { const el = document.getElementById('footer-logo'); el.src = logoSrc; el.style.display = 'block'; }
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+// ── YOUTUBE AUDIO ──
+let _ytPlayer = null, _ytReady = false, _ytStarted = false, _ytMuted = false;
+
+function getYtId(url) {
+  if (!url) return null;
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+function initYoutubeAudio(url) {
+  const id = getYtId(url);
+  if (!id) return;
+  const wrap = document.createElement('div');
+  wrap.id = 'yt-audio-wrap';
+  wrap.style.cssText = 'position:fixed;width:1px;height:1px;bottom:-200px;left:-200px;opacity:0;pointer-events:none';
+  document.body.appendChild(wrap);
+  const tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+  window.onYouTubeIframeAPIReady = function() {
+    _ytPlayer = new YT.Player('yt-audio-wrap', {
+      height: '1', width: '1', videoId: id,
+      playerVars: { autoplay: 0, controls: 0, loop: 1, playlist: id, rel: 0 },
+      events: { onReady: () => { _ytReady = true; if (_ytStarted) _ytPlayer.playVideo(); } }
+    });
+  };
+  const btn = document.createElement('button');
+  btn.id = 'btn-yt-audio';
+  btn.title = 'Música';
+  btn.innerHTML = `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>`;
+  btn.style.cssText = 'position:fixed;bottom:80px;right:24px;z-index:200;background:rgba(0,0,0,0.55);border:1px solid rgba(201,168,76,0.45);color:var(--gold);width:44px;height:44px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);transition:all 0.2s';
+  btn.onclick = function(e) { e.stopPropagation(); _ytStarted ? toggleYtAudio() : triggerYtPlay(); };
+  document.body.appendChild(btn);
+  function onFirstInteraction() {
+    triggerYtPlay();
+    document.removeEventListener('click', onFirstInteraction);
+    document.removeEventListener('scroll', onFirstInteraction);
+  }
+  document.addEventListener('click', onFirstInteraction);
+  document.addEventListener('scroll', onFirstInteraction, { passive: true });
+}
+
+function triggerYtPlay() {
+  if (_ytStarted) return;
+  _ytStarted = true;
+  if (_ytReady && _ytPlayer) _ytPlayer.playVideo();
+  const btn = document.getElementById('btn-yt-audio');
+  if (btn) btn.innerHTML = `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.536 8.464a5 5 0 010 7.072M12 6v12m-3.536-9.536a5 5 0 000 7.072"/></svg>`;
+}
+
+function toggleYtAudio() {
+  if (!_ytPlayer || !_ytReady) return;
+  _ytMuted = !_ytMuted;
+  _ytMuted ? _ytPlayer.mute() : _ytPlayer.unMute();
+  const btn = document.getElementById('btn-yt-audio');
+  if (!btn) return;
+  btn.innerHTML = _ytMuted
+    ? `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/></svg>`
+    : `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.536 8.464a5 5 0 010 7.072M12 6v12m-3.536-9.536a5 5 0 000 7.072"/></svg>`;
+}
 </script>
 </body>
 </html>

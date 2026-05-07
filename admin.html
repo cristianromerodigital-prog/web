@@ -754,6 +754,20 @@ tr:hover td{background:rgba(255,255,255,0.02);}
               <div class="inv-modal-section-title">Regalo / Transferencia</div>
               <div class="inv-form-2col">
                 <div class="form-group">
+                  <label class="form-label">Etiqueta superior</label>
+                  <input class="form-input" id="inv-regalo-label" placeholder="Si querés hacernos un regalo">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Título</label>
+                  <input class="form-input" id="inv-regalo-titulo" placeholder="Transferencia">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Texto descriptivo</label>
+                <textarea class="form-textarea" id="inv-regalo-texto" style="min-height:52px" placeholder="Tu presencia es el mejor regalo que podemos recibir. Pero si insistís, acá está el dato:"></textarea>
+              </div>
+              <div class="inv-form-2col">
+                <div class="form-group">
                   <label class="form-label">Alias (Mercado Pago / banco)</label>
                   <input class="form-input" id="inv-alias" placeholder="cristian.romero">
                 </div>
@@ -829,6 +843,16 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                 <label class="form-label">Link de playlist colaborativa</label>
                 <input class="form-input" id="inv-spotify" placeholder="https://open.spotify.com/playlist/...">
                 <small style="color:var(--gray);font-size:10px;margin-top:4px;display:block">Creá una playlist colaborativa en Spotify → los invitados podrán agregar canciones.</small>
+              </div>
+            </div>
+
+            <!-- AUDIO -->
+            <div class="inv-modal-section">
+              <div class="inv-modal-section-title">Música de Fondo (opcional)</div>
+              <div class="form-group">
+                <label class="form-label">Link de YouTube</label>
+                <input class="form-input" id="inv-youtube-audio" placeholder="https://youtu.be/... o https://www.youtube.com/watch?v=...">
+                <small style="color:var(--gray);font-size:10px;margin-top:4px;display:block">Suena automáticamente al primer clic o scroll. Aparece un botón flotante para silenciar.</small>
               </div>
             </div>
 
@@ -4300,6 +4324,10 @@ function openInviteModal(id) {
     document.getElementById('inv-gsheet-url').value = c.gsheet_url || '';
     document.getElementById('inv-emailjs-template').value = c.emailjs_template || '';
     document.getElementById('inv-spotify').value = c.spotify_url || '';
+    document.getElementById('inv-regalo-label').value = c.regalo_label || '';
+    document.getElementById('inv-regalo-titulo').value = c.regalo_titulo || '';
+    document.getElementById('inv-regalo-texto').value = c.regalo_texto || '';
+    document.getElementById('inv-youtube-audio').value = c.youtube_audio || '';
     document.getElementById('inv-color-esquema').value = c.color_esquema || 'negro';
     document.getElementById('inv-estilo-aero').checked = !!c.estilo_aero;
     const slugEl = document.getElementById('inv-slug');
@@ -4314,7 +4342,8 @@ function openInviteModal(id) {
      'inv-ceremonia-hora','inv-ceremonia-lugar','inv-ceremonia-dir','inv-recepcion-hora','inv-fin-fiesta-hora','inv-recepcion-lugar',
      'inv-lugar-nombre','inv-lugar-dir','inv-lugar-maps','inv-dresscode','inv-dresscode-nota',
      'inv-alias','inv-alias-banco','inv-alias-titular','inv-cbu','inv-rsvp-limite',
-     'inv-gsheet-url','inv-emailjs-template','inv-spotify','inv-slug'].forEach(id => {
+     'inv-gsheet-url','inv-emailjs-template','inv-spotify',
+     'inv-regalo-label','inv-regalo-titulo','inv-regalo-texto','inv-youtube-audio','inv-slug'].forEach(id => {
       const el = document.getElementById(id);
       if (el) { el.value = ''; if (el.dataset) el.dataset.manual = ''; }
     });
@@ -4370,6 +4399,10 @@ function readInviteForm() {
       emailjs_template: document.getElementById('inv-emailjs-template').value.trim(),
       emailjs_key: 'odUJtdh1Z0U27ZkaN',
       spotify_url: document.getElementById('inv-spotify').value.trim(),
+      regalo_label: document.getElementById('inv-regalo-label').value.trim(),
+      regalo_titulo: document.getElementById('inv-regalo-titulo').value.trim(),
+      regalo_texto: document.getElementById('inv-regalo-texto').value.trim(),
+      youtube_audio: document.getElementById('inv-youtube-audio').value.trim(),
       color_esquema: document.getElementById('inv-color-esquema').value,
       estilo_aero: document.getElementById('inv-estilo-aero').checked,
       logo_dark: S.get('crd_site_logo') || '',
