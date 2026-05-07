@@ -4325,9 +4325,9 @@ function openInviteModal(id) {
     document.getElementById('inv-gsheet-url').value = c.gsheet_url || '';
     document.getElementById('inv-emailjs-template').value = c.emailjs_template || '';
     document.getElementById('inv-spotify').value = c.spotify_url || '';
-    document.getElementById('inv-regalo-label').value = c.regalo_label || 'Si querés hacernos un regalo';
-    document.getElementById('inv-regalo-titulo').value = c.regalo_titulo || 'Transferencia';
-    document.getElementById('inv-regalo-texto').value = c.regalo_texto || 'Tu presencia es el mejor regalo que podemos recibir. Pero si insistís, acá está el dato:';
+    document.getElementById('inv-regalo-label').value = c.regalo_label || '';
+    document.getElementById('inv-regalo-titulo').value = c.regalo_titulo || '';
+    document.getElementById('inv-regalo-texto').value = c.regalo_texto || '';
     document.getElementById('inv-youtube-audio').value = c.youtube_audio || '';
     document.getElementById('inv-color-esquema').value = c.color_esquema || 'negro';
     document.getElementById('inv-estilo-aero').checked = !!c.estilo_aero;
@@ -4347,9 +4347,9 @@ function openInviteModal(id) {
       const el = document.getElementById(id);
       if (el) { el.value = ''; if (el.dataset) el.dataset.manual = ''; }
     });
-    document.getElementById('inv-regalo-label').value = 'Si querés hacernos un regalo';
-    document.getElementById('inv-regalo-titulo').value = 'Transferencia';
-    document.getElementById('inv-regalo-texto').value = 'Tu presencia es el mejor regalo que podemos recibir. Pero si insistís, acá está el dato:';
+    document.getElementById('inv-regalo-label').value = '';
+    document.getElementById('inv-regalo-titulo').value = '';
+    document.getElementById('inv-regalo-texto').value = '';
     document.getElementById('inv-rsvp-activo').checked = true;
     document.getElementById('inv-fecha-iso').value = '';
     document.getElementById('inv-media-type').value = 'image';
