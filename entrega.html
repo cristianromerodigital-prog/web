@@ -110,9 +110,9 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
 #back-btn { display:none; align-items:center; gap:10px; color:rgba(255,255,255,.5); font-size:11px; letter-spacing:.3em; text-transform:uppercase; cursor:pointer !important; margin-bottom:28px; transition:color .3s; }
 #back-btn:hover { color:var(--cyan); }
 #back-btn.visible { display:flex; }
-.photos-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; }
-.photo-item { position:relative; overflow:hidden; cursor:pointer !important; display:block; aspect-ratio:3/4; }
-.photo-item img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s cubic-bezier(.25,.46,.45,.94); }
+.photos-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; align-items:start; }
+.photo-item { position:relative; overflow:hidden; cursor:pointer !important; display:block; }
+.photo-item img { width:100%; height:auto; display:block; transition:transform .5s cubic-bezier(.25,.46,.45,.94); }
 .photo-item:hover img { transform:scale(1.03); }
 .photo-name { position:absolute; bottom:0; left:0; right:0; padding:28px 10px 8px; background:linear-gradient(to top, rgba(0,0,0,.72) 0%, transparent 100%); color:rgba(255,255,255,.9); font-size:10px; letter-spacing:.06em; font-weight:300; opacity:0; transform:translateY(4px); transition:opacity .35s ease, transform .35s ease; pointer-events:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; z-index:2; }
 .photo-item:hover .photo-name { opacity:1; transform:translateY(0); }
@@ -198,6 +198,7 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
 @media(max-width:768px){
   .albums-grid { grid-template-columns:1fr; }
   .photos-grid { grid-template-columns:repeat(2,1fr); gap:3px; }
+  .masonry-col { gap:3px !important; }
   .videos-grid { grid-template-columns:1fr; }
   .action-bar { flex-direction:column; align-items:flex-start; }
   #galeria { padding:60px 20px; }
@@ -673,14 +674,20 @@ function renderFotos(items, folderId, label) {
   document.getElementById('btn-pedir-album').style.display = 'flex';
   renderAlbumTypeSelector(label);
 
+  const numCols = window.innerWidth <= 768 ? 2 : 3;
+  const cols = Array.from({length: numCols}, () => []);
+  items.forEach((f, i) => cols[i % numCols].push({f, i}));
+
   container.innerHTML = `
     <div class="photos-grid" id="photos-grid">
-      ${items.map((f, i) => `
-        <div class="photo-item" id="pi-${f.id}" onclick="openPhoto(${i})">
-          <img src="${thumbUrl(f.id)}" alt="${f.name}" loading="lazy">
-          <div class="photo-check" id="chk-${f.id}" onclick="event.stopPropagation();toggleSelect('${f.id}', ${i})"></div>
-          <div class="photo-name">${f.name.replace(/\.[^.]+$/, '')}</div>
-        </div>`).join('')}
+      ${cols.map(col => `<div class="masonry-col" style="display:flex;flex-direction:column;gap:4px">${
+        col.map(({f, i}) => `
+          <div class="photo-item" id="pi-${f.id}" onclick="openPhoto(${i})">
+            <img src="${thumbUrl(f.id)}" alt="${f.name}" loading="lazy">
+            <div class="photo-check" id="chk-${f.id}" onclick="event.stopPropagation();toggleSelect('${f.id}', ${i})"></div>
+            <div class="photo-name">${f.name.replace(/\.[^.]+$/, '')}</div>
+          </div>`).join('')
+      }</div>`).join('')}
     </div>`;
 }
 
