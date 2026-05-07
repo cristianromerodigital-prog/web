@@ -510,6 +510,10 @@ function applyConfig() {
 // ═══════════════════════════════════════════════════════════
 // ESTRUCTURA: detecta Fotos/Exteriores, Fotos/Evento, Video
 // ═══════════════════════════════════════════════════════════
+function sortByName(arr) {
+  return arr.slice().sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+}
+
 async function buildStructure(rootItems) {
   const tabs   = [];
   const panels = {};
@@ -536,13 +540,13 @@ async function buildStructure(rootItems) {
         if(rootImgs.length > 0) {
           const key = 'foto_root_' + item.id;
           tabs.push({ key, label: 'General', type: 'fotos', folderId: item.id });
-          panels[key] = rootImgs;
+          panels[key] = sortByName(rootImgs);
         }
       } else {
         // Sin subcarpetas → tab directo con el nombre de la carpeta
         const key = 'foto_' + item.id;
         tabs.push({ key, label: item.name, type: 'fotos', folderId: item.id });
-        panels[key] = rootImgs;
+        panels[key] = sortByName(rootImgs);
       }
 
     } else if(isVideoRoot) {
@@ -565,7 +569,7 @@ async function buildStructure(rootItems) {
       } else {
         const key = 'video_' + item.id;
         tabs.push({ key, label: item.name, type: 'videos', folderId: item.id });
-        panels[key] = sub || [];
+        panels[key] = (sub || []).filter(i => i.type === 'video');
       }
     }
   }
@@ -591,7 +595,7 @@ function renderTabs(tabs) {
   let html = '';
 
   if(fotoTabs.length > 0) {
-    if(hasBoth) html += `<span style="font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 14px;align-self:center;white-space:nowrap">📷</span>`;
+    if(hasBoth) html += `<span style="font-size:16px;color:rgba(255,255,255,.35);padding:0 14px;align-self:center;white-space:nowrap">📷</span>`;
     html += fotoTabs.map((t, i) => {
       const globalIdx = tabs.indexOf(t);
       return `<button class="tab-btn${i===0&&globalIdx===0?' active':''}" onclick="switchTab(tabDefs[${globalIdx}])" id="tab-${t.key}">${t.label}</button>`;
@@ -600,7 +604,7 @@ function renderTabs(tabs) {
 
   if(hasBoth) {
     html += `<span style="width:1px;background:rgba(255,255,255,.12);align-self:stretch;flex-shrink:0"></span>`;
-    html += `<span style="font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 14px;align-self:center;white-space:nowrap">🎬</span>`;
+    html += `<span style="font-size:16px;color:rgba(255,255,255,.35);padding:0 14px;align-self:center;white-space:nowrap">🎬</span>`;
   }
 
   if(videoTabs.length > 0) {
@@ -628,9 +632,10 @@ async function switchTab(tab) {
     document.getElementById('panels-container').innerHTML = '<div style="text-align:center;padding:60px;color:rgba(255,255,255,.3);font-size:11px;letter-spacing:.3em">Cargando...</div>';
     const items = await gasCall({ action: 'getDriveFolder', folder: tab.folderId });
     // Filtrar según tipo del tab
-    allPanels[tab.key] = (items || []).filter(i =>
+    const filtered = (items || []).filter(i =>
       tab.type === 'videos' ? i.type === 'video' : i.type === 'image'
     );
+    allPanels[tab.key] = tab.type === 'fotos' ? sortByName(filtered) : filtered;
   }
 
   exitSelectMode();
