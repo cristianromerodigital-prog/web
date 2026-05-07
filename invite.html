@@ -178,6 +178,28 @@ footer small a{color:inherit}
 /* LOGO FOOTER */
 #footer-logo{display:none;margin:16px auto 12px;max-height:56px;max-width:180px;object-fit:contain;filter:invert(1)}
 .theme-blanco #footer-logo,.theme-champagne #footer-logo{filter:none}
+
+/* ── SOBRE / ENVELOPE ── */
+#envelope-screen{position:fixed;inset:0;z-index:9999;background:var(--black);display:none;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.env-scene{display:flex;flex-direction:column;align-items:center;gap:36px;perspective:900px}
+.env-wrap{position:relative;width:340px;height:215px;transform-style:preserve-3d;animation:env-rise 0.9s ease both}
+@keyframes env-rise{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+.env-body{position:absolute;inset:0;background:#1c1913;border:1px solid rgba(201,168,76,0.25);overflow:hidden}
+.env-body::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent calc(50% - .5px),rgba(201,168,76,.1) 50%,transparent calc(50% + .5px)),linear-gradient(225deg,transparent calc(50% - .5px),rgba(201,168,76,.1) 50%,transparent calc(50% + .5px))}
+.env-flap{position:absolute;top:0;left:0;width:340px;height:107px;background:#272318;clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top center;z-index:5;transition:transform .9s cubic-bezier(.4,0,.2,1)}
+.env-flap.open{transform:rotateX(-180deg)}
+.env-fold-bot{position:absolute;bottom:0;left:0;width:340px;height:88px;background:#211e14;clip-path:polygon(0 100%,100% 100%,50% 0);z-index:1}
+.env-text{position:absolute;top:107px;bottom:0;left:0;right:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;padding:0 24px}
+.env-eyebrow{font-size:9px;letter-spacing:5px;text-transform:uppercase;color:rgba(201,168,76,.55);margin-bottom:10px}
+.env-name{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;font-style:italic;color:var(--white);text-align:center;line-height:1.25}
+.env-seal{position:absolute;top:81px;left:50%;transform:translateX(-50%);width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 38% 38%,#e8c97a,#c9a84c 60%,#a07820);border:2px solid rgba(201,168,76,.35);display:flex;align-items:center;justify-content:center;font-size:19px;color:rgba(0,0,0,.55);z-index:6;box-shadow:0 2px 14px rgba(0,0,0,.5),0 0 0 4px rgba(201,168,76,.07);transition:opacity .3s,transform .3s}
+.env-cta{display:flex;flex-direction:column;align-items:center;gap:7px;color:rgba(201,168,76,.65);font-size:10px;letter-spacing:4px;text-transform:uppercase;animation:env-cta 2.2s ease-in-out infinite}
+.env-cta svg{width:14px;height:14px}
+@keyframes env-cta{0%,100%{opacity:.5;transform:translateY(0)}50%{opacity:1;transform:translateY(5px)}}
+.env-scene.opening .env-seal{opacity:0;transform:translateX(-50%) scale(.6)}
+.env-scene.opening .env-cta{opacity:0;transition:opacity .2s}
+@media(max-width:420px){.env-scene{transform:scale(.88)}}
+@media(max-width:360px){.env-scene{transform:scale(.76)}}
 </style>
 </head>
 <body>
@@ -186,6 +208,26 @@ footer small a{color:inherit}
   <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
   <h2>Invitación no encontrada</h2>
   <p>El enlace de esta invitación no es válido o ha expirado. Pedile al organizador que te reenvíe el link correcto.</p>
+</div>
+
+<div id="envelope-screen">
+  <div class="env-scene" id="env-scene">
+    <div class="env-wrap" id="env-wrap">
+      <div class="env-body">
+        <div class="env-fold-bot"></div>
+        <div class="env-text">
+          <span class="env-eyebrow">INVITACIÓN</span>
+          <span class="env-name" id="env-name"></span>
+        </div>
+      </div>
+      <div class="env-flap" id="env-flap"></div>
+      <div class="env-seal" id="env-seal">✦</div>
+    </div>
+    <div class="env-cta" id="env-cta">
+      Abrí aquí
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"/></svg>
+    </div>
+  </div>
 </div>
 
 <div id="invite-app" style="display:none">
@@ -677,7 +719,6 @@ async function init() {
     document.getElementById('placeholder').style.display = 'flex';
     return;
   }
-  document.getElementById('invite-app').style.display = 'block';
   if (cfg.color_esquema && cfg.color_esquema !== 'negro') document.documentElement.classList.add('theme-' + cfg.color_esquema);
   if (cfg.estilo_aero) { document.documentElement.classList.add('estilo-aero'); startAeroParticles(); }
   if (cfg.color_acento) document.documentElement.style.setProperty('--gold', cfg.color_acento);
@@ -689,15 +730,54 @@ async function init() {
   renderRSVP(cfg);
   renderSpotify(cfg);
   renderNav(cfg);
-  if (cfg.youtube_audio) initYoutubeAudio(cfg.youtube_audio);
   const logoSrc = cfg.logo_dark || localStorage.getItem('crd_site_logo');
   if (logoSrc) { const el = document.getElementById('footer-logo'); el.src = logoSrc; el.style.display = 'block'; }
+  if (cfg.youtube_audio) {
+    showEnvelope(cfg);
+  } else {
+    document.getElementById('invite-app').style.display = 'block';
+  }
+}
+
+function showEnvelope(c) {
+  const name = c.novios || c.titulo || '';
+  document.getElementById('env-name').textContent = name;
+  const screen = document.getElementById('envelope-screen');
+  screen.style.display = 'flex';
+  // Scale for very small screens
+  const scale = Math.min(1, (window.innerWidth - 24) / 380);
+  if (scale < 1) document.getElementById('env-scene').style.transform = `scale(${scale})`;
+  screen.addEventListener('click', openEnvelope, { once: true });
+}
+
+function openEnvelope() {
+  const screen = document.getElementById('envelope-screen');
+  const scene  = document.getElementById('env-scene');
+  const flap   = document.getElementById('env-flap');
+  screen.style.pointerEvents = 'none';
+
+  // Este click ES el gesto del usuario → el audio puede arrancar con sonido directo
+  if (cfg.youtube_audio) initYoutubeAudio(cfg.youtube_audio);
+
+  scene.classList.add('opening'); // oculta sello y CTA
+  flap.classList.add('open');     // abre el sobre
+
+  // Tras la animación del flap, revelar la invitación
+  setTimeout(() => {
+    const app = document.getElementById('invite-app');
+    app.style.cssText = 'display:block;opacity:0;transition:opacity 0.6s ease';
+    requestAnimationFrame(() => { requestAnimationFrame(() => { app.style.opacity = '1'; }); });
+    screen.style.transition = 'opacity 0.55s ease';
+    screen.style.opacity = '0';
+    setTimeout(() => screen.remove(), 650);
+  }, 950);
 }
 
 document.addEventListener('DOMContentLoaded', init);
 
 // ── YOUTUBE AUDIO ──
-let _ytIframe = null, _ytUnmuted = false, _ytMuted = false;
+// Llamado solo desde openEnvelope() (dentro de click → browser permite autoplay con sonido)
+let _ytIframe = null, _ytMuted = false;
 const SVG_VOL  = `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.536 8.464a5 5 0 010 7.072M12 6v12m-3.536-9.536a5 5 0 000 7.072"/></svg>`;
 const SVG_MUTE = `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/></svg>`;
 
@@ -712,72 +792,29 @@ function _ytSend(cmd) {
     _ytIframe.contentWindow.postMessage(JSON.stringify({ event:'command', func:cmd, args:[] }), 'https://www.youtube.com');
 }
 
-function _ytSetBtn(state) {
-  const b = document.getElementById('btn-yt-audio');
-  if (!b) return;
-  b.innerHTML = state === 'muted' ? SVG_MUTE : SVG_VOL;
-  b.title = state === 'muted' ? 'Activar música' : 'Silenciar música';
-}
-
 function initYoutubeAudio(url) {
   const id = getYtId(url);
   if (!id) return;
-
-  // Crear iframe inmediatamente con autoplay+mute — el browser lo permite sin gesto.
-  // autoplay=1&mute=1 funciona en desktop, Android Chrome e iOS Safari (iOS 10+).
   const orig = (location.origin && location.origin !== 'null') ? '&origin=' + encodeURIComponent(location.origin) : '';
   _ytIframe = document.createElement('iframe');
   _ytIframe.allow = 'autoplay';
   _ytIframe.style.cssText = 'position:fixed;top:-999px;left:-999px;width:1px;height:1px;border:none;pointer-events:none';
-  _ytIframe.src = `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&controls=0&enablejsapi=1${orig}`;
+  // autoplay=1 sin mute — funciona porque estamos dentro de un event handler de click
+  _ytIframe.src = `https://www.youtube.com/embed/${id}?autoplay=1&loop=1&playlist=${id}&controls=0&enablejsapi=1${orig}`;
   document.body.appendChild(_ytIframe);
 
-  // Botón visible desde el inicio mostrando estado muteado
   const btn = document.createElement('button');
   btn.id = 'btn-yt-audio';
-  btn.innerHTML = SVG_MUTE;
-  btn.title = 'Activar música';
+  btn.innerHTML = SVG_VOL;
+  btn.title = 'Silenciar música';
   btn.style.cssText = 'position:fixed;bottom:80px;right:24px;z-index:200;background:rgba(0,0,0,0.55);border:1px solid rgba(201,168,76,0.45);color:var(--gold);width:44px;height:44px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);transition:all 0.2s';
   document.body.appendChild(btn);
-
-  // Si el player no estaba listo cuando llegó el unmute, lo reintenta en onReady
-  let _pendingUnmute = false;
-  window.addEventListener('message', function(e) {
-    if (e.origin !== 'https://www.youtube.com') return;
-    try { if (JSON.parse(e.data).event === 'onReady' && _pendingUnmute) { _ytSend('unMute'); _pendingUnmute = false; } } catch(_) {}
-  });
-
-  function unmute() {
-    if (_ytUnmuted) return;
-    _ytUnmuted = true;
-    document.removeEventListener('touchstart', unmute);
-    document.removeEventListener('scroll',     unmute);
-    document.removeEventListener('click', onDocClick);
-    _ytSend('unMute');     // intento inmediato
-    _pendingUnmute = true; // fallback por si el player aún carga
-    _ytMuted = false;
-    _ytSetBtn('playing');
-  }
-
-  function onDocClick(e) {
-    if (e.target.closest && e.target.closest('#btn-yt-audio')) return;
-    unmute();
-  }
-
-  // touchstart = primer toque en mobile (iOS Safari); scroll = desktop y Android; click = todo
-  document.addEventListener('touchstart', unmute,     { passive: true });
-  document.addEventListener('scroll',     unmute,     { passive: true });
-  document.addEventListener('click',      onDocClick);
-
   btn.onclick = function(e) {
     e.stopPropagation();
-    if (!_ytUnmuted) {
-      unmute();
-    } else {
-      _ytMuted = !_ytMuted;
-      _ytSend(_ytMuted ? 'mute' : 'unMute');
-      _ytSetBtn(_ytMuted ? 'muted' : 'playing');
-    }
+    _ytMuted = !_ytMuted;
+    _ytSend(_ytMuted ? 'mute' : 'unMute');
+    btn.innerHTML = _ytMuted ? SVG_MUTE : SVG_VOL;
+    btn.title = _ytMuted ? 'Activar música' : 'Silenciar música';
   };
 }
 </script>
