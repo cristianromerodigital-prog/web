@@ -5289,9 +5289,21 @@ function makeEntregaSlug(nombres) {
     .replace(/-+/g, '-');
 }
 
+function parseFechaSlug(fecha) {
+  if(!fecha) return '';
+  const meses = {enero:'01',febrero:'02',marzo:'03',abril:'04',mayo:'05',junio:'06',julio:'07',agosto:'08',septiembre:'09',octubre:'10',noviembre:'11',diciembre:'12'};
+  const lower = fecha.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  let mes = '';
+  for(const [k,v] of Object.entries(meses)) { if(lower.includes(k)) { mes = v; break; } }
+  const nums = lower.match(/\d+/g) || [];
+  const dia  = (nums[0] || '').padStart(2,'0');
+  const anio = nums.find(n => n.length === 4) || '';
+  return [dia, mes, anio].filter(Boolean).join('-');
+}
+
 function buildEntregaUrl(ev) {
   const base = window.location.href.replace(/admin\.html.*/, 'entrega.html');
-  const slug = ev.slug || makeEntregaSlug(ev.nombres) || ev.numId || ev.id;
+  const slug = ev.slug || [makeEntregaSlug(ev.nombres), parseFechaSlug(ev.fecha)].filter(Boolean).join('-') || ev.numId || ev.id;
   return base + '?id=' + encodeURIComponent(slug);
 }
 function updateEntregaPreview() {
@@ -5382,7 +5394,8 @@ function guardarEntrega() {
   const dlEl2 = document.getElementById('ent-allow-dl');
   const nombres = document.getElementById('ent-nombres').value.trim() || 'Entrega';
   const tipo = document.getElementById('ent-tipo').value;
-  const ev = { id: 0, folderId: fid, nombres, slug: makeEntregaSlug(nombres), fecha: document.getElementById('ent-fecha').value.trim(), tipo, frase: document.getElementById('ent-frase').value.trim(), portadaId: document.getElementById('ent-portada').value.trim(), allowDownload: dlEl2 ? dlEl2.checked : true, overlay: _entOverlay, creado: new Date().toLocaleDateString('es-AR'), estado: 'En edición', notas: '' };
+  const fecha = document.getElementById('ent-fecha').value.trim();
+  const ev = { id: 0, folderId: fid, nombres, slug: [makeEntregaSlug(nombres), parseFechaSlug(fecha)].filter(Boolean).join('-'), fecha, tipo, frase: document.getElementById('ent-frase').value.trim(), portadaId: document.getElementById('ent-portada').value.trim(), allowDownload: dlEl2 ? dlEl2.checked : true, overlay: _entOverlay, creado: new Date().toLocaleDateString('es-AR'), estado: 'En edición', notas: '' };
   const entregas = getEntregas();
   if(_editingEntregaIdx >= 0 && entregas[_editingEntregaIdx]) {
     ev.id = entregas[_editingEntregaIdx].id;
