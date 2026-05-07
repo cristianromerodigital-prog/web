@@ -530,13 +530,10 @@ function applyLogo(src) {
 async function init() {
   startFrases();
 
-  // Aplicar logo desde localStorage de inmediato
-  try { applyLogo(JSON.parse(localStorage.getItem('crd_site_logo'))); } catch(e) {}
-
-  // Logo desde CF — se aplica ni bien llega, sin esperar otros fetches ni return tempranos
+  // Logo siempre desde CF (URL de Drive) — funciona en todos los browsers y dispositivos
   fetch(CF_URL + '/crd_site_logo').then(r => r.text()).catch(() => null).then(raw => {
     if(!raw) return;
-    try { const src = JSON.parse(raw); if(src) { localStorage.setItem('crd_site_logo', JSON.stringify(src)); applyLogo(src); } } catch(e) {}
+    try { const src = JSON.parse(raw); if(src) applyLogo(src); } catch(e) {}
   });
 
   // Lanzar todos los fetches CF en paralelo
