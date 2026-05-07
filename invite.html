@@ -865,9 +865,11 @@ function initYoutubeAudio(url) {
   const id = getYtId(url);
   if (!id) return;
   const orig = (location.origin && location.origin !== 'null') ? '&origin=' + encodeURIComponent(location.origin) : '';
+  // Iframe dentro del viewport (opacity casi 0) — Android Chrome permite muted autoplay
+  // mejor cuando el elemento está en el area visible de la página
   _ytIframe = document.createElement('iframe');
   _ytIframe.allow = 'autoplay';
-  _ytIframe.style.cssText = 'position:fixed;top:-999px;left:-999px;width:1px;height:1px;border:none;pointer-events:none';
+  _ytIframe.style.cssText = 'position:fixed;bottom:80px;right:24px;width:44px;height:44px;border:none;opacity:.01;pointer-events:none;z-index:199';
   _ytIframe.src = `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&controls=0&enablejsapi=1${orig}`;
   document.body.appendChild(_ytIframe);
 
@@ -878,10 +880,19 @@ function initYoutubeAudio(url) {
   btn.style.cssText = 'position:fixed;bottom:80px;right:24px;z-index:200;background:rgba(0,0,0,0.55);border:1px solid rgba(201,168,76,0.45);color:var(--gold);width:44px;height:44px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);transition:background .2s,border .2s';
   document.body.appendChild(btn);
 
-  let _pendingUnmute = false;
+  // Cuando el player está listo, arrancamos muted automáticamente
+  // Así cuando el usuario toca, solo necesitamos unMute (mucho más rápido)
+  let _videoPlaying = false, _pendingUnmute = false;
   window.addEventListener('message', function(e) {
     if (e.origin !== 'https://www.youtube.com') return;
-    try { if (JSON.parse(e.data).event === 'onReady' && _pendingUnmute) { _ytSend('playVideo'); _ytSend('unMute'); _pendingUnmute = false; } } catch(_) {}
+    try {
+      const d = JSON.parse(e.data);
+      if (d.event === 'onReady') {
+        _ytSend('playVideo'); // arranca muted apenas carga — sin gesto necesario
+        _videoPlaying = true;
+        if (_pendingUnmute) { _ytSend('unMute'); _pendingUnmute = false; }
+      }
+    } catch(_) {}
   });
 
   function unmute() {
@@ -890,9 +901,13 @@ function initYoutubeAudio(url) {
     document.removeEventListener('touchstart', unmute);
     document.removeEventListener('scroll',     unmute);
     document.removeEventListener('click',      onDocClick);
-    _ytSend('playVideo');
-    _ytSend('unMute');
-    _pendingUnmute = true;
+    if (_videoPlaying) {
+      _ytSend('unMute'); // video ya cargado → unmute instantáneo
+    } else {
+      _ytSend('playVideo');
+      _ytSend('unMute');
+      _pendingUnmute = true; // fallback: se ejecuta en onReady
+    }
     _ytMuted = false;
     _ytSetBtn('playing');
     // Mutear cuando abre Spotify
