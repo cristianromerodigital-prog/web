@@ -5303,7 +5303,7 @@ function parseFechaSlug(fecha) {
 
 function buildEntregaUrl(ev) {
   const slug = ev.slug || [makeEntregaSlug(ev.nombres), parseFechaSlug(ev.fecha)].filter(Boolean).join('-') || ev.numId || ev.id;
-  return 'https://web.cristian-romero-digital.workers.dev/e/' + encodeURIComponent(slug);
+  return 'https://cristianromerodigital.ar/entrega.html?id=' + encodeURIComponent(slug);
 }
 function updateEntregaPreview() {
   const raw = document.getElementById('ent-folder').value.trim();
