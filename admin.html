@@ -5278,9 +5278,21 @@ function setEntOverlay(key, el) {
   updateEntregaPreview();
 }
 
+function makeEntregaSlug(nombres) {
+  return (nombres || '')
+    .toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[&+]/g, 'y')
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+}
+
 function buildEntregaUrl(ev) {
   const base = window.location.href.replace(/admin\.html.*/, 'entrega.html');
-  return base + '?id=' + (ev.numId || ev.id);
+  const slug = ev.slug || makeEntregaSlug(ev.nombres) || ev.numId || ev.id;
+  return base + '?id=' + encodeURIComponent(slug);
 }
 function updateEntregaPreview() {
   const raw = document.getElementById('ent-folder').value.trim();
@@ -5370,7 +5382,7 @@ function guardarEntrega() {
   const dlEl2 = document.getElementById('ent-allow-dl');
   const nombres = document.getElementById('ent-nombres').value.trim() || 'Entrega';
   const tipo = document.getElementById('ent-tipo').value;
-  const ev = { id: 0, folderId: fid, nombres, fecha: document.getElementById('ent-fecha').value.trim(), tipo, frase: document.getElementById('ent-frase').value.trim(), portadaId: document.getElementById('ent-portada').value.trim(), allowDownload: dlEl2 ? dlEl2.checked : true, overlay: _entOverlay, creado: new Date().toLocaleDateString('es-AR'), estado: 'En edición', notas: '' };
+  const ev = { id: 0, folderId: fid, nombres, slug: makeEntregaSlug(nombres), fecha: document.getElementById('ent-fecha').value.trim(), tipo, frase: document.getElementById('ent-frase').value.trim(), portadaId: document.getElementById('ent-portada').value.trim(), allowDownload: dlEl2 ? dlEl2.checked : true, overlay: _entOverlay, creado: new Date().toLocaleDateString('es-AR'), estado: 'En edición', notas: '' };
   const entregas = getEntregas();
   if(_editingEntregaIdx >= 0 && entregas[_editingEntregaIdx]) {
     ev.id = entregas[_editingEntregaIdx].id;

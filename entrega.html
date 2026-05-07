@@ -540,7 +540,7 @@ async function init() {
   // Esperar evento solo si es necesario para tener el folderId
   if(EVENT_ID && !EVENT_FOLDER) {
     const entregas = await fetchEvent;
-    const ev = (entregas || []).find(e => String(e.id) === String(EVENT_ID) || e.numId === EVENT_ID);
+    const ev = (entregas || []).find(e => String(e.id) === String(EVENT_ID) || e.numId === EVENT_ID || e.slug === EVENT_ID);
     if(ev) Object.assign(CFG, ev);
   }
 
