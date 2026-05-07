@@ -674,6 +674,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                   <input class="form-input" id="inv-media-url" placeholder="https://res.cloudinary.com/..." oninput="invPreviewMedia(this.value)" style="flex:1">
                   <button class="btn-sm" onclick="openInvCloudinary()" title="Subir desde PC">⬆ Subir</button>
                   <button class="btn-sm" onclick="openInvBrowser()" title="Explorar subidos a Cloudinary" style="border-color:var(--cyan);color:var(--cyan)">☁ Explorar</button>
+                  <button class="btn-sm" onclick="openInvDriveBrowser()" title="Elegir desde Google Drive" style="border-color:#34a853;color:#34a853">▲ Drive</button>
                 </div>
               </div>
               <img id="inv-media-preview-img" class="inv-media-preview" alt="">
@@ -754,11 +755,11 @@ tr:hover td{background:rgba(255,255,255,0.02);}
               <div class="inv-modal-section-title">Regalo / Transferencia</div>
               <div class="inv-form-2col">
                 <div class="form-group">
-                  <label class="form-label">Etiqueta superior</label>
+                  <label class="form-label">Texto pequeño (encabezado)</label>
                   <input class="form-input" id="inv-regalo-label" placeholder="Si querés hacernos un regalo">
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Título</label>
+                  <label class="form-label">Título grande (tipografía serif)</label>
                   <input class="form-input" id="inv-regalo-titulo" placeholder="Transferencia">
                 </div>
               </div>
@@ -4324,9 +4325,9 @@ function openInviteModal(id) {
     document.getElementById('inv-gsheet-url').value = c.gsheet_url || '';
     document.getElementById('inv-emailjs-template').value = c.emailjs_template || '';
     document.getElementById('inv-spotify').value = c.spotify_url || '';
-    document.getElementById('inv-regalo-label').value = c.regalo_label || '';
-    document.getElementById('inv-regalo-titulo').value = c.regalo_titulo || '';
-    document.getElementById('inv-regalo-texto').value = c.regalo_texto || '';
+    document.getElementById('inv-regalo-label').value = c.regalo_label || 'Si querés hacernos un regalo';
+    document.getElementById('inv-regalo-titulo').value = c.regalo_titulo || 'Transferencia';
+    document.getElementById('inv-regalo-texto').value = c.regalo_texto || 'Tu presencia es el mejor regalo que podemos recibir. Pero si insistís, acá está el dato:';
     document.getElementById('inv-youtube-audio').value = c.youtube_audio || '';
     document.getElementById('inv-color-esquema').value = c.color_esquema || 'negro';
     document.getElementById('inv-estilo-aero').checked = !!c.estilo_aero;
@@ -4342,11 +4343,13 @@ function openInviteModal(id) {
      'inv-ceremonia-hora','inv-ceremonia-lugar','inv-ceremonia-dir','inv-recepcion-hora','inv-fin-fiesta-hora','inv-recepcion-lugar',
      'inv-lugar-nombre','inv-lugar-dir','inv-lugar-maps','inv-dresscode','inv-dresscode-nota',
      'inv-alias','inv-alias-banco','inv-alias-titular','inv-cbu','inv-rsvp-limite',
-     'inv-gsheet-url','inv-emailjs-template','inv-spotify',
-     'inv-regalo-label','inv-regalo-titulo','inv-regalo-texto','inv-youtube-audio','inv-slug'].forEach(id => {
+     'inv-gsheet-url','inv-emailjs-template','inv-spotify','inv-youtube-audio','inv-slug'].forEach(id => {
       const el = document.getElementById(id);
       if (el) { el.value = ''; if (el.dataset) el.dataset.manual = ''; }
     });
+    document.getElementById('inv-regalo-label').value = 'Si querés hacernos un regalo';
+    document.getElementById('inv-regalo-titulo').value = 'Transferencia';
+    document.getElementById('inv-regalo-texto').value = 'Tu presencia es el mejor regalo que podemos recibir. Pero si insistís, acá está el dato:';
     document.getElementById('inv-rsvp-activo').checked = true;
     document.getElementById('inv-fecha-iso').value = '';
     document.getElementById('inv-media-type').value = 'image';
@@ -4517,6 +4520,13 @@ function invApplySubtiuloPreset(val) {
   if (!val || val === 'custom') return;
   const plain = INV_SUBTITULO_PRESETS[val] ? INV_SUBTITULO_PRESETS[val].replace(/<[^>]+>/g, '') : '';
   document.getElementById('inv-subtitulo').value = plain;
+}
+
+function openInvDriveBrowser() {
+  openDriveBrowser(url => {
+    document.getElementById('inv-media-url').value = url;
+    invPreviewMedia(url, document.getElementById('inv-media-type').value);
+  });
 }
 
 async function openInvBrowser() {
