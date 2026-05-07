@@ -750,7 +750,8 @@ async function init() {
     showEnvelope(cfg);
   } else {
     document.getElementById('invite-app').style.display = 'block';
-    if (cfg.youtube_audio) initYoutubeAudioDirect(cfg.youtube_audio);
+    if (cfg.youtube_audio) initYoutubeAudio(cfg.youtube_audio);
+    // sin sobre: unmute en primer scroll/touch/click (manejado dentro de initYoutubeAudio)
   }
 }
 
@@ -811,8 +812,11 @@ function openEnvelope() {
   const flap   = document.getElementById('env-flap');
   screen.style.pointerEvents = 'none';
 
-  // Este click ES el gesto del usuario → el audio puede arrancar con sonido directo
-  if (cfg.youtube_audio) initYoutubeAudio(cfg.youtube_audio);
+  // Iniciar audio — dentro del click del sobre → unmute inmediato
+  if (cfg.youtube_audio) {
+    initYoutubeAudio(cfg.youtube_audio);
+    if (_ytTriggerUnmute) _ytTriggerUnmute(); // click del sobre = gesto válido para desmuteado
+  }
 
   scene.classList.add('opening'); // oculta sello y CTA
   flap.classList.add('open');     // abre el sobre
@@ -830,8 +834,8 @@ function openEnvelope() {
 
 document.addEventListener('DOMContentLoaded', init);
 
-// ── YOUTUBE AUDIO ──
-let _ytIframe = null, _ytMuted = false;
+// ── YOUTUBE AUDIO ── (basado en la versión que funcionaba)
+let _ytIframe = null, _ytUnmuted = false, _ytMuted = false, _ytTriggerUnmute = null;
 const SVG_VOL  = `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.536 8.464a5 5 0 010 7.072M12 6v12m-3.536-9.536a5 5 0 000 7.072"/></svg>`;
 const SVG_MUTE = `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/></svg>`;
 
@@ -840,103 +844,79 @@ function getYtId(url) {
   const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([A-Za-z0-9_-]{11})/);
   return m ? m[1] : null;
 }
+
 function _ytSend(cmd) {
   if (_ytIframe && _ytIframe.contentWindow)
     _ytIframe.contentWindow.postMessage(JSON.stringify({ event:'command', func:cmd, args:[] }), 'https://www.youtube.com');
 }
-function _ytMakeBtn(playing) {
-  const btn = document.createElement('button');
-  btn.id = 'btn-yt-audio';
-  btn.innerHTML = playing ? SVG_VOL : SVG_MUTE;
-  btn.title = playing ? 'Silenciar música' : 'Activar música';
-  if (playing) btn.classList.add('playing');
-  btn.style.cssText = 'position:fixed;bottom:80px;right:24px;z-index:200;background:rgba(0,0,0,0.55);border:1px solid rgba(201,168,76,0.45);color:var(--gold);width:44px;height:44px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);transition:background .2s,border .2s';
-  document.body.appendChild(btn);
-  btn.onclick = function(e) {
-    e.stopPropagation();
-    _ytMuted = !_ytMuted;
-    _ytSend(_ytMuted ? 'mute' : 'unMute');
-    btn.innerHTML = _ytMuted ? SVG_MUTE : SVG_VOL;
-    btn.title = _ytMuted ? 'Activar música' : 'Silenciar música';
-    btn.classList.toggle('playing', !_ytMuted);
-  };
-  // Mutear cuando abre Spotify
-  const sp = document.getElementById('btn-spotify');
-  if (sp) sp.addEventListener('click', () => {
-    if (!_ytMuted) { _ytMuted = true; _ytSend('mute'); btn.innerHTML = SVG_MUTE; btn.title = 'Activar música'; btn.classList.remove('playing'); }
-  }, { once: true });
-  return btn;
+
+function _ytSetBtn(state) {
+  const b = document.getElementById('btn-yt-audio');
+  if (!b) return;
+  b.innerHTML = state === 'muted' ? SVG_MUTE : SVG_VOL;
+  b.title = state === 'muted' ? 'Activar música' : 'Silenciar música';
+  b.classList.toggle('playing', state !== 'muted');
 }
 
-// Con sobre: llamado desde click → autoplay con sonido funciona en todos los browsers
+// Una sola función — igual al backup que funcionaba.
+// Si se llama desde el sobre (openEnvelope), _ytTriggerUnmute() se llama inmediatamente.
+// Si se llama directo (sin sobre), el unmute ocurre al primer scroll/touch/click.
 function initYoutubeAudio(url) {
   const id = getYtId(url);
   if (!id) return;
   const orig = (location.origin && location.origin !== 'null') ? '&origin=' + encodeURIComponent(location.origin) : '';
   _ytIframe = document.createElement('iframe');
   _ytIframe.allow = 'autoplay';
-  // Posicionar dentro del viewport pero invisible — iOS requiere que el iframe esté en el DOM visible
-  _ytIframe.style.cssText = 'position:fixed;bottom:80px;right:24px;width:44px;height:44px;border:none;opacity:.01;pointer-events:none;z-index:199';
-  _ytIframe.src = `https://www.youtube.com/embed/${id}?autoplay=1&loop=1&playlist=${id}&controls=0&enablejsapi=1${orig}`;
-  document.body.appendChild(_ytIframe);
-  _ytMakeBtn(true);
-}
-
-// Sin sobre: pre-carga el iframe con mute=1 (browser lo permite sin gesto),
-// en el primer touchstart/scroll/click manda unMute+playVideo via postMessage.
-function initYoutubeAudioDirect(url) {
-  const id = getYtId(url);
-  if (!id) return;
-  const orig = (location.origin && location.origin !== 'null') ? '&origin=' + encodeURIComponent(location.origin) : '';
-
-  let playerReady = false, started = false, playPending = false;
-
-  // Pre-cargar muted — iOS 10+ permite muted autoplay en iframes
-  _ytIframe = document.createElement('iframe');
-  _ytIframe.allow = 'autoplay';
-  _ytIframe.style.cssText = 'position:fixed;bottom:80px;right:24px;width:44px;height:44px;border:none;opacity:.01;pointer-events:none;z-index:199';
+  _ytIframe.style.cssText = 'position:fixed;top:-999px;left:-999px;width:1px;height:1px;border:none;pointer-events:none';
   _ytIframe.src = `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&controls=0&enablejsapi=1${orig}`;
   document.body.appendChild(_ytIframe);
 
-  // Cuando el player avisa que está listo
+  const btn = document.createElement('button');
+  btn.id = 'btn-yt-audio';
+  btn.innerHTML = SVG_MUTE;
+  btn.title = 'Activar música';
+  btn.style.cssText = 'position:fixed;bottom:80px;right:24px;z-index:200;background:rgba(0,0,0,0.55);border:1px solid rgba(201,168,76,0.45);color:var(--gold);width:44px;height:44px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);transition:background .2s,border .2s';
+  document.body.appendChild(btn);
+
+  let _pendingUnmute = false;
   window.addEventListener('message', function(e) {
     if (e.origin !== 'https://www.youtube.com') return;
-    try {
-      if (JSON.parse(e.data).event === 'onReady') {
-        playerReady = true;
-        if (playPending) { _ytSend('playVideo'); _ytSend('unMute'); playPending = false; }
-      }
-    } catch(_) {}
+    try { if (JSON.parse(e.data).event === 'onReady' && _pendingUnmute) { _ytSend('unMute'); _pendingUnmute = false; } } catch(_) {}
   });
 
-  const btn = _ytMakeBtn(false);
-
-  function start() {
-    if (started) return;
-    started = true;
-    document.removeEventListener('touchstart', start);
-    document.removeEventListener('scroll',     start);
-    document.removeEventListener('click',      onDoc);
-    // Dentro del handler del evento → gesto del usuario → iOS acepta el unMute
-    if (playerReady) { _ytSend('playVideo'); _ytSend('unMute'); }
-    else { playPending = true; } // se ejecuta en onReady
+  function unmute() {
+    if (_ytUnmuted) return;
+    _ytUnmuted = true;
+    document.removeEventListener('touchstart', unmute);
+    document.removeEventListener('scroll',     unmute);
+    document.removeEventListener('click',      onDocClick);
+    _ytSend('unMute');
+    _pendingUnmute = true;
     _ytMuted = false;
-    btn.innerHTML = SVG_VOL; btn.title = 'Silenciar música'; btn.classList.add('playing');
+    _ytSetBtn('playing');
+    // Mutear cuando abre Spotify
+    const sp = document.getElementById('btn-spotify');
+    if (sp) sp.addEventListener('click', () => {
+      if (!_ytMuted) { _ytMuted = true; _ytSend('mute'); _ytSetBtn('muted'); }
+    }, { once: true });
   }
 
-  function onDoc(e) { if (!e.target.closest || !e.target.closest('#btn-yt-audio')) start(); }
-  document.addEventListener('touchstart', start, { passive: true });
-  document.addEventListener('scroll',     start, { passive: true });
-  document.addEventListener('click',      onDoc);
+  _ytTriggerUnmute = unmute; // para que openEnvelope() lo llame dentro del click
+
+  function onDocClick(e) {
+    if (e.target.closest && e.target.closest('#btn-yt-audio')) return;
+    unmute();
+  }
+  document.addEventListener('touchstart', unmute,     { passive: true });
+  document.addEventListener('scroll',     unmute,     { passive: true });
+  document.addEventListener('click',      onDocClick);
 
   btn.onclick = function(e) {
     e.stopPropagation();
-    if (!started) { start(); return; }
+    if (!_ytUnmuted) { unmute(); return; }
     _ytMuted = !_ytMuted;
     _ytSend(_ytMuted ? 'mute' : 'unMute');
-    btn.innerHTML = _ytMuted ? SVG_MUTE : SVG_VOL;
-    btn.title = _ytMuted ? 'Activar música' : 'Silenciar música';
-    btn.classList.toggle('playing', !_ytMuted);
+    _ytSetBtn(_ytMuted ? 'muted' : 'playing');
   };
 }
 </script>
