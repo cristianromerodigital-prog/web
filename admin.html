@@ -2087,7 +2087,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 // ── CLOUDFLARE SYNC ──
 const CF_URL = 'https://web.cristian-romero-digital.workers.dev';
 const CF_AUTH = 'crd2025';
-const CF_SYNC_KEYS = ["crd_portfolio","crd_testimonials","crd_posts","crd_settings","crd_content","crd_site_photos","crd_hero_video_url","crd_invites","crd_messages","crd_inv_base","crd_admin_creds","crd_presupuesto","crd_editable","crd_opcionales","crd_entregas","crd_pedidos"];
+const CF_SYNC_KEYS = ["crd_portfolio","crd_testimonials","crd_posts","crd_settings","crd_content","crd_site_photos","crd_hero_video_url","crd_invites","crd_messages","crd_inv_base","crd_admin_creds","crd_presupuesto","crd_editable","crd_opcionales","crd_entregas","crd_pedidos","crd_contratos_cfg"];
 
 async function syncToCloud(key, value) {
   if (!CF_SYNC_KEYS.includes(key)) return;
@@ -5921,6 +5921,7 @@ function ctSaveCfg() {
   const url = document.getElementById('ct-apps-url').value.trim();
   if (!url) { toast('Ingresá la URL del Apps Script', 'error'); return; }
   S.set(CT_CFG_KEY, { url });
+  syncToCloud(CT_CFG_KEY, JSON.stringify({ url }));
   toast('URL guardada');
   ctToggleCfg();
   ctCargarServicios();
