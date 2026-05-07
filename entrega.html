@@ -211,7 +211,8 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
   #galeria { padding:48px 12px 60px; }
   .section-title { font-size:clamp(26px,6vw,40px); margin-bottom:24px; }
   .tabs-wrap { width:100%; -webkit-overflow-scrolling:touch; }
-  .tab-btn { padding:11px 18px; font-size:10px; letter-spacing:.25em; white-space:nowrap; flex-shrink:0; }
+  .tab-btn { padding:11px 13px; font-size:10px; letter-spacing:.15em; white-space:nowrap; flex-shrink:0; }
+  .tabs-sep { padding:0 8px !important; font-size:14px !important; }
   #social-float { bottom:20px; right:16px; gap:10px; }
   .sfloat-btn { width:44px; height:44px; }
   .sfloat-btn svg { width:22px; height:22px; }
@@ -715,7 +716,7 @@ function renderTabs(tabs) {
   let html = '';
 
   if(fotoTabs.length > 0) {
-    if(hasBoth) html += `<span style="font-size:16px;color:rgba(255,255,255,.35);padding:0 14px;align-self:center;white-space:nowrap">📷</span>`;
+    if(hasBoth) html += `<span class="tabs-sep" style="font-size:16px;color:rgba(255,255,255,.35);padding:0 14px;align-self:center;white-space:nowrap">📷</span>`;
     html += fotoTabs.map((t, i) => {
       const globalIdx = tabs.indexOf(t);
       return `<button class="tab-btn${i===0&&globalIdx===0?' active':''}" onclick="switchTab(tabDefs[${globalIdx}])" id="tab-${t.key}">${t.label}</button>`;
@@ -724,7 +725,7 @@ function renderTabs(tabs) {
 
   if(hasBoth) {
     html += `<span style="width:1px;background:rgba(255,255,255,.12);align-self:stretch;flex-shrink:0"></span>`;
-    html += `<span style="font-size:16px;color:rgba(255,255,255,.35);padding:0 14px;align-self:center;white-space:nowrap">🎬</span>`;
+    html += `<span class="tabs-sep" style="font-size:16px;color:rgba(255,255,255,.35);padding:0 14px;align-self:center;white-space:nowrap">🎬</span>`;
   }
 
   if(videoTabs.length > 0) {
