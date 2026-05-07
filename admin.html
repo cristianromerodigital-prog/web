@@ -5280,16 +5280,7 @@ function setEntOverlay(key, el) {
 
 function buildEntregaUrl(ev) {
   const base = window.location.href.replace(/admin\.html.*/, 'entrega.html');
-  const p = new URLSearchParams();
-  p.set('folder', ev.folderId);
-  if(ev.nombres) p.set('nombres', ev.nombres);
-  if(ev.fecha)   p.set('fecha',   ev.fecha);
-  if(ev.tipo)    p.set('tipo',    ev.tipo);
-  if(ev.frase)   p.set('frase',   ev.frase);
-  if(ev.portadaId) p.set('portada', ev.portadaId);
-  if(ev.allowDownload === false) p.set('dl', '0');
-  if(ev.overlay && ev.overlay !== 'violeta') p.set('overlay', ev.overlay);
-  return base + '?' + p.toString();
+  return base + '?id=' + (ev.numId || ev.id);
 }
 function updateEntregaPreview() {
   const raw = document.getElementById('ent-folder').value.trim();

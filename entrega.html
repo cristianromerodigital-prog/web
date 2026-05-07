@@ -204,8 +204,24 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
   .photos-grid { grid-template-columns:repeat(2,1fr); gap:3px; }
   .masonry-col { gap:3px !important; }
   .videos-grid { grid-template-columns:1fr; }
-  .action-bar { flex-direction:column; align-items:flex-start; }
-  #galeria { padding:60px 20px; }
+  .action-bar { flex-direction:column; align-items:flex-start; gap:8px; }
+  .action-bar-right { flex-wrap:wrap; gap:8px; width:100%; }
+  .action-bar-right .btn-action { flex:1; justify-content:center; min-width:120px; }
+  #galeria { padding:48px 12px 60px; }
+  .section-title { font-size:clamp(26px,6vw,40px); margin-bottom:24px; }
+  .tabs-wrap { overflow-x:auto; border-radius:40px; flex-wrap:nowrap; justify-content:flex-start; width:100%; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .tabs-wrap::-webkit-scrollbar { display:none; }
+  .tab-btn { padding:11px 18px; font-size:10px; letter-spacing:.25em; white-space:nowrap; flex-shrink:0; }
+  #social-float { bottom:20px; right:16px; gap:10px; }
+  .sfloat-btn { width:44px; height:44px; }
+  .sfloat-btn svg { width:22px; height:22px; }
+  .lb-header { padding:12px 16px; }
+  .lb-thumbs { padding:10px 16px; }
+  .lb-thumb { width:42px; height:42px; }
+  #lb-prev { left:6px; } #lb-next { right:6px; }
+  .lb-nav { width:38px; height:38px; font-size:18px; }
+  #footer { padding:48px 20px; }
+  .footer-brand { font-size:24px; }
 }
 </style>
 </head>
@@ -432,12 +448,22 @@ let currentTab     = '';
 // ═══════════════════════════════════════════════════════════
 // JSONP helper
 // ═══════════════════════════════════════════════════════════
-function jsonp(url) {
+async function gasCallRetry(params, retries = 3) {
+  let lastErr;
+  for(let i = 0; i < retries; i++) {
+    try { return await gasCall(params); }
+    catch(e) { lastErr = e; if(i < retries - 1) await new Promise(r => setTimeout(r, 2000)); }
+  }
+  throw lastErr;
+}
+
+function jsonp(url, ms = 20000) {
   return new Promise((resolve, reject) => {
     const cb = '__gcb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
     const s  = document.createElement('script');
-    window[cb] = d => { resolve(d); delete window[cb]; s.remove(); };
-    s.onerror  = () => { reject(new Error('Error de red')); delete window[cb]; s.remove(); };
+    const timer = setTimeout(() => { delete window[cb]; s.remove(); reject(new Error('timeout')); }, ms);
+    window[cb] = d => { clearTimeout(timer); resolve(d); delete window[cb]; s.remove(); };
+    s.onerror  = () => { clearTimeout(timer); reject(new Error('Error de red')); delete window[cb]; s.remove(); };
     s.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cb;
     document.head.appendChild(s);
   });
@@ -514,7 +540,7 @@ async function init() {
   // Esperar evento solo si es necesario para tener el folderId
   if(EVENT_ID && !EVENT_FOLDER) {
     const entregas = await fetchEvent;
-    const ev = (entregas || []).find(e => e.id === EVENT_ID);
+    const ev = (entregas || []).find(e => String(e.id) === String(EVENT_ID) || e.numId === EVENT_ID);
     if(ev) Object.assign(CFG, ev);
   }
 
@@ -525,7 +551,7 @@ async function init() {
   }
 
   // Iniciar carga de Drive sin esperar logo ni settings
-  const drivePromise = gasCall({ action: 'getDriveFolder', folder: CFG.folderId });
+  const drivePromise = gasCallRetry({ action: 'getDriveFolder', folder: CFG.folderId });
 
   // Aplicar logo y social cuando lleguen (no bloquean Drive)
   fetchLogo.then(raw => {
@@ -594,17 +620,28 @@ async function buildStructure(rootItems) {
   const tabs   = [];
   const panels = {};
 
-  for(const item of rootItems) {
-    if(item.type !== 'folder') continue;
+  const roots = rootItems.filter(item => {
+    if(item.type !== 'folder') return false;
     const nl = item.name.toLowerCase();
+    return nl.includes('foto') || nl.includes('photo') || nl.includes('image') ||
+           nl.includes('video') || nl.includes('clip') || nl.includes('film');
+  });
+
+  // Carga todas las carpetas raíz en paralelo
+  const subResults = await Promise.all(
+    roots.map(item => gasCallRetry({ action: 'getDriveFolder', folder: item.id }).catch(() => []))
+  );
+
+  for(let ri = 0; ri < roots.length; ri++) {
+    const item = roots[ri];
+    const sub  = subResults[ri] || [];
+    const nl   = item.name.toLowerCase();
     const isPhotoRoot = nl.includes('foto') || nl.includes('photo') || nl.includes('image');
     const isVideoRoot = nl.includes('video') || nl.includes('clip') || nl.includes('film');
 
     if(isPhotoRoot) {
-      // Lee subCarpetas — cada una se convierte en un tab con su nombre real
-      const sub = await gasCall({ action: 'getDriveFolder', folder: item.id });
-      const subFolders = (sub || []).filter(i => i.type === 'folder');
-      const rootImgs   = (sub || []).filter(i => i.type === 'image');
+      const subFolders = sub.filter(i => i.type === 'folder');
+      const rootImgs   = sub.filter(i => i.type === 'image');
 
       if(subFolders.length > 0) {
         for(const sf of subFolders) {
@@ -612,24 +649,20 @@ async function buildStructure(rootItems) {
           tabs.push({ key, label: sf.name, type: 'fotos', folderId: sf.id });
           panels[key] = null; // lazy
         }
-        // Si además hay fotos en la raíz de "Fotos", agrega tab extra
         if(rootImgs.length > 0) {
           const key = 'foto_root_' + item.id;
           tabs.push({ key, label: 'General', type: 'fotos', folderId: item.id });
           panels[key] = sortByName(rootImgs);
         }
       } else {
-        // Sin subcarpetas → tab directo con el nombre de la carpeta
         const key = 'foto_' + item.id;
         tabs.push({ key, label: item.name, type: 'fotos', folderId: item.id });
         panels[key] = sortByName(rootImgs);
       }
 
     } else if(isVideoRoot) {
-      // Lee subCarpetas de Video — cada una = una sección con su nombre real
-      const sub = await gasCall({ action: 'getDriveFolder', folder: item.id });
-      const subFolders = (sub || []).filter(i => i.type === 'folder');
-      const rootVids   = (sub || []).filter(i => i.type === 'video');
+      const subFolders = sub.filter(i => i.type === 'folder');
+      const rootVids   = sub.filter(i => i.type === 'video');
 
       if(subFolders.length > 0) {
         for(const sf of subFolders) {
@@ -706,7 +739,7 @@ async function switchTab(tab) {
   // Lazy load si no tiene datos
   if(allPanels[tab.key] === null) {
     document.getElementById('panels-container').innerHTML = '<div style="text-align:center;padding:60px;color:rgba(255,255,255,.3);font-size:11px;letter-spacing:.3em">Cargando...</div>';
-    const items = await gasCall({ action: 'getDriveFolder', folder: tab.folderId });
+    const items = await gasCallRetry({ action: 'getDriveFolder', folder: tab.folderId });
     // Filtrar según tipo del tab
     const filtered = (items || []).filter(i =>
       tab.type === 'videos' ? i.type === 'video' : i.type === 'image'
