@@ -845,9 +845,9 @@ function getYtId(url) {
   return m ? m[1] : null;
 }
 
-function _ytSend(cmd) {
+function _ytSend(cmd, args) {
   if (_ytIframe && _ytIframe.contentWindow)
-    _ytIframe.contentWindow.postMessage(JSON.stringify({ event:'command', func:cmd, args:[] }), 'https://www.youtube.com');
+    _ytIframe.contentWindow.postMessage(JSON.stringify({ event:'command', func:cmd, args: args || [] }), 'https://www.youtube.com');
 }
 
 function _ytSetBtn(state) {
@@ -882,15 +882,19 @@ function initYoutubeAudio(url) {
 
   // Cuando el player está listo, arrancamos muted automáticamente
   // Así cuando el usuario toca, solo necesitamos unMute (mucho más rápido)
-  let _videoPlaying = false, _pendingUnmute = false;
+  let _pendingUnmute = false;
   window.addEventListener('message', function(e) {
     if (e.origin !== 'https://www.youtube.com') return;
     try {
       const d = JSON.parse(e.data);
       if (d.event === 'onReady') {
-        _ytSend('playVideo'); // arranca muted apenas carga — sin gesto necesario
-        _videoPlaying = true;
-        if (_pendingUnmute) { _ytSend('unMute'); _pendingUnmute = false; }
+        _ytSend('playVideo');
+        // Truco: unMute + setVolume(0) — el browser pre-carga el stream de audio
+        // en silencio. Cuando el usuario toca, setVolume(100) es casi instantáneo
+        // porque el audio ya está en el buffer (a diferencia de mute=1 que no lo carga).
+        _ytSend('unMute');
+        _ytSend('setVolume', [0]);
+        if (_pendingUnmute) { _ytSend('setVolume', [100]); _pendingUnmute = false; }
       }
     } catch(_) {}
   });
@@ -901,13 +905,11 @@ function initYoutubeAudio(url) {
     document.removeEventListener('touchstart', unmute);
     document.removeEventListener('scroll',     unmute);
     document.removeEventListener('click',      onDocClick);
-    if (_videoPlaying) {
-      _ytSend('unMute'); // video ya cargado → unmute instantáneo
-    } else {
-      _ytSend('playVideo');
-      _ytSend('unMute');
-      _pendingUnmute = true; // fallback: se ejecuta en onReady
-    }
+    // playVideo por si el player no arrancó (Android puede bloquearlo fuera de gesto)
+    _ytSend('playVideo');
+    _ytSend('unMute');
+    _ytSend('setVolume', [100]); // si el audio estaba pre-cargado → instantáneo
+    _pendingUnmute = true; // fallback en onReady si el player aún no estaba listo
     _ytMuted = false;
     _ytSetBtn('playing');
     // Mutear cuando abre Spotify
@@ -931,7 +933,7 @@ function initYoutubeAudio(url) {
     e.stopPropagation();
     if (!_ytUnmuted) { unmute(); return; }
     _ytMuted = !_ytMuted;
-    _ytSend(_ytMuted ? 'mute' : 'unMute');
+    if (_ytMuted) { _ytSend('mute'); } else { _ytSend('unMute'); _ytSend('setVolume', [100]); }
     _ytSetBtn(_ytMuted ? 'muted' : 'playing');
   };
 }
