@@ -2339,6 +2339,17 @@ async function init() {
   if (Array.isArray(cloudPedidos)) localStorage.setItem('crd_pedidos', JSON.stringify(cloudPedidos));
   else if (!localStorage.getItem('crd_pedidos')) localStorage.setItem('crd_pedidos', '[]');
 
+  // Logo: re-sincronizar a CF cada login para que sea visible en todos los dispositivos
+  const localLogo = localStorage.getItem('crd_site_logo');
+  if (localLogo) {
+    syncToCloud('crd_site_logo', localLogo);
+  } else {
+    try {
+      const res = await fetch(CF_URL + '/crd_site_logo', { headers: { 'Authorization': CF_AUTH } });
+      if (res.ok) { const raw = await res.text(); if(raw && raw !== 'null') localStorage.setItem('crd_site_logo', raw); }
+    } catch(e) {}
+  }
+
   if (!localStorage.getItem('crd_inv_base')) {
     const cloud = await fetchFromCloud('crd_inv_base');
     if (cloud && typeof cloud === 'string') localStorage.setItem('crd_inv_base', cloud);
