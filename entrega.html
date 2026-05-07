@@ -461,9 +461,11 @@ function jsonp(url, ms = 20000) {
   return new Promise((resolve, reject) => {
     const cb = '__gcb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
     const s  = document.createElement('script');
-    const timer = setTimeout(() => { delete window[cb]; s.remove(); reject(new Error('timeout')); }, ms);
-    window[cb] = d => { clearTimeout(timer); resolve(d); delete window[cb]; s.remove(); };
-    s.onerror  = () => { clearTimeout(timer); reject(new Error('Error de red')); delete window[cb]; s.remove(); };
+    let settled = false;
+    const done = (fn) => { if(settled) return; settled = true; window[cb] = () => {}; if(s.parentNode) s.remove(); fn(); };
+    const timer = setTimeout(() => done(() => reject(new Error('timeout'))), ms);
+    window[cb] = d => { clearTimeout(timer); done(() => resolve(d)); };
+    s.onerror  = () => { clearTimeout(timer); done(() => reject(new Error('Error de red'))); };
     s.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cb;
     document.head.appendChild(s);
   });
