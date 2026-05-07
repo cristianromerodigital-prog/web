@@ -387,7 +387,7 @@ try {
 const CF_URL   = 'https://web.cristian-romero-digital.workers.dev';
 const WSP_NUM  = '5491162557763';
 const IG_DEFAULT  = 'https://www.instagram.com/cristian.romero.digital/';
-const WEB_DEFAULT = 'https://cristian-romero-digital.pages.dev';
+const WEB_DEFAULT = 'https://cristianromerodigital.ar';
 
 // Parsear URL params
 const urlParams = new URLSearchParams(window.location.search);
@@ -540,6 +540,13 @@ async function init() {
       const webBtn = document.getElementById('web-float');
       if(igBtn  && sett.entregaIgUrl)  igBtn.href  = sett.entregaIgUrl;
       if(webBtn && sett.entregaWebUrl) { webBtn.href = sett.entregaWebUrl; webBtn.style.display = 'flex'; }
+      if(sett.waSuffix) {
+        const wspUrl = `https://wa.me/${sett.waSuffix.replace(/\D/g,'')}`;
+        const wEl = document.getElementById('wsp-float');
+        const fEl = document.getElementById('footer-wsp');
+        if(wEl) wEl.href = wspUrl;
+        if(fEl) fEl.href = wspUrl;
+      }
     } catch(e) {}
   });
 
