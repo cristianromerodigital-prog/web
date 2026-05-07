@@ -5302,9 +5302,8 @@ function parseFechaSlug(fecha) {
 }
 
 function buildEntregaUrl(ev) {
-  const base = window.location.href.replace(/admin\.html.*/, 'entrega.html');
   const slug = ev.slug || [makeEntregaSlug(ev.nombres), parseFechaSlug(ev.fecha)].filter(Boolean).join('-') || ev.numId || ev.id;
-  return base + '?id=' + encodeURIComponent(slug);
+  return 'https://web.cristian-romero-digital.workers.dev/e/' + encodeURIComponent(slug);
 }
 function updateEntregaPreview() {
   const raw = document.getElementById('ent-folder').value.trim();
