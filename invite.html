@@ -882,25 +882,44 @@ function initYoutubeAudio(url) {
   _ytMakeBtn(true);
 }
 
-// Sin sobre: crea el iframe DENTRO del handler del evento → el browser lo trata como gesto del usuario → autoplay con sonido
+// Sin sobre: pre-carga el iframe con mute=1 (browser lo permite sin gesto),
+// en el primer touchstart/scroll/click manda unMute+playVideo via postMessage.
 function initYoutubeAudioDirect(url) {
   const id = getYtId(url);
   if (!id) return;
   const orig = (location.origin && location.origin !== 'null') ? '&origin=' + encodeURIComponent(location.origin) : '';
+
+  let playerReady = false, started = false, playPending = false;
+
+  // Pre-cargar muted — iOS 10+ permite muted autoplay en iframes
+  _ytIframe = document.createElement('iframe');
+  _ytIframe.allow = 'autoplay';
+  _ytIframe.style.cssText = 'position:fixed;bottom:80px;right:24px;width:44px;height:44px;border:none;opacity:.01;pointer-events:none;z-index:199';
+  _ytIframe.src = `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&controls=0&enablejsapi=1${orig}`;
+  document.body.appendChild(_ytIframe);
+
+  // Cuando el player avisa que está listo
+  window.addEventListener('message', function(e) {
+    if (e.origin !== 'https://www.youtube.com') return;
+    try {
+      if (JSON.parse(e.data).event === 'onReady') {
+        playerReady = true;
+        if (playPending) { _ytSend('playVideo'); _ytSend('unMute'); playPending = false; }
+      }
+    } catch(_) {}
+  });
+
   const btn = _ytMakeBtn(false);
-  let started = false;
 
   function start() {
     if (started) return;
     started = true;
     document.removeEventListener('touchstart', start);
-    document.removeEventListener('scroll', start);
-    document.removeEventListener('click', onDoc);
-    _ytIframe = document.createElement('iframe');
-    _ytIframe.allow = 'autoplay';
-    _ytIframe.style.cssText = 'position:fixed;bottom:80px;right:24px;width:44px;height:44px;border:none;opacity:.01;pointer-events:none;z-index:199';
-    _ytIframe.src = `https://www.youtube.com/embed/${id}?autoplay=1&loop=1&playlist=${id}&controls=0&enablejsapi=1${orig}`;
-    document.body.appendChild(_ytIframe);
+    document.removeEventListener('scroll',     start);
+    document.removeEventListener('click',      onDoc);
+    // Dentro del handler del evento → gesto del usuario → iOS acepta el unMute
+    if (playerReady) { _ytSend('playVideo'); _ytSend('unMute'); }
+    else { playPending = true; } // se ejecuta en onReady
     _ytMuted = false;
     btn.innerHTML = SVG_VOL; btn.title = 'Silenciar música'; btn.classList.add('playing');
   }
