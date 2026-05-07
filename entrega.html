@@ -110,8 +110,8 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
 #back-btn { display:none; align-items:center; gap:10px; color:rgba(255,255,255,.5); font-size:11px; letter-spacing:.3em; text-transform:uppercase; cursor:pointer !important; margin-bottom:28px; transition:color .3s; }
 #back-btn:hover { color:var(--cyan); }
 #back-btn.visible { display:flex; }
-.photos-grid { columns:3; column-gap:4px; }
-.photo-item { position:relative; overflow:hidden; cursor:pointer !important; break-inside:avoid; margin-bottom:4px; display:block; }
+.photos-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; }
+.photo-item { position:relative; overflow:hidden; cursor:pointer !important; display:block; }
 .photo-item img { width:100%; height:auto; display:block; transition:transform .5s cubic-bezier(.25,.46,.45,.94); }
 .photo-item:hover img { transform:scale(1.03); }
 .photo-name { position:absolute; bottom:0; left:0; right:0; padding:28px 10px 8px; background:linear-gradient(to top, rgba(0,0,0,.72) 0%, transparent 100%); color:rgba(255,255,255,.9); font-size:10px; letter-spacing:.06em; font-weight:300; opacity:0; transform:translateY(4px); transition:opacity .35s ease, transform .35s ease; pointer-events:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; z-index:2; }
@@ -197,8 +197,7 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
 
 @media(max-width:768px){
   .albums-grid { grid-template-columns:1fr; }
-  .photos-grid { columns:2; column-gap:3px; }
-  .photo-item { margin-bottom:3px; }
+  .photos-grid { grid-template-columns:repeat(2,1fr); gap:3px; }
   .videos-grid { grid-template-columns:1fr; }
   .action-bar { flex-direction:column; align-items:flex-start; }
   #galeria { padding:60px 20px; }
