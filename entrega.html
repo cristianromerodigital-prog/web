@@ -533,12 +533,17 @@ async function init() {
   // Aplicar logo desde localStorage de inmediato
   try { applyLogo(JSON.parse(localStorage.getItem('crd_site_logo'))); } catch(e) {}
 
+  // Logo desde CF — se aplica ni bien llega, sin esperar otros fetches ni return tempranos
+  fetch(CF_URL + '/crd_site_logo').then(r => r.text()).catch(() => null).then(raw => {
+    if(!raw) return;
+    try { const src = JSON.parse(raw); if(src) { localStorage.setItem('crd_site_logo', JSON.stringify(src)); applyLogo(src); } } catch(e) {}
+  });
+
   // Lanzar todos los fetches CF en paralelo
   const fetchEvent  = (EVENT_ID && !EVENT_FOLDER)
     ? fetch(CF_URL + '/crd_entregas').then(r => r.json()).catch(() => [])
     : Promise.resolve(null);
   const fetchGasUrl = fetch(CF_URL + '/crd_contratos_cfg').then(r => r.text()).catch(() => null);
-  const fetchLogo   = fetch(CF_URL + '/crd_site_logo').then(r => r.text()).catch(() => null);
   const fetchSett   = fetch(CF_URL + '/crd_settings').then(r => r.text()).catch(() => null);
 
   // Esperar evento + GAS URL (ambos necesarios antes del Drive call)
@@ -565,11 +570,7 @@ async function init() {
   // Iniciar carga de Drive
   const drivePromise = gasCallRetry({ action: 'getDriveFolder', folder: CFG.folderId });
 
-  // Aplicar logo y social cuando lleguen (no bloquean Drive)
-  fetchLogo.then(raw => {
-    if(!raw) return;
-    try { const src = JSON.parse(raw); if(src) { localStorage.setItem('crd_site_logo', JSON.stringify(src)); applyLogo(src); } } catch(e) {}
-  });
+  // Aplicar social cuando llegue (no bloquea Drive)
   fetchSett.then(raw => {
     if(!raw) return;
     try {
