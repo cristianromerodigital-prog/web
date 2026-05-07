@@ -860,7 +860,8 @@ function abrirPedidoAlbum() {
     document.getElementById('album-success').style.display = 'none';
     document.getElementById('album-exists').style.display = 'block';
     const t = document.getElementById('album-exists-title');
-    if(t) t.textContent = 'Ya tenés un pedido de ' + (tipo === 'book' ? 'Book' : 'Fiesta') + ' en marcha';
+    const def = tabDefs.find(td => td.key === currentTab);
+    if(t) t.textContent = 'Ya tenés un pedido de ' + (def ? def.label : tipo) + ' en marcha';
     return;
   }
   const fotos = selectedPhotos.size > 0
@@ -1060,18 +1061,23 @@ document.addEventListener('keydown', e => {
 // ═══════════════════════════════════════════════════════════
 // ARRANQUE
 // ═══════════════════════════════════════════════════════════
-const _pedidosExistentes = { book: false, fiesta: false };
+const _pedidosExistentes = {};
 function tipoTabActual() {
   const def = tabDefs.find(t => t.key === currentTab);
-  return (def && def.label.toLowerCase().includes('book')) ? 'book' : 'fiesta';
+  if(!def) return 'fiesta';
+  const nl = def.label.toLowerCase();
+  if(nl.includes('book'))  return 'book';
+  if(nl.includes('civil')) return 'civil';
+  if(nl.includes('boda'))  return 'boda';
+  return def.label.toLowerCase().replace(/\s+/g, '_');
 }
 async function checkPedidoExistente() {
   if(!CFG.nombres) return;
   try {
     const res = await fetch('https://web.cristian-romero-digital.workers.dev/crd_pedidos', { headers: { 'Authorization': 'crd2025' } });
     const arr = (res.ok ? await res.json() : null) || [];
-    _pedidosExistentes.book   = arr.some(p => p.evento === CFG.nombres && p.tipoAlbum === 'book');
-    _pedidosExistentes.fiesta = arr.some(p => p.evento === CFG.nombres && p.tipoAlbum === 'fiesta');
+    arr.filter(p => p.evento === CFG.nombres && p.tipoAlbum)
+       .forEach(p => { _pedidosExistentes[p.tipoAlbum] = true; });
   } catch(e) {}
 }
 init();
