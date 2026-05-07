@@ -223,6 +223,7 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
   </div>
   <div class="loading-spinner"></div>
   <div class="loading-text">Cargando tu entrega...</div>
+  <div id="loading-phrase" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(14px,2vw,18px);color:rgba(255,255,255,.35);margin-top:20px;max-width:480px;text-align:center;padding:0 24px;line-height:1.6;min-height:2.4em;transition:opacity .6s"></div>
 </div>
 
 <!-- HERO -->
@@ -365,7 +366,7 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
   <a id="web-float" class="sfloat-btn" href="#" target="_blank" style="display:none">
     <svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,212,232,.9)" stroke-width="1.5" width="26" height="26"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 010 20"/><path d="M12 2a15.3 15.3 0 000 20"/></svg>
   </a>
-  <a id="ig-float" class="sfloat-btn" href="#" target="_blank" style="display:none">
+  <a id="ig-float" class="sfloat-btn" href="#" target="_blank">
     <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" width="26" height="26"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke-linecap="round" stroke-width="2.5"/></svg>
   </a>
   <a id="wsp-float" class="sfloat-btn" href="#" target="_blank">
@@ -385,6 +386,8 @@ try {
 } catch(e) {}
 const CF_URL   = 'https://web.cristian-romero-digital.workers.dev';
 const WSP_NUM  = '5491162557763';
+const IG_DEFAULT  = 'https://www.instagram.com/cristian.romero.digital/';
+const WEB_DEFAULT = 'https://cristian-romero-digital.pages.dev';
 
 // Parsear URL params
 const urlParams = new URLSearchParams(window.location.search);
@@ -464,63 +467,93 @@ function videoEmbedUrl(id) {
 // ═══════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════
+const _FRASES = [
+  '"Una foto es la pausa de la vida."',
+  '"Los recuerdos son el regalo más preciado."',
+  '"Cada imagen guarda un momento único."',
+  '"El amor verdadero dura para siempre."',
+  '"La fotografía eterniza lo que el tiempo borrará."',
+];
+let _fraseIdx = 0, _fraseTimer = null;
+function startFrases() {
+  const el = document.getElementById('loading-phrase');
+  if(!el) return;
+  function show() {
+    el.style.opacity = '0';
+    setTimeout(() => { el.textContent = _FRASES[_fraseIdx % _FRASES.length]; el.style.opacity = '1'; _fraseIdx++; }, 400);
+  }
+  show();
+  _fraseTimer = setInterval(show, 3000);
+}
+function stopFrases() { clearInterval(_fraseTimer); }
+
+function applyLogo(src) {
+  if(!src) return;
+  const heroImg = document.getElementById('hero-logo');
+  const seal    = document.getElementById('hero-logo-seal');
+  const preImg  = document.getElementById('preloader-logo-img');
+  const preWrap = document.getElementById('preloader-logo-wrap');
+  if(heroImg) heroImg.src = src;
+  if(seal) seal.style.display = 'block';
+  if(preImg) { preImg.src = src; preWrap.style.display = 'flex'; document.querySelector('.loading-spinner').style.display = 'none'; }
+}
+
 async function init() {
-  // Si viene con ?id= cargar desde cloud
+  startFrases();
+
+  // Aplicar logo desde localStorage de inmediato
+  try { applyLogo(JSON.parse(localStorage.getItem('crd_site_logo'))); } catch(e) {}
+
+  // Lanzar todos los fetches en paralelo
+  const fetchEvent = (EVENT_ID && !EVENT_FOLDER)
+    ? fetch(CF_URL + '/crd_entregas').then(r => r.json()).catch(() => [])
+    : Promise.resolve(null);
+  const fetchLogo  = fetch(CF_URL + '/crd_site_logo').then(r => r.text()).catch(() => null);
+  const fetchSett  = fetch(CF_URL + '/crd_settings').then(r => r.text()).catch(() => null);
+
+  // Esperar evento solo si es necesario para tener el folderId
   if(EVENT_ID && !EVENT_FOLDER) {
-    try {
-      const entregas = await fetch(CF_URL + '/crd_entregas').then(r => r.json()).catch(() => []);
-      const ev = (entregas || []).find(e => e.id === EVENT_ID);
-      if(ev) Object.assign(CFG, ev);
-    } catch(e) {}
+    const entregas = await fetchEvent;
+    const ev = (entregas || []).find(e => e.id === EVENT_ID);
+    if(ev) Object.assign(CFG, ev);
   }
 
-  // Aplicar config al hero
   applyConfig();
-
   if(!CFG.folderId) {
     showError('No se especificó carpeta. Contactá al fotógrafo para obtener el enlace correcto.');
-    return;
+    stopFrases(); return;
   }
 
-  // Cargar logo: primero localStorage, luego cloud
-  function applyLogo(src) {
-    if(!src) return;
-    const heroImg = document.getElementById('hero-logo');
-    const seal    = document.getElementById('hero-logo-seal');
-    const preImg  = document.getElementById('preloader-logo-img');
-    const preWrap = document.getElementById('preloader-logo-wrap');
-    if(heroImg) heroImg.src = src;
-    if(seal) seal.style.display = 'block';
-    if(preImg) { preImg.src = src; preWrap.style.display = 'flex'; document.querySelector('.loading-spinner').style.display = 'none'; }
-  }
-  try { applyLogo(JSON.parse(localStorage.getItem('crd_site_logo'))); } catch(e) {}
-  try {
-    const raw = await fetch(CF_URL + '/crd_site_logo').then(r => r.text()).catch(() => null);
-    if(raw) { const src = JSON.parse(raw); if(src) { localStorage.setItem('crd_site_logo', JSON.stringify(src)); applyLogo(src); } }
-  } catch(e) {}
+  // Iniciar carga de Drive sin esperar logo ni settings
+  const drivePromise = gasCall({ action: 'getDriveFolder', folder: CFG.folderId });
 
-  // Cargar social links desde settings
-  try {
-    const settRaw = await fetch(CF_URL + '/crd_settings').then(r => r.text()).catch(() => null);
-    if(settRaw) {
-      const sett = JSON.parse(settRaw);
+  // Aplicar logo y social cuando lleguen (no bloquean Drive)
+  fetchLogo.then(raw => {
+    if(!raw) return;
+    try { const src = JSON.parse(raw); if(src) { localStorage.setItem('crd_site_logo', JSON.stringify(src)); applyLogo(src); } } catch(e) {}
+  });
+  fetchSett.then(raw => {
+    if(!raw) return;
+    try {
+      const sett = JSON.parse(raw);
       const igBtn  = document.getElementById('ig-float');
       const webBtn = document.getElementById('web-float');
-      if(igBtn && sett.entregaIgUrl)  { igBtn.href  = sett.entregaIgUrl;  igBtn.style.display  = 'flex'; }
+      if(igBtn  && sett.entregaIgUrl)  igBtn.href  = sett.entregaIgUrl;
       if(webBtn && sett.entregaWebUrl) { webBtn.href = sett.entregaWebUrl; webBtn.style.display = 'flex'; }
-    }
-  } catch(e) {}
+    } catch(e) {}
+  });
 
-  // Cargar estructura del evento desde Drive
+  // Esperar Drive (cuello de botella real)
   try {
-    const root = await gasCall({ action: 'getDriveFolder', folder: CFG.folderId });
-    if(root.error) { showError('Error al cargar: ' + root.error); return; }
+    const root = await drivePromise;
+    if(root.error) { showError('Error al cargar: ' + root.error); stopFrases(); return; }
     await buildStructure(root);
   } catch(err) {
     showError('No se pudo conectar con Google Drive. ' + err.message);
-    return;
+    stopFrases(); return;
   }
 
+  stopFrases();
   hideLoading();
 }
 
@@ -537,6 +570,9 @@ function applyConfig() {
   const wspUrl = `https://wa.me/${WSP_NUM}`;
   document.getElementById('wsp-float').href  = wspUrl;
   document.getElementById('footer-wsp').href = wspUrl;
+  document.getElementById('ig-float').href   = IG_DEFAULT;
+  const webBtn0 = document.getElementById('web-float');
+  if(webBtn0) { webBtn0.href = WEB_DEFAULT; webBtn0.style.display = 'flex'; }
   document.getElementById('sec-title').textContent = CFG.nombres;
 }
 
