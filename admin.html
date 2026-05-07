@@ -2331,6 +2331,14 @@ async function init() {
   if (cloudInvites !== null) S.set('crd_invites', cloudInvites);
   else if (!S.get('crd_invites')) S.set('crd_invites', []);
 
+  // Entregas y pedidos: siempre sincronizar del cloud (datos colaborativos)
+  const cloudEntregas = await fetchFromCloud('crd_entregas');
+  if (Array.isArray(cloudEntregas)) localStorage.setItem('crd_entregas', JSON.stringify(cloudEntregas));
+  else if (!localStorage.getItem('crd_entregas')) localStorage.setItem('crd_entregas', '[]');
+  const cloudPedidos = await fetchFromCloud('crd_pedidos');
+  if (Array.isArray(cloudPedidos)) localStorage.setItem('crd_pedidos', JSON.stringify(cloudPedidos));
+  else if (!localStorage.getItem('crd_pedidos')) localStorage.setItem('crd_pedidos', '[]');
+
   if (!localStorage.getItem('crd_inv_base')) {
     const cloud = await fetchFromCloud('crd_inv_base');
     if (cloud && typeof cloud === 'string') localStorage.setItem('crd_inv_base', cloud);
@@ -5718,11 +5726,15 @@ function eliminarPedido(id) {
 function loadEntregasPage() {
   renderEntregasList();
   updateEntregaPreview();
-  // Cargar pedidos frescos desde Cloudflare
-  fetch(CF_URL + '/crd_pedidos', { headers: { 'Authorization': CF_AUTH } })
-    .then(r => r.ok ? r.json() : null)
-    .then(arr => { const list = Array.isArray(arr) ? arr : []; localStorage.setItem('crd_pedidos', JSON.stringify(list)); renderEntregasList(); })
-    .catch(() => {});
+  // Siempre refrescar entregas y pedidos desde Cloudflare al abrir la sección
+  Promise.all([
+    fetch(CF_URL + '/crd_entregas', { headers: { 'Authorization': CF_AUTH } }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch(CF_URL + '/crd_pedidos', { headers: { 'Authorization': CF_AUTH } }).then(r => r.ok ? r.json() : null).catch(() => null)
+  ]).then(([ent, ped]) => {
+    if (Array.isArray(ent)) localStorage.setItem('crd_entregas', JSON.stringify(ent));
+    if (Array.isArray(ped)) localStorage.setItem('crd_pedidos', JSON.stringify(ped));
+    renderEntregasList();
+  });
 }
 function pickPortadaDrive() {
   openDriveBrowser(url => {
