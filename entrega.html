@@ -191,9 +191,13 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
 .footer-copy { margin-top:48px; font-size:10px; letter-spacing:.25em; color:rgba(255,255,255,.18); }
 
 /* FLOTANTES */
-#wsp-float { position:fixed; bottom:32px; right:32px; z-index:150; width:52px; height:52px; background:#25d366; border-radius:50%; display:flex; align-items:center; justify-content:center; text-decoration:none; box-shadow:0 8px 24px rgba(37,211,102,.4); transition:all .3s; cursor:pointer !important; }
-#wsp-float:hover { transform:scale(1.12); }
-#wsp-float svg { width:26px; height:26px; }
+#social-float { position:fixed; bottom:32px; right:32px; z-index:150; display:flex; flex-direction:column; align-items:center; gap:14px; }
+.sfloat-btn { width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-decoration:none; transition:all .3s; cursor:pointer !important; }
+.sfloat-btn:hover { transform:scale(1.12); }
+.sfloat-btn svg { width:26px; height:26px; }
+#wsp-float  { background:#25d366; box-shadow:0 8px 24px rgba(37,211,102,.4); }
+#ig-float   { background:radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); box-shadow:0 8px 24px rgba(214,36,159,.3); }
+#web-float  { background:#0d1117; border:1px solid rgba(0,212,232,.5); box-shadow:0 8px 24px rgba(0,212,232,.2); }
 
 @media(max-width:768px){
   .albums-grid { grid-template-columns:1fr; }
@@ -357,9 +361,17 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
   <div id="footer-copy" class="footer-copy"></div>
 </footer>
 
-<a id="wsp-float" href="#" target="_blank">
-  <svg viewBox="0 0 24 24" fill="white" width="26" height="26"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.374 0 0 5.373 0 12c0 2.123.558 4.114 1.531 5.837L.031 24l6.336-1.483A11.946 11.946 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.892a9.875 9.875 0 01-5.031-1.378l-.361-.214-3.741.876.938-3.648-.235-.374A9.863 9.863 0 012.108 12c0-5.455 4.437-9.892 9.892-9.892 5.456 0 9.893 4.437 9.893 9.892 0 5.456-4.437 9.892-9.893 9.892z"/></svg>
-</a>
+<div id="social-float">
+  <a id="web-float" class="sfloat-btn" href="#" target="_blank" style="display:none">
+    <svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,212,232,.9)" stroke-width="1.5" width="26" height="26"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 010 20"/><path d="M12 2a15.3 15.3 0 000 20"/></svg>
+  </a>
+  <a id="ig-float" class="sfloat-btn" href="#" target="_blank" style="display:none">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" width="26" height="26"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke-linecap="round" stroke-width="2.5"/></svg>
+  </a>
+  <a id="wsp-float" class="sfloat-btn" href="#" target="_blank">
+    <svg viewBox="0 0 24 24" fill="white" width="26" height="26"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.374 0 0 5.373 0 12c0 2.123.558 4.114 1.531 5.837L.031 24l6.336-1.483A11.946 11.946 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.892a9.875 9.875 0 01-5.031-1.378l-.361-.214-3.741.876.938-3.648-.235-.374A9.863 9.863 0 012.108 12c0-5.455 4.437-9.892 9.892-9.892 5.456 0 9.893 4.437 9.893 9.892 0 5.456-4.437 9.892-9.893 9.892z"/></svg>
+  </a>
+</div>
 
 <script>
 // ═══════════════════════════════════════════════════════════
@@ -373,12 +385,18 @@ try {
 } catch(e) {}
 const CF_URL   = 'https://web.cristian-romero-digital.workers.dev';
 const WSP_NUM  = '5491162557763';
-const IG_URL   = 'https://www.instagram.com/cristian.romero.digital/';
 
 // Parsear URL params
 const urlParams = new URLSearchParams(window.location.search);
 const EVENT_FOLDER = urlParams.get('folder') || '';
 const EVENT_ID     = urlParams.get('id') || '';
+
+const OVERLAY_PRESETS = {
+  violeta: 'radial-gradient(ellipse at 20% 80%, rgba(123,47,212,.45) 0%, transparent 55%), radial-gradient(ellipse at 80% 20%, rgba(0,212,232,.3) 0%, transparent 55%), linear-gradient(to bottom, rgba(10,10,15,.1) 0%, rgba(10,10,15,.75) 100%)',
+  dorado:  'radial-gradient(ellipse at 20% 80%, rgba(160,90,0,.55) 0%, transparent 55%), radial-gradient(ellipse at 80% 20%, rgba(245,166,35,.35) 0%, transparent 55%), linear-gradient(to bottom, rgba(10,8,0,.1) 0%, rgba(18,12,0,.78) 100%)',
+  rosa:    'radial-gradient(ellipse at 20% 80%, rgba(160,40,80,.48) 0%, transparent 55%), radial-gradient(ellipse at 80% 20%, rgba(220,120,150,.28) 0%, transparent 55%), linear-gradient(to bottom, rgba(10,10,15,.1) 0%, rgba(14,10,12,.78) 100%)',
+  neutro:  'radial-gradient(ellipse at 20% 80%, rgba(15,15,20,.6) 0%, transparent 60%), linear-gradient(to bottom, rgba(10,10,15,.05) 0%, rgba(10,10,15,.84) 100%)',
+};
 
 let CFG = {
   nombres: urlParams.get('nombres') || 'Tu entrega',
@@ -387,7 +405,8 @@ let CFG = {
   frase:   urlParams.get('frase')   || '',
   portadaId: urlParams.get('portada') || '',
   folderId:  EVENT_FOLDER,
-  allowDownload: urlParams.get('dl') !== '0'  // default: permitido
+  allowDownload: urlParams.get('dl') !== '0',
+  overlay: urlParams.get('overlay') || 'violeta',
 };
 // Ocultar todos los elementos de descarga si está deshabilitado
 function applyDownloadPolicy() {
@@ -480,6 +499,18 @@ async function init() {
     if(raw) { const src = JSON.parse(raw); if(src) { localStorage.setItem('crd_site_logo', JSON.stringify(src)); applyLogo(src); } }
   } catch(e) {}
 
+  // Cargar social links desde settings
+  try {
+    const settRaw = await fetch(CF_URL + '/crd_settings').then(r => r.text()).catch(() => null);
+    if(settRaw) {
+      const sett = JSON.parse(settRaw);
+      const igBtn  = document.getElementById('ig-float');
+      const webBtn = document.getElementById('web-float');
+      if(igBtn && sett.entregaIgUrl)  { igBtn.href  = sett.entregaIgUrl;  igBtn.style.display  = 'flex'; }
+      if(webBtn && sett.entregaWebUrl) { webBtn.href = sett.entregaWebUrl; webBtn.style.display = 'flex'; }
+    }
+  } catch(e) {}
+
   // Cargar estructura del evento desde Drive
   try {
     const root = await gasCall({ action: 'getDriveFolder', folder: CFG.folderId });
@@ -500,6 +531,8 @@ function applyConfig() {
   document.getElementById('hero-tipo').textContent  = CFG.tipo;
   document.getElementById('hero-frase').textContent = CFG.frase;
   if(CFG.portadaId) document.getElementById('hero-bg').style.backgroundImage = `url('${thumbUrl(CFG.portadaId, 1200)}')`;
+  const overlayEl = document.querySelector('.hero-overlay');
+  if(overlayEl) overlayEl.style.background = OVERLAY_PRESETS[CFG.overlay] || OVERLAY_PRESETS.violeta;
   document.getElementById('footer-copy').textContent = `© ${new Date().getFullYear()} Cristian Romero Digital · Todos los derechos reservados`;
   const wspUrl = `https://wa.me/${WSP_NUM}`;
   document.getElementById('wsp-float').href  = wspUrl;

@@ -913,6 +913,14 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           </div>
         </div>
         <div class="settings-section">
+          <div class="settings-section-title">Entregas — Botones Sociales</div>
+          <p style="font-size:11px;color:var(--gray);margin-bottom:16px;letter-spacing:.5px">URLs que aparecen como botones flotantes en las páginas de entrega al cliente.</p>
+          <div class="settings-row">
+            <div class="form-group"><label class="form-label">Instagram (URL completa)</label><input class="form-input" id="set-entrega-ig" placeholder="https://instagram.com/cristian.romero.digital"></div>
+            <div class="form-group"><label class="form-label">Sitio Web (URL completa)</label><input class="form-input" id="set-entrega-web" placeholder="https://cristian-romero-digital.pages.dev"></div>
+          </div>
+        </div>
+        <div class="settings-section">
           <div class="settings-section-title">Seguridad</div>
           <div class="settings-row">
             <div class="form-group"><label class="form-label">Nueva contraseña</label><input class="form-input" type="password" id="set-newpass" placeholder="Mínimo 6 caracteres"></div>
@@ -1711,6 +1719,27 @@ tr:hover td{background:rgba(255,255,255,0.02);}
               <input type="checkbox" id="ent-allow-dl" checked onchange="updateEntregaPreview()" style="accent-color:var(--gold);width:16px;height:16px;flex-shrink:0">
               Permitir descarga de fotos y videos al cliente
             </label>
+          </div>
+          <div class="form-group" style="margin-top:12px">
+            <label class="form-label">Color del hero (overlay)</label>
+            <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
+              <div class="overlay-opt active" data-overlay="violeta" onclick="setEntOverlay('violeta',this)" title="Violeta / Cyan" style="width:64px;cursor:pointer;text-align:center">
+                <div style="height:36px;border-radius:4px;background:linear-gradient(135deg,rgba(123,47,212,.9),rgba(0,212,232,.7));border:2px solid var(--gold)"></div>
+                <span style="font-size:8px;letter-spacing:.5px;color:var(--gray2);margin-top:4px;display:block">VIOLETA</span>
+              </div>
+              <div class="overlay-opt" data-overlay="dorado" onclick="setEntOverlay('dorado',this)" title="Dorado / Cobre" style="width:64px;cursor:pointer;text-align:center">
+                <div style="height:36px;border-radius:4px;background:linear-gradient(135deg,rgba(160,90,0,.9),rgba(245,166,35,.8));border:2px solid transparent"></div>
+                <span style="font-size:8px;letter-spacing:.5px;color:var(--gray2);margin-top:4px;display:block">DORADO</span>
+              </div>
+              <div class="overlay-opt" data-overlay="rosa" onclick="setEntOverlay('rosa',this)" title="Rosa / Nude" style="width:64px;cursor:pointer;text-align:center">
+                <div style="height:36px;border-radius:4px;background:linear-gradient(135deg,rgba(160,40,80,.9),rgba(220,120,150,.7));border:2px solid transparent"></div>
+                <span style="font-size:8px;letter-spacing:.5px;color:var(--gray2);margin-top:4px;display:block">ROSA</span>
+              </div>
+              <div class="overlay-opt" data-overlay="neutro" onclick="setEntOverlay('neutro',this)" title="Neutro / Oscuro" style="width:64px;cursor:pointer;text-align:center">
+                <div style="height:36px;border-radius:4px;background:linear-gradient(135deg,rgba(20,20,30,.95),rgba(40,40,50,.8));border:2px solid transparent"></div>
+                <span style="font-size:8px;letter-spacing:.5px;color:var(--gray2);margin-top:4px;display:block">NEUTRO</span>
+              </div>
+            </div>
           </div>
           <div style="background:rgba(0,212,232,.04);border:1px solid rgba(0,212,232,.15);padding:14px 16px;margin-bottom:16px">
             <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);margin-bottom:6px">Link generado</div>
@@ -2874,6 +2903,8 @@ function loadSettings() {
   document.getElementById('set-price-book-boda').value = s.priceBookBoda || '';
   document.getElementById('set-wa').value = s.waSuffix || '';
   document.getElementById('set-instagram').value = s.instagram || '';
+  document.getElementById('set-entrega-ig').value  = s.entregaIgUrl  || '';
+  document.getElementById('set-entrega-web').value = s.entregaWebUrl || '';
   loadLogoPreview();
   loadLogoLightPreview();
 }
@@ -2904,6 +2935,8 @@ function saveSettings() {
     priceBookBoda: document.getElementById('set-price-book-boda').value.trim(),
     waSuffix: document.getElementById('set-wa').value.trim(),
     instagram: document.getElementById('set-instagram').value.trim(),
+    entregaIgUrl:  document.getElementById('set-entrega-ig').value.trim(),
+    entregaWebUrl: document.getElementById('set-entrega-web').value.trim(),
   };
   S.set('crd_settings', s);
   toast('Configuración guardada ✓');
@@ -5237,6 +5270,14 @@ function entFolderId(input) {
   if(/^[a-zA-Z0-9_-]{25,}$/.test(input.trim())) return input.trim();
   return input.trim();
 }
+let _entOverlay = 'violeta';
+function setEntOverlay(key, el) {
+  _entOverlay = key;
+  document.querySelectorAll('.overlay-opt > div:first-child').forEach(d => d.style.border = '2px solid transparent');
+  el.querySelector('div').style.border = '2px solid var(--gold)';
+  updateEntregaPreview();
+}
+
 function buildEntregaUrl(ev) {
   const base = window.location.href.replace(/admin\.html.*/, 'entrega.html');
   const p = new URLSearchParams();
@@ -5247,13 +5288,14 @@ function buildEntregaUrl(ev) {
   if(ev.frase)   p.set('frase',   ev.frase);
   if(ev.portadaId) p.set('portada', ev.portadaId);
   if(ev.allowDownload === false) p.set('dl', '0');
+  if(ev.overlay && ev.overlay !== 'violeta') p.set('overlay', ev.overlay);
   return base + '?' + p.toString();
 }
 function updateEntregaPreview() {
   const raw = document.getElementById('ent-folder').value.trim();
   const fid = entFolderId(raw);
   const dlEl = document.getElementById('ent-allow-dl');
-  const ev = { folderId: fid, nombres: document.getElementById('ent-nombres').value.trim(), fecha: document.getElementById('ent-fecha').value.trim(), tipo: document.getElementById('ent-tipo').value, frase: document.getElementById('ent-frase').value.trim(), portadaId: document.getElementById('ent-portada').value.trim(), allowDownload: dlEl ? dlEl.checked : true };
+  const ev = { folderId: fid, nombres: document.getElementById('ent-nombres').value.trim(), fecha: document.getElementById('ent-fecha').value.trim(), tipo: document.getElementById('ent-tipo').value, frase: document.getElementById('ent-frase').value.trim(), portadaId: document.getElementById('ent-portada').value.trim(), allowDownload: dlEl ? dlEl.checked : true, overlay: _entOverlay };
   const linkEl = document.getElementById('ent-link-preview');
   const prevBtn = document.getElementById('ent-preview-btn');
   if(!fid) { linkEl.textContent = 'Completa la carpeta de Drive para generar el link'; prevBtn.style.display='none'; return; }
@@ -5337,7 +5379,7 @@ function guardarEntrega() {
   const dlEl2 = document.getElementById('ent-allow-dl');
   const nombres = document.getElementById('ent-nombres').value.trim() || 'Entrega';
   const tipo = document.getElementById('ent-tipo').value;
-  const ev = { id: 0, folderId: fid, nombres, fecha: document.getElementById('ent-fecha').value.trim(), tipo, frase: document.getElementById('ent-frase').value.trim(), portadaId: document.getElementById('ent-portada').value.trim(), allowDownload: dlEl2 ? dlEl2.checked : true, creado: new Date().toLocaleDateString('es-AR'), estado: 'En edición', notas: '' };
+  const ev = { id: 0, folderId: fid, nombres, fecha: document.getElementById('ent-fecha').value.trim(), tipo, frase: document.getElementById('ent-frase').value.trim(), portadaId: document.getElementById('ent-portada').value.trim(), allowDownload: dlEl2 ? dlEl2.checked : true, overlay: _entOverlay, creado: new Date().toLocaleDateString('es-AR'), estado: 'En edición', notas: '' };
   const entregas = getEntregas();
   if(_editingEntregaIdx >= 0 && entregas[_editingEntregaIdx]) {
     ev.id = entregas[_editingEntregaIdx].id;
@@ -5363,6 +5405,8 @@ function guardarEntrega() {
   navigator.clipboard.writeText(url).then(() => toast('Link copiado al portapapeles'));
   renderEntregasList();
   ['ent-nombres','ent-fecha','ent-frase','ent-folder','ent-portada'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  _entOverlay = 'violeta';
+  document.querySelectorAll('.overlay-opt').forEach((el,i) => { const d=el.querySelector('div'); if(d) d.style.border = i===0 ? '2px solid var(--gold)' : '2px solid transparent'; });
   document.getElementById('ent-link-preview').textContent = 'Completa los campos para generar el link';
   document.getElementById('ent-preview-btn').style.display = 'none';
 }
@@ -5537,6 +5581,11 @@ function editarEntrega(idx) {
     }
   }
   document.getElementById('ent-portada').value = ev.portadaId || '';
+  _entOverlay = ev.overlay || 'violeta';
+  document.querySelectorAll('.overlay-opt').forEach(el => {
+    const d = el.querySelector('div');
+    if(d) d.style.border = el.dataset.overlay === _entOverlay ? '2px solid var(--gold)' : '2px solid transparent';
+  });
   updateEntregaPreview();
   document.querySelector('#page-entregas .settings-section').scrollIntoView({ behavior:'smooth' });
   toast('Entrega cargada — modificá y guardá');
