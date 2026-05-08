@@ -190,6 +190,7 @@ footer small a{color:inherit}
 .env-wrap[data-color="dorado"]{--eb:#231a08;--ef:#2e2208;--efo:#1c1406;--el:rgba(220,170,50,.2);--ebr:rgba(210,160,40,.55);--es:radial-gradient(circle at 38% 38%,#f0d060,#d4a828 60%,#a07810);--esc:rgba(0,0,0,.6)}
 .env-wrap[data-color="rosa"]{--eb:#251020;--ef:#321828;--efo:#1c0c18;--el:rgba(200,70,120,.2);--ebr:rgba(195,75,125,.45);--es:radial-gradient(circle at 38% 38%,#e090a8,#c05878 60%,#982050);--esc:rgba(255,255,255,.8)}
 .env-wrap[data-color="verde"]{--eb:#0f2214;--ef:#162e1c;--efo:#0b1c10;--el:rgba(60,160,80,.2);--ebr:rgba(55,150,70,.45);--es:radial-gradient(circle at 38% 38%,#70c880,#3a8848 60%,#1f5a28);--esc:rgba(0,0,0,.6)}
+.env-wrap[data-color="azul"]{--eb:#0d1a2e;--ef:#132240;--efo:#0a1220;--el:rgba(60,140,220,.2);--ebr:rgba(70,150,230,.45);--es:radial-gradient(circle at 38% 38%,#70b8e8,#3878c8 60%,#1848a0);--esc:rgba(255,255,255,.8)}
 @keyframes env-rise{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
 .env-body{position:absolute;inset:0;background:var(--eb);border:1px solid var(--ebr);overflow:hidden}
 .env-body::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent calc(50% - .5px),var(--el) 50%,transparent calc(50% + .5px)),linear-gradient(225deg,transparent calc(50% - .5px),var(--el) 50%,transparent calc(50% + .5px))}
@@ -756,36 +757,55 @@ async function init() {
   }
 }
 
-function startEnvParticles() {
+function startEnvParticles(type) {
   const cv = document.getElementById('env-particles');
   if (!cv) return;
   const ctx = cv.getContext('2d');
   let W, H, raf;
+  const isStars = type === 'estrellas';
   const resize = () => { W = cv.width = cv.offsetWidth; H = cv.height = cv.offsetHeight; };
   resize();
   window.addEventListener('resize', resize);
   const pts = Array.from({ length: 60 }, () => ({
     x: Math.random() * innerWidth,
     y: Math.random() * innerHeight,
-    r: Math.random() * 1.4 + 0.3,
+    r: isStars ? Math.random() * 3 + 1.5 : Math.random() * 1.4 + 0.3,
     vy: Math.random() * 0.4 + 0.15,
     vx: (Math.random() - 0.5) * 0.2,
-    op: Math.random() * 0.5 + 0.08
+    op: Math.random() * 0.5 + 0.08,
+    rot: Math.random() * Math.PI * 2,
+    drot: (Math.random() - 0.5) * 0.015
   }));
   function tick() {
     ctx.clearRect(0, 0, W, H);
     pts.forEach(p => {
       p.y -= p.vy; p.x += p.vx;
-      if (p.y < -4) { p.y = H + 4; p.x = Math.random() * W; }
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, 6.283);
+      if (isStars) p.rot += p.drot;
+      if (p.y < -8) { p.y = H + 8; p.x = Math.random() * W; }
       ctx.fillStyle = `rgba(255,255,255,${p.op})`;
-      ctx.fill();
+      if (isStars) {
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.beginPath();
+        for (let i = 0; i < 10; i++) {
+          const ang = (i * Math.PI) / 5 - Math.PI / 2;
+          const rad = i % 2 === 0 ? p.r : p.r * 0.42;
+          i === 0 ? ctx.moveTo(rad * Math.cos(ang), rad * Math.sin(ang))
+                  : ctx.lineTo(rad * Math.cos(ang), rad * Math.sin(ang));
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      } else {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, 6.283);
+        ctx.fill();
+      }
     });
     raf = requestAnimationFrame(tick);
   }
   tick();
-  // Detener cuando se cierra el sobre
   document.getElementById('envelope-screen').addEventListener('click', () => {
     cancelAnimationFrame(raf);
     window.removeEventListener('resize', resize);
@@ -804,7 +824,7 @@ function showEnvelope(c) {
   const scale = Math.min(1, (window.innerWidth - 24) / 380);
   if (scale < 1) document.getElementById('env-scene').style.transform = `scale(${scale})`;
   screen.addEventListener('click', openEnvelope, { once: true });
-  startEnvParticles();
+  startEnvParticles(c.env_particulas || 'puntos');
 }
 
 function openEnvelope() {

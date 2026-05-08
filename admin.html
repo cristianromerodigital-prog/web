@@ -887,8 +887,19 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                       <div style="width:62px;height:40px;border-radius:7px;background:linear-gradient(135deg,#1a3a1e,#2d6a35);border:2px solid transparent;transition:border .2s"></div>
                       <span style="font-size:9px;letter-spacing:2px;color:var(--gray2);display:block;margin-top:4px">VERDE</span>
                     </div>
+                    <div onclick="selectEnvColor('azul')" data-ecolor="azul" style="cursor:pointer;text-align:center">
+                      <div style="width:62px;height:40px;border-radius:7px;background:linear-gradient(135deg,#0d1a2e,#1848a0);border:2px solid transparent;transition:border .2s"></div>
+                      <span style="font-size:9px;letter-spacing:2px;color:var(--gray2);display:block;margin-top:4px">AZUL</span>
+                    </div>
                   </div>
                   <input type="hidden" id="inv-env-color" value="negro">
+                </div>
+                <div class="form-group" style="margin-top:16px">
+                  <label class="form-label">Partículas del fondo</label>
+                  <select class="form-input" id="inv-env-particulas">
+                    <option value="puntos">Puntos flotantes</option>
+                    <option value="estrellas">Estrellas flotantes</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -4400,6 +4411,7 @@ function openInviteModal(id) {
     document.getElementById('inv-env-mostrar').checked = c.env_mostrar !== false;
     document.getElementById('inv-env-slogan').value = c.env_slogan || '';
     selectEnvColor(c.env_color || 'negro');
+    document.getElementById('inv-env-particulas').value = c.env_particulas || 'puntos';
     document.getElementById('inv-color-esquema').value = c.color_esquema || 'negro';
     document.getElementById('inv-estilo-aero').checked = !!c.estilo_aero;
     const slugEl = document.getElementById('inv-slug');
@@ -4482,6 +4494,7 @@ function readInviteForm() {
       env_mostrar: document.getElementById('inv-env-mostrar').checked,
       env_slogan: document.getElementById('inv-env-slogan').value.trim(),
       env_color: document.getElementById('inv-env-color').value,
+      env_particulas: document.getElementById('inv-env-particulas').value,
       color_esquema: document.getElementById('inv-color-esquema').value,
       estilo_aero: document.getElementById('inv-estilo-aero').checked,
       logo_dark: S.get('crd_site_logo') || '',
