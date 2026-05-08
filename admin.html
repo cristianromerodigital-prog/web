@@ -2342,7 +2342,11 @@ async function init() {
   // Contratos cfg: cargar desde CF si no está en localStorage (necesario para solicitudes e historial)
   if (!S.get('crd_contratos_cfg')) {
     const cloudCfg = await fetchFromCloud('crd_contratos_cfg');
-    if (cloudCfg) S.set('crd_contratos_cfg', cloudCfg);
+    if (cloudCfg) {
+      S.set('crd_contratos_cfg', cloudCfg);
+      // Si el usuario ya navegó a Contratos mientras init() corría, reiniciar la carga
+      if (currentPage === 'contratos') initContratosPage();
+    }
   }
 
   // Logo sidebar: aplicar siempre al arrancar (desde localStorage o desde crd_settings de CF)
@@ -6320,12 +6324,16 @@ function ctInitSolicitudes() {
 async function ctRefreshSolicitudes() {
   const url = ctGetUrl();
   if (!url) { document.getElementById('ct-sol-list').innerHTML = '<div style="color:var(--gray);font-size:12px">Configurá la URL del Apps Script primero.</div>'; return; }
+  // Mostrar cache inmediato si existe
+  try { const c = JSON.parse(localStorage.getItem('crd_ct_sol_cache')); if(c) ctRenderSolicitudes(c); } catch(e) {}
   try {
     const res  = await fetch(url, { method:'POST', redirect:'follow', body: JSON.stringify({action:'getSolicitudes'}) });
     const data = await res.json();
+    localStorage.setItem('crd_ct_sol_cache', JSON.stringify(data));
     ctRenderSolicitudes(data);
   } catch(e) {
-    document.getElementById('ct-sol-list').innerHTML = '<div style="color:var(--red);font-size:12px">Error cargando solicitudes.</div>';
+    if (!localStorage.getItem('crd_ct_sol_cache'))
+      document.getElementById('ct-sol-list').innerHTML = '<div style="color:var(--red);font-size:12px">Error cargando solicitudes.</div>';
   }
 }
 
@@ -6421,14 +6429,18 @@ function ctToggleHistorial() {
 async function ctLoadHistorial() {
   const url = ctGetUrl();
   if (!url) { document.getElementById('ct-hist-list').innerHTML = '<div style="color:var(--gray);font-size:12px">Configurá la URL del Apps Script primero.</div>'; return; }
+  // Mostrar cache inmediato si existe
+  try { const c = JSON.parse(localStorage.getItem('crd_ct_hist_cache')); if(c) { ctHistData = c; ctRenderHistorial(c); } } catch(e) {}
   try {
     const res  = await fetch(url, { method:'POST', redirect:'follow', body: JSON.stringify({action:'getContratos'}) });
     const data = await res.json();
+    localStorage.setItem('crd_ct_hist_cache', JSON.stringify(data));
     ctHistLoaded = true;
     ctHistData   = data;
     ctRenderHistorial(data);
   } catch(e) {
-    document.getElementById('ct-hist-list').innerHTML = '<div style="color:var(--red);font-size:12px">Error cargando historial.</div>';
+    if (!localStorage.getItem('crd_ct_hist_cache'))
+      document.getElementById('ct-hist-list').innerHTML = '<div style="color:var(--red);font-size:12px">Error cargando historial.</div>';
   }
 }
 
