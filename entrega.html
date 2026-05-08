@@ -530,12 +530,6 @@ function applyLogo(src) {
 async function init() {
   startFrases();
 
-  // Logo siempre desde CF (URL de Drive) — funciona en todos los browsers y dispositivos
-  fetch(CF_URL + '/crd_site_logo').then(r => r.text()).catch(() => null).then(raw => {
-    if(!raw) return;
-    try { const src = JSON.parse(raw); if(src) applyLogo(src); } catch(e) {}
-  });
-
   // Lanzar todos los fetches CF en paralelo
   const fetchEvent  = (EVENT_ID && !EVENT_FOLDER)
     ? fetch(CF_URL + '/crd_entregas').then(r => r.json()).catch(() => [])
@@ -572,6 +566,7 @@ async function init() {
     if(!raw) return;
     try {
       const sett = JSON.parse(raw);
+      if(sett.logoUrl) applyLogo(sett.logoUrl);
       const igBtn  = document.getElementById('ig-float');
       const webBtn = document.getElementById('web-float');
       if(igBtn  && sett.entregaIgUrl)  igBtn.href  = sett.entregaIgUrl;

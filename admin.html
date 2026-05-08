@@ -3334,6 +3334,11 @@ function saveLogoConfig() {
   }
   S.set('crd_site_logo', logoSrc);
   S.set('crd_site_logo_filter', filter);
+  // Sync logo a crd_settings (que sí llega a CF y es visible en todos los browsers)
+  const setts = S.get('crd_settings') || {};
+  setts.logoUrl = logoSrc;
+  setts.logoFilter = filter;
+  S.set('crd_settings', setts);
   applySidebarLogo(logoSrc);
   if(urlInp) urlInp.value = '';
   loadLogoPreview();
