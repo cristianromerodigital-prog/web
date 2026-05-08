@@ -169,7 +169,7 @@
       .page { width: 210mm !important; height: 297mm !important; margin: 0 !important; box-shadow: none !important; page-break-after: always; overflow: hidden; position: relative !important; }
       .page:last-child { page-break-after: avoid; height: auto !important; }
       .page-bar { position: absolute !important; bottom: 0 !important; left: 0 !important; right: 0 !important; }
-      .pack-body { min-height: 0 !important; max-height: calc(297mm - 58px) !important; overflow: hidden !important; }
+      .pack-body { min-height: 0 !important; }
 
       /* portada */
       .cover-top { flex-direction: row !important; padding: 44px 60px 30px !important; }
@@ -190,12 +190,21 @@
       .estilo-gallery .span2 { grid-column: 1 / 3 !important; }
 
       /* packs */
-      .pack-body { padding: 0 60px 44px !important; }
-      .pack-box { grid-template-columns: 300px 1fr !important; }
+      .pack-body { padding: 0 52px 28px !important; }
+      .pack-header { padding: 12px 0 10px !important; margin-bottom: 18px !important; }
+      .pack-box { grid-template-columns: 280px 1fr !important; }
       .photos-col { display: grid !important; }
-      .content-col { padding: 30px 34px 26px !important; }
-      .total-val { font-size: 34px !important; }
-      .includes-grid { grid-template-columns: 1fr 1fr !important; }
+      .content-col { padding: 16px 28px 14px !important; }
+      .pack-name { font-size: 22px !important; }
+      .name-divider { margin: 7px 0 10px !important; }
+      .svc-list li { padding: 4px 0 4px 18px !important; font-size: 10.5px !important; }
+      .svc-item-desc { font-size: 9px !important; margin-top: 1px !important; }
+      .total-block { padding-top: 10px !important; }
+      .total-val { font-size: 28px !important; }
+      .pack-foot { margin-top: 10px !important; }
+      .includes-grid { grid-template-columns: 1fr 1fr !important; gap: 4px 12px !important; }
+      .inc-item { font-size: 10px !important; }
+      .obs { margin-top: 8px !important; padding-top: 8px !important; font-size: 9.5px !important; }
 
       /* opcionales */
       .opc-body { padding: 0 60px 44px !important; }
