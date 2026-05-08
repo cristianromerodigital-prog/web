@@ -2339,6 +2339,12 @@ async function init() {
   if (Array.isArray(cloudPedidos)) localStorage.setItem('crd_pedidos', JSON.stringify(cloudPedidos));
   else if (!localStorage.getItem('crd_pedidos')) localStorage.setItem('crd_pedidos', '[]');
 
+  // Contratos cfg: cargar desde CF si no está en localStorage (necesario para solicitudes e historial)
+  if (!S.get('crd_contratos_cfg')) {
+    const cloudCfg = await fetchFromCloud('crd_contratos_cfg');
+    if (cloudCfg) S.set('crd_contratos_cfg', cloudCfg);
+  }
+
   // Logo: aplicar desde crd_settings.logoUrl si no está en localStorage
   if (!S.get('crd_site_logo')) {
     const setts = S.get('crd_settings') || {};
