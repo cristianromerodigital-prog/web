@@ -897,9 +897,14 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                 <div class="form-group" style="margin-top:16px">
                   <label class="form-label">Partículas del fondo</label>
                   <select class="form-input" id="inv-env-particulas">
+                    <option value="ninguno">Sin partículas</option>
                     <option value="puntos">Puntos flotantes</option>
                     <option value="estrellas">Estrellas flotantes</option>
                   </select>
+                </div>
+                <div class="form-group" style="margin-top:12px">
+                  <label class="form-label">Tamaño de partículas — <span id="inv-env-particulas-tam-val">3</span></label>
+                  <input type="range" id="inv-env-particulas-tam" min="1" max="10" step="1" value="3" style="width:100%;accent-color:var(--gold)" oninput="document.getElementById('inv-env-particulas-tam-val').textContent=this.value">
                 </div>
               </div>
             </div>
@@ -4413,6 +4418,9 @@ function openInviteModal(id) {
     document.getElementById('inv-env-slogan').value = c.env_slogan || '';
     selectEnvColor(c.env_color || 'negro');
     document.getElementById('inv-env-particulas').value = c.env_particulas || 'puntos';
+    const tam = c.env_particulas_tam || 3;
+    document.getElementById('inv-env-particulas-tam').value = tam;
+    document.getElementById('inv-env-particulas-tam-val').textContent = tam;
     document.getElementById('inv-color-esquema').value = c.color_esquema || 'negro';
     document.getElementById('inv-estilo-aero').checked = !!c.estilo_aero;
     const slugEl = document.getElementById('inv-slug');
@@ -4496,6 +4504,7 @@ function readInviteForm() {
       env_slogan: document.getElementById('inv-env-slogan').value.trim(),
       env_color: document.getElementById('inv-env-color').value,
       env_particulas: document.getElementById('inv-env-particulas').value,
+      env_particulas_tam: parseInt(document.getElementById('inv-env-particulas-tam').value),
       color_esquema: document.getElementById('inv-color-esquema').value,
       estilo_aero: document.getElementById('inv-estilo-aero').checked,
       logo_dark: S.get('crd_site_logo') || '',
