@@ -2345,10 +2345,13 @@ async function init() {
     if (cloudCfg) S.set('crd_contratos_cfg', cloudCfg);
   }
 
-  // Logo: aplicar desde crd_settings.logoUrl si no está en localStorage
-  if (!S.get('crd_site_logo')) {
-    const setts = S.get('crd_settings') || {};
-    if (setts.logoUrl) { S.set('crd_site_logo', setts.logoUrl); applySidebarLogo(setts.logoUrl); }
+  // Logo sidebar: aplicar siempre al arrancar (desde localStorage o desde crd_settings de CF)
+  const _logoLocal = S.get('crd_site_logo');
+  if (_logoLocal) {
+    applySidebarLogo(_logoLocal);
+  } else {
+    const _setts = S.get('crd_settings') || {};
+    if (_setts.logoUrl) { S.set('crd_site_logo', _setts.logoUrl); applySidebarLogo(_setts.logoUrl); }
   }
 
   if (!localStorage.getItem('crd_inv_base')) {
