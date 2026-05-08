@@ -783,7 +783,7 @@ function startEnvParticles(type) {
   const ctx = cv.getContext('2d');
   let W, H, raf;
   const isStars = type === 'estrellas';
-  const resize = () => { W = cv.width = cv.offsetWidth; H = cv.height = cv.offsetHeight; };
+  const resize = () => { W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; };
   resize();
   window.addEventListener('resize', resize);
   const pts = Array.from({ length: 60 }, () => ({
