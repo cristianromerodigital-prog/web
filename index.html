@@ -1400,16 +1400,16 @@ document.addEventListener('keydown', e => {
 });
 
 // ── TESTIMONIALS ──
-const GOOGLE_PLACE_ID = 'ChIJ9+JuYX3HvJURpPoXFiUQBtY=';
+const GOOGLE_PLACE_ID = 'ChIJ9-JuYX3HvJURpPoXFiUQBtY';
 const GOOGLE_API_KEY  = 'AIzaSyDmMEFDvwp8-F3F1BdUBtyViTLK8Cj2ilA';
 
 async function renderTestimonials() {
   const grid = document.getElementById('testimonials-grid');
 
   try {
-    const pid = encodeURIComponent(GOOGLE_PLACE_ID);
     const r = await fetch(
-      `https://places.googleapis.com/v1/places/${pid}?fields=reviews,rating,userRatingCount&key=${GOOGLE_API_KEY}`
+      `https://places.googleapis.com/v1/places/${GOOGLE_PLACE_ID}?key=${GOOGLE_API_KEY}`,
+      { headers: { 'X-Goog-FieldMask': 'reviews,rating,userRatingCount' } }
     );
     if (r.ok) {
       const d = await r.json();
