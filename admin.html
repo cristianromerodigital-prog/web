@@ -2322,10 +2322,10 @@ async function init() {
     const cloud = await fetchFromCloud('crd_messages');
     S.set('crd_messages', cloud || []);
   }
-  if (!S.get('crd_settings')) {
-    const cloud = await fetchFromCloud('crd_settings');
-    S.set('crd_settings', cloud || {availability:'Tomando fechas para 2025 y 2026',waSuffix:'+5491100000000',countdownDate:new Date(Date.now()+30*24*60*60*1000).toISOString(),countdownMsg:'Solo 2 fechas libres este mes',priceSilver:'',priceGold:'',pricePlatinum:''});
-  }
+  // Settings: siempre sincronizar del cloud (contiene logoUrl y otros datos críticos)
+  const cloudSettings = await fetchFromCloud('crd_settings');
+  if (cloudSettings) S.set('crd_settings', cloudSettings);
+  else if (!S.get('crd_settings')) S.set('crd_settings', {availability:'Tomando fechas para 2025 y 2026',waSuffix:'+5491100000000',countdownDate:new Date(Date.now()+30*24*60*60*1000).toISOString(),countdownMsg:'Solo 2 fechas libres este mes',priceSilver:'',priceGold:'',pricePlatinum:''});
   // Invitaciones: siempre sincronizar del cloud (fuente de verdad)
   const cloudInvites = await fetchFromCloud('crd_invites');
   if (cloudInvites !== null) S.set('crd_invites', cloudInvites);
@@ -2339,15 +2339,10 @@ async function init() {
   if (Array.isArray(cloudPedidos)) localStorage.setItem('crd_pedidos', JSON.stringify(cloudPedidos));
   else if (!localStorage.getItem('crd_pedidos')) localStorage.setItem('crd_pedidos', '[]');
 
-  // Logo: re-sincronizar a CF cada login para que sea visible en todos los dispositivos
-  const localLogo = localStorage.getItem('crd_site_logo');
-  if (localLogo) {
-    syncToCloud('crd_site_logo', localLogo);
-  } else {
-    try {
-      const res = await fetch(CF_URL + '/crd_site_logo', { headers: { 'Authorization': CF_AUTH } });
-      if (res.ok) { const raw = await res.text(); if(raw && raw !== 'null') localStorage.setItem('crd_site_logo', raw); }
-    } catch(e) {}
+  // Logo: aplicar desde crd_settings.logoUrl si no está en localStorage
+  if (!S.get('crd_site_logo')) {
+    const setts = S.get('crd_settings') || {};
+    if (setts.logoUrl) { S.set('crd_site_logo', setts.logoUrl); applySidebarLogo(setts.logoUrl); }
   }
 
   if (!localStorage.getItem('crd_inv_base')) {
