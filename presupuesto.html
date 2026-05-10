@@ -872,7 +872,7 @@ async function generarPDF(btn) {
 
       // Simula object-fit via CSS (sin drawImage, sin CORS issues)
       const fixed = [];
-      page.querySelectorAll('img').forEach(img => {
+      page.querySelectorAll('.img-ph.loaded img').forEach(img => {
         if (!img.naturalWidth || !img.naturalHeight) return;
         const fit = getComputedStyle(img).objectFit;
         if (!fit || fit === 'fill' || fit === 'none') return;
