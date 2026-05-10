@@ -6,7 +6,7 @@
   <title>Presupuesto — Cristian Romero Digital</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@3.4.0/dist/dom-to-image-more.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -870,23 +870,38 @@ async function generarPDF(btn) {
       const w = page.offsetWidth;
       const h = page.offsetHeight;
 
-      const scale = 2;
-      const imgW = w * scale;
-      const imgH = h * scale;
-
-      const img = await domtoimage.toJpeg(page, {
-        quality: 0.95,
-        width: imgW,
-        height: imgH,
-        style: { transform: `scale(${scale})`, transformOrigin: 'top left', width: w + 'px', height: h + 'px' }
+      const canvas = await html2canvas(page, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        onclone: (clonedDoc) => {
+          clonedDoc.querySelectorAll('img').forEach(img => {
+            const original = document.querySelector(`img[src="${img.src}"]`);
+            if (!original) return;
+            const fit = getComputedStyle(original).objectFit;
+            if (!fit || fit === 'fill' || fit === 'none') return;
+            const pw = original.parentElement.offsetWidth;
+            const ph = original.parentElement.offsetHeight;
+            const nw = original.naturalWidth || pw;
+            const nh = original.naturalHeight || ph;
+            const s = fit === 'cover' ? Math.max(pw/nw, ph/nh) : Math.min(pw/nw, ph/nh);
+            const sw = nw * s, sh = nh * s;
+            img.style.cssText += `object-fit:none;width:${sw}px;height:${sh}px;left:${(pw-sw)/2}px;top:${(ph-sh)/2}px;`;
+          });
+        }
       });
 
+      const imgW = canvas.width;
+      const imgH = canvas.height;
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
       if (i === 0) {
         pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [imgW, imgH] });
       } else {
         pdf.addPage([imgW, imgH]);
       }
-      pdf.addImage(img, 'JPEG', 0, 0, imgW, imgH);
+      pdf.addImage(imgData, 'JPEG', 0, 0, imgW, imgH);
     }
 
     pdf.save('presupuesto.pdf');
