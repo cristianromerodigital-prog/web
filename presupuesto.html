@@ -870,28 +870,32 @@ async function generarPDF(btn) {
       const w = page.offsetWidth;
       const h = page.offsetHeight;
 
-      const canvas = await html2canvas(page, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        onclone: (clonedDoc) => {
-          clonedDoc.querySelectorAll('img').forEach(img => {
-            const original = document.querySelector(`img[src="${img.src}"]`);
-            if (!original) return;
-            const fit = getComputedStyle(original).objectFit;
-            if (!fit || fit === 'fill' || fit === 'none') return;
-            const pw = original.parentElement.offsetWidth;
-            const ph = original.parentElement.offsetHeight;
-            const nw = original.naturalWidth || pw;
-            const nh = original.naturalHeight || ph;
-            const s = fit === 'cover' ? Math.max(pw/nw, ph/nh) : Math.min(pw/nw, ph/nh);
-            const sw = nw * s, sh = nh * s;
-            img.style.cssText += `object-fit:none;width:${sw}px;height:${sh}px;left:${(pw-sw)/2}px;top:${(ph-sh)/2}px;`;
-          });
-        }
+      // Pre-procesa imágenes con object-fit: las dibuja en canvas con recorte correcto
+      const fixed = [];
+      page.querySelectorAll('img').forEach(img => {
+        if (!img.naturalWidth || !img.naturalHeight) return;
+        const fit = getComputedStyle(img).objectFit;
+        if (!fit || fit === 'fill' || fit === 'none') return;
+        const par = img.parentElement;
+        const pw = par.offsetWidth, ph = par.offsetHeight;
+        const nw = img.naturalWidth, nh = img.naturalHeight;
+        const s = fit === 'cover' ? Math.max(pw/nw, ph/nh) : Math.min(pw/nw, ph/nh);
+        const sw = nw*s, sh = nh*s, sx = (pw-sw)/2, sy = (ph-sh)/2;
+        const c = document.createElement('canvas');
+        c.width = pw; c.height = ph;
+        c.getContext('2d').drawImage(img, sx, sy, sw, sh);
+        Object.assign(c.style, { position:'absolute', inset:'0', width:pw+'px', height:ph+'px', zIndex:'1' });
+        par.appendChild(c);
+        img.style.visibility = 'hidden';
+        fixed.push({ img, c });
       });
+
+      const canvas = await html2canvas(page, {
+        scale: 2, useCORS: true, allowTaint: true, logging: false, backgroundColor: '#ffffff'
+      });
+
+      // Restaura
+      fixed.forEach(({ img, c }) => { img.style.visibility = ''; c.remove(); });
 
       const imgW = canvas.width;
       const imgH = canvas.height;
