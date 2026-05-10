@@ -880,12 +880,14 @@ async function generarPDF(btn) {
 
       const img = canvas.toDataURL('image/jpeg', 0.95);
 
+      const imgW = canvas.width;
+      const imgH = canvas.height;
       if (i === 0) {
-        pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [w, h], hotfixes: ['px_scaling'] });
+        pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [imgW, imgH] });
       } else {
-        pdf.addPage([w, h]);
+        pdf.addPage([imgW, imgH]);
       }
-      pdf.addImage(img, 'JPEG', 0, 0, w, h);
+      pdf.addImage(img, 'JPEG', 0, 0, imgW, imgH);
     }
 
     pdf.save('presupuesto.pdf');
