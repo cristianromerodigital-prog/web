@@ -6,7 +6,7 @@
   <title>Presupuesto — Cristian Romero Digital</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@3.4.0/dist/dom-to-image-more.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -870,18 +870,17 @@ async function generarPDF(btn) {
       const w = page.offsetWidth;
       const h = page.offsetHeight;
 
-      const canvas = await html2canvas(page, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: '#ffffff'
+      const scale = 2;
+      const imgW = w * scale;
+      const imgH = h * scale;
+
+      const img = await domtoimage.toJpeg(page, {
+        quality: 0.95,
+        width: imgW,
+        height: imgH,
+        style: { transform: `scale(${scale})`, transformOrigin: 'top left', width: w + 'px', height: h + 'px' }
       });
 
-      const img = canvas.toDataURL('image/jpeg', 0.95);
-
-      const imgW = canvas.width;
-      const imgH = canvas.height;
       if (i === 0) {
         pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [imgW, imgH] });
       } else {
