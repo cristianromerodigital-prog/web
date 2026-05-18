@@ -625,12 +625,14 @@ const PRESUPUESTO_DEFAULT = {
   paymentMethods: 'Efectivo · Transferencia bancaria · Mercado Pago'
 };
 
+const _PR_KEY = new URLSearchParams(location.search).get('tipo') === 'boda' ? 'crd_presupuesto_boda' : 'crd_presupuesto';
+
 function getData() {
-  try { return JSON.parse(localStorage.getItem('crd_presupuesto')) || JSON.parse(JSON.stringify(PRESUPUESTO_DEFAULT)); }
+  try { return JSON.parse(localStorage.getItem(_PR_KEY)) || JSON.parse(JSON.stringify(PRESUPUESTO_DEFAULT)); }
   catch(e) { return JSON.parse(JSON.stringify(PRESUPUESTO_DEFAULT)); }
 }
 function saveData(data) {
-  try { localStorage.setItem('crd_presupuesto', JSON.stringify(data)); } catch(e) {}
+  try { localStorage.setItem(_PR_KEY, JSON.stringify(data)); } catch(e) {}
 }
 
 function setText(id, val) {
@@ -841,7 +843,7 @@ document.querySelectorAll('[data-persist]').forEach(el => el.addEventListener('i
 const CF_URL = 'https://web.cristian-romero-digital.workers.dev';
 
 async function syncFromCloud() {
-  const keys = ['crd_presupuesto', 'crd_editable', 'crd_opcionales', 'crd_site_logo'];
+  const keys = [_PR_KEY, 'crd_editable', 'crd_opcionales', 'crd_site_logo'];
   await Promise.all(keys.map(async key => {
     try {
       const res = await fetch(CF_URL + '/' + key);
