@@ -5668,7 +5668,10 @@ function renderEntregasList() {
                     +'</div>'
                     +(p.fotosNombres?'<div style="font-size:10px;color:rgba(255,255,255,.55);line-height:1.6"><span style="color:var(--gray);letter-spacing:1px;display:block;margin-bottom:3px">FOTOS ELEGIDAS</span>'+p.fotosNombres+'</div>':'')
                     +(p.notas?'<div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:8px;font-style:italic;border-top:1px solid rgba(255,255,255,.06);padding-top:8px">'+p.notas+'</div>':'')
-                    +'<div style="margin-top:10px;text-align:right"><button onclick="eliminarPedido(\''+p.id+'\')" class="btn-sm" style="font-size:10px;color:var(--red);border-color:rgba(224,85,85,.3)">Eliminar pedido</button></div>'
+                    +'<div id="ped-act-'+p.id+'" style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-wrap:wrap">'
+                      +'<button class="btn-sm" onclick="crearAlbum(\''+p.id+'\')" style="font-size:10px;color:var(--cyan);border-color:rgba(0,212,232,.3)">Crear álbum</button>'
+                      +'<button class="btn-sm" onclick="pedConfirm(\''+p.id+'\')" style="font-size:10px;color:var(--red);border-color:rgba(224,85,85,.3)">Eliminar pedido</button>'
+                    +'</div>'
                   +'</div>'
                 ).join('')
               +'</div>';
@@ -5760,8 +5763,20 @@ function eliminarEntrega(idx) {
   const entregas = getEntregas(); entregas.splice(idx, 1); setEntregas(entregas); renderEntregasList();
 }
 function getPedidos() { try { return JSON.parse(localStorage.getItem('crd_pedidos')) || []; } catch(e) { return []; } }
+function pedConfirm(id) {
+  const el = document.getElementById('ped-act-'+id);
+  if (!el) return;
+  el.innerHTML = '<span style="font-size:11px;color:rgba(255,255,255,.6);margin-right:auto">¿Eliminar este pedido?</span>'
+    +'<button class="btn-sm" onclick="pedCancelConfirm(\''+id+'\')" style="font-size:10px">Cancelar</button>'
+    +'<button class="btn-sm" onclick="eliminarPedido(\''+id+'\')" style="font-size:10px;background:rgba(224,85,85,.18);color:var(--red);border-color:rgba(224,85,85,.45)">Sí, eliminar</button>';
+}
+function pedCancelConfirm(id) {
+  const el = document.getElementById('ped-act-'+id);
+  if (!el) return;
+  el.innerHTML = '<button class="btn-sm" onclick="crearAlbum(\''+id+'\')" style="font-size:10px;color:var(--cyan);border-color:rgba(0,212,232,.3)">Crear álbum</button>'
+    +'<button class="btn-sm" onclick="pedConfirm(\''+id+'\')" style="font-size:10px;color:var(--red);border-color:rgba(224,85,85,.3)">Eliminar pedido</button>';
+}
 function eliminarPedido(id) {
-  if(!confirm('Eliminar este pedido? El cliente podrá enviar uno nuevo.')) return;
   const lista = getPedidos().filter(p => p.id !== id);
   const str = JSON.stringify(lista);
   localStorage.setItem('crd_pedidos', str);
@@ -5770,6 +5785,91 @@ function eliminarPedido(id) {
   toast('Pedido eliminado — el cliente puede enviar uno nuevo');
 }
 
+function crearAlbum(pedidoId) {
+  const p = getPedidos().find(x => x.id === pedidoId);
+  if (!p || !p.fotos || !p.fotos.length) { toast('Sin fotos en este pedido', 'error'); return; }
+  const fotos = p.fotos;
+  const nombres = p.fotosNombres ? p.fotosNombres.split(', ') : fotos.map((_, i) => 'foto_'+String(i+1).padStart(3,'0'));
+  const grid = fotos.map((id, i) => {
+    const nombre = nombres[i] || ('foto_'+(i+1));
+    const esTapa = id === p.tapaId;
+    return '<div style="position:relative;break-inside:avoid;margin-bottom:8px">'
+      +'<img src="https://drive.google.com/thumbnail?id='+id+'&sz=w300" style="width:100%;display:block;border:2px solid '+(esTapa?'var(--gold)':'transparent')+'" loading="lazy">'
+      +(esTapa?'<div style="position:absolute;top:4px;left:4px;background:var(--gold);color:#000;font-size:9px;font-weight:700;padding:2px 6px;letter-spacing:1px">TAPA</div>':'')
+      +'<div style="font-size:9px;color:rgba(255,255,255,.5);padding:3px 4px;background:rgba(0,0,0,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+nombre+'</div>'
+      +'</div>';
+  }).join('');
+  let ov = document.getElementById('album-modal-ov');
+  if (ov) ov.remove();
+  ov = document.createElement('div');
+  ov.id = 'album-modal-ov';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.9);display:flex;flex-direction:column;overflow:hidden';
+  ov.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0;gap:12px;flex-wrap:wrap">'
+    +'<div>'
+      +'<div style="font-size:14px;font-weight:500;color:var(--white)">'+p.nombre+' — '+p.size+'</div>'
+      +'<div style="font-size:11px;color:var(--gray);margin-top:2px">'+fotos.length+' fotos · '+p.finish+' · '+p.qty+' copia'+(p.qty>1?'s':'')+'</div>'
+    +'</div>'
+    +'<div style="display:flex;gap:8px;align-items:center;margin-left:auto">'
+      +'<span id="album-dl-prog" style="font-size:11px;color:var(--gray);display:none"></span>'
+      +'<button id="album-dl-btn" onclick="downloadAlbumZip(\''+pedidoId+'\')" class="btn-sm" style="font-size:11px;color:var(--cyan);border-color:rgba(0,212,232,.35)">Descargar ZIP</button>'
+      +'<button onclick="document.getElementById(\'album-modal-ov\').remove()" style="background:none;border:none;color:var(--gray);font-size:20px;line-height:1;cursor:pointer;padding:4px">✕</button>'
+    +'</div>'
+  +'</div>'
+  +'<div style="flex:1;overflow-y:auto;padding:16px">'
+    +'<div style="columns:3 180px;gap:8px">'+grid+'</div>'
+  +'</div>';
+  document.body.appendChild(ov);
+  const esc = e => { if(e.key==='Escape'){ ov.remove(); document.removeEventListener('keydown',esc); } };
+  document.addEventListener('keydown', esc);
+}
+async function downloadAlbumZip(pedidoId) {
+  const p = getPedidos().find(x => x.id === pedidoId);
+  if (!p) return;
+  const btn = document.getElementById('album-dl-btn');
+  const prog = document.getElementById('album-dl-prog');
+  btn.disabled = true;
+  btn.textContent = 'Cargando...';
+  prog.style.display = 'block';
+  prog.textContent = '';
+  if (!window.JSZip) {
+    await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+      s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    }).catch(() => { toast('Error cargando JSZip','error'); btn.disabled=false; btn.textContent='Descargar ZIP'; prog.style.display='none'; return Promise.reject(); });
+  }
+  const fotos = p.fotos || [];
+  const nombres = p.fotosNombres ? p.fotosNombres.split(', ') : fotos.map((_, i) => 'foto_'+String(i+1).padStart(3,'0'));
+  const zip = new JSZip();
+  let done = 0;
+  const fetchFoto = async (id, i) => {
+    const base = (nombres[i]||('foto_'+(i+1))).replace(/\.(jpe?g|png)$/i,'');
+    const esTapa = id === p.tapaId;
+    const fname = base + (esTapa ? '_TAPA' : '') + '.jpg';
+    try {
+      const res = await fetch('https://lh3.googleusercontent.com/d/'+id);
+      if (!res.ok) throw new Error(res.status);
+      zip.file(fname, await res.blob());
+    } catch(e) { console.warn('Skip foto', id, e); }
+    done++;
+    prog.textContent = done+'/'+fotos.length;
+    btn.textContent = 'Descargando '+Math.round(done/fotos.length*100)+'%';
+  };
+  for (let i = 0; i < fotos.length; i += 5) {
+    await Promise.all(fotos.slice(i, i+5).map((id, j) => fetchFoto(id, i+j)));
+  }
+  btn.textContent = 'Generando ZIP...';
+  const blob = await zip.generateAsync({ type:'blob', compression:'DEFLATE', compressionOptions:{ level:1 } });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = ('Album_'+p.nombre+'_'+p.size).replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_.-]/g,'') + '.zip';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+  btn.textContent = 'Descargar ZIP';
+  btn.disabled = false;
+  prog.style.display = 'none';
+}
 function loadEntregasPage() {
   renderEntregasList();
   updateEntregaPreview();
