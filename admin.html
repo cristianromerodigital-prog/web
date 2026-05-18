@@ -5787,8 +5787,9 @@ function eliminarPedido(id) {
 
 function crearAlbum(pedidoId) {
   const p = getPedidos().find(x => x.id === pedidoId);
-  if (!p || !p.fotos || !p.fotos.length) { toast('Sin fotos en este pedido', 'error'); return; }
-  const fotos = p.fotos;
+  if (!p || !p.fotos) { toast('Sin fotos en este pedido', 'error'); return; }
+  const fotos = Array.isArray(p.fotos) ? p.fotos : p.fotos.split(',').map(s=>s.trim()).filter(Boolean);
+  if (!fotos.length) { toast('Sin fotos en este pedido', 'error'); return; }
   const nombres = p.fotosNombres ? p.fotosNombres.split(', ') : fotos.map((_, i) => 'foto_'+String(i+1).padStart(3,'0'));
   const grid = fotos.map((id, i) => {
     const nombre = nombres[i] || ('foto_'+(i+1));
@@ -5839,7 +5840,7 @@ async function downloadAlbumZip(pedidoId) {
       document.head.appendChild(s);
     }).catch(() => { toast('Error cargando JSZip','error'); btn.disabled=false; btn.textContent='Descargar ZIP'; prog.style.display='none'; return Promise.reject(); });
   }
-  const fotos = p.fotos || [];
+  const fotos = Array.isArray(p.fotos) ? p.fotos : (p.fotos||'').split(',').map(s=>s.trim()).filter(Boolean);
   const nombres = p.fotosNombres ? p.fotosNombres.split(', ') : fotos.map((_, i) => 'foto_'+String(i+1).padStart(3,'0'));
   const zip = new JSZip();
   let done = 0;
