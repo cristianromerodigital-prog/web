@@ -4882,46 +4882,44 @@ function setPresupuesto(data) {
 let currentPresupuestoPack = 0;
 
 function loadPresupuestoPage() {
-  const data = getPresupuesto();
-  // Sobre mi / Estilo
-  const editable = S.get('crd_editable') || {};
-  const stripHtml = h => { const t = document.createElement('div'); t.innerHTML = h; return t.textContent || t.innerText || ''; };
-  document.getElementById('pr-sobre-title').value  = stripHtml(editable['sobre-title'] || '');
-  document.getElementById('pr-sobre-p0').value     = stripHtml(editable['sobre-p0'] || '');
-  document.getElementById('pr-sobre-p1').value     = stripHtml(editable['sobre-p1'] || '');
-  document.getElementById('pr-sobre-p2').value     = stripHtml(editable['sobre-p2'] || '');
-  document.getElementById('pr-estilo-title').value = stripHtml(editable['estilo-title'] || '');
-  document.getElementById('pr-estilo-desc').value  = stripHtml(editable['estilo-desc'] || '');
-  // Opcionales
-  renderOpcionalesAdmin();
-  // Payment texts
-  document.getElementById('pr-payment-how-title').value    = data.paymentHowTitle || '';
-  document.getElementById('pr-payment-freeze-title').value = data.paymentFreezeTitle || '';
-  document.getElementById('pr-payment-note-title').value   = data.paymentNoteTitle || '';
-  document.getElementById('pr-payment-methods-title').value= data.paymentMethodsTitle || '';
-  document.getElementById('pr-payment-how').value          = data.paymentHow || '';
-  document.getElementById('pr-payment-freeze').value       = data.paymentFreeze || '';
-  document.getElementById('pr-payment-note-body').value    = data.paymentNote || '';
-  document.getElementById('pr-payment-methods').value      = data.paymentMethods || '';
-  // Cover photos + Sobre mi + Estilo
-  renderPresupuestoCoverPhotos(data.coverPhotos || []);
-  renderPresupuestoExtraPhotos('sobre', data.sobrePhotos || [], 1);
-  renderPresupuestoExtraPhotos('estilo', data.estiloPhotos || [], 3);
-  renderPresupuestoPack(0, data);
-  renderPresupuestoIncludes(data.includes || PRESUPUESTO_DEFAULT.includes);
-  document.getElementById('pr-obs').value          = data.observations || '';
-  document.getElementById('pr-instagram').value    = data.instagram || '';
-  document.getElementById('pr-phone').value        = data.phone || '';
-  document.getElementById('pr-validity').value     = data.validity || '';
-  document.getElementById('pr-payment-note').value  = data.paymentNote || '';
-  document.getElementById('pr-closing-note').value  = data.closingNote !== undefined ? data.closingNote : 'Precios vigentes Mayo 2025 — No incluye IVA';
-  // Logo preview
-  const prLogoImg2 = document.getElementById('pr-logo-img');
-  const _logoVal = S.get('crd_site_logo');
-  if(_logoVal && prLogoImg2) { prLogoImg2.src = _logoVal; prLogoImg2.style.display = 'block'; document.getElementById('pr-logo-empty').style.display = 'none'; }
-  // Reset pack tabs (not tipo tabs)
-  document.querySelectorAll('#page-presupuesto .cnt-subtab:not([id^="pr-tipo"])').forEach((t,i) => t.classList.toggle('active', i===0));
-  currentPresupuestoPack = 0;
+  try {
+    const data = getPresupuesto();
+    const editable = S.get('crd_editable') || {};
+    const stripHtml = h => { const t = document.createElement('div'); t.innerHTML = h; return t.textContent || t.innerText || ''; };
+    document.getElementById('pr-sobre-title').value  = stripHtml(editable['sobre-title'] || '');
+    document.getElementById('pr-sobre-p0').value     = stripHtml(editable['sobre-p0'] || '');
+    document.getElementById('pr-sobre-p1').value     = stripHtml(editable['sobre-p1'] || '');
+    document.getElementById('pr-sobre-p2').value     = stripHtml(editable['sobre-p2'] || '');
+    document.getElementById('pr-estilo-title').value = stripHtml(editable['estilo-title'] || '');
+    document.getElementById('pr-estilo-desc').value  = stripHtml(editable['estilo-desc'] || '');
+    renderOpcionalesAdmin();
+    document.getElementById('pr-payment-how-title').value    = data.paymentHowTitle || '';
+    document.getElementById('pr-payment-freeze-title').value = data.paymentFreezeTitle || '';
+    document.getElementById('pr-payment-note-title').value   = data.paymentNoteTitle || '';
+    document.getElementById('pr-payment-methods-title').value= data.paymentMethodsTitle || '';
+    document.getElementById('pr-payment-how').value          = data.paymentHow || '';
+    document.getElementById('pr-payment-freeze').value       = data.paymentFreeze || '';
+    document.getElementById('pr-payment-note-body').value    = data.paymentNote || '';
+    document.getElementById('pr-payment-methods').value      = data.paymentMethods || '';
+    renderPresupuestoCoverPhotos(data.coverPhotos || []);
+    renderPresupuestoExtraPhotos('sobre', data.sobrePhotos || [], 1);
+    renderPresupuestoExtraPhotos('estilo', data.estiloPhotos || [], 3);
+    renderPresupuestoPack(0, data);
+    renderPresupuestoIncludes(data.includes || PRESUPUESTO_DEFAULT.includes);
+    document.getElementById('pr-obs').value          = data.observations || '';
+    document.getElementById('pr-instagram').value    = data.instagram || '';
+    document.getElementById('pr-phone').value        = data.phone || '';
+    document.getElementById('pr-validity').value     = data.validity || '';
+    document.getElementById('pr-payment-note').value  = data.paymentNote || '';
+    document.getElementById('pr-closing-note').value  = data.closingNote !== undefined ? data.closingNote : 'Precios vigentes Mayo 2025 — No incluye IVA';
+    try {
+      const prLogoImg2 = document.getElementById('pr-logo-img');
+      const _logoVal = S.get('crd_site_logo');
+      if(_logoVal && prLogoImg2) { prLogoImg2.src = _logoVal; prLogoImg2.style.display = 'block'; document.getElementById('pr-logo-empty').style.display = 'none'; }
+    } catch(e) { console.warn('loadPresupuestoPage logo:', e); }
+    document.querySelectorAll('#page-presupuesto .cnt-subtab:not([id^="pr-tipo"])').forEach((t,i) => t.classList.toggle('active', i===0));
+    currentPresupuestoPack = 0;
+  } catch(e) { console.error('loadPresupuestoPage:', e); }
 }
 
 function renderPresupuestoExtraPhotos(type, photos, count) {
