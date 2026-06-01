@@ -429,7 +429,7 @@ footer small a{color:inherit}
 <footer>
   <p id="footer-names"></p>
   <img id="footer-logo" alt="Logo">
-  <small>Invitación digital · <a href="https://www.cristianromerodigital.ar" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:3px">Cristian Romero Digital</a> · <a href="https://www.instagram.com/cristian.romero.digital" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:3px">@cristian.romero.digital</a></small>
+  <small>Invitación digital · <a id="invite-footer-web" href="https://www.cristianromerodigital.ar" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:3px">Cristian Romero Producciones</a> · <a id="invite-footer-ig" href="https://www.instagram.com/cristian.romero.digital" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:3px">@cristian.romero.digital</a></small>
 </footer>
 
 </div><!-- /invite-app -->
@@ -778,6 +778,21 @@ async function init() {
     if (cfg.youtube_audio) initYoutubeAudio(cfg.youtube_audio);
     // sin sobre: unmute en primer scroll/touch/click (manejado dentro de initYoutubeAudio)
   }
+  // Load branding from crd_settings
+  try {
+    const sRes = await fetch(CF_URL_INV + '/crd_settings?t=' + Date.now());
+    const sText = await sRes.text();
+    if (sText && sText !== 'null') {
+      const s = JSON.parse(sText);
+      const webEl = document.getElementById('invite-footer-web');
+      const igEl  = document.getElementById('invite-footer-ig');
+      if (webEl && s.entregaWebUrl) { webEl.href = s.entregaWebUrl; }
+      if (igEl  && s.entregaIgUrl)  {
+        igEl.href = s.entregaIgUrl;
+        igEl.textContent = s.entregaIgUrl.replace('https://www.instagram.com/','@').replace('https://instagram.com/','@').replace(/\/$/,'');
+      }
+    }
+  } catch(e) {}
 }
 
 function startInviteParticles(type, size) {
