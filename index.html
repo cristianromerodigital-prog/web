@@ -1832,7 +1832,13 @@ function applyHeroVideo() {
     if(wrap) wrap.style.display = 'block';
     section.classList.add('has-video');
     vid.load();
-    vid.play().catch(function() {});
+    vid.play().catch(function() {
+      // iOS Safari rechaza play() desde async — fallback: primer toque del usuario
+      document.addEventListener('touchstart', function iosPlay() {
+        vid.play().catch(function(){});
+        document.removeEventListener('touchstart', iosPlay);
+      }, {once: true, passive: true});
+    });
   }
 }
 </script>
@@ -1883,14 +1889,4 @@ function applyHeroVideo() {
     applyStoredLogo();
   }
 })();
-</script>
-<script id="debug-overlay-tmp">
-setTimeout(function(){
-  var v=document.getElementById('hero-video');
-  var d=document.createElement('div');
-  d.style.cssText='position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.92);color:#0f0;font-size:11px;padding:10px;z-index:99999;font-family:monospace;word-break:break-all;line-height:1.6';
-  d.innerHTML='<b>VIDEO DEBUG</b><br>readyState:'+v.readyState+'<br>paused:'+v.paused+'<br>networkState:'+v.networkState+'<br>muted:'+v.muted+'<br>error:'+(v.error?v.error.message:'null')+'<br>src:'+v.src.slice(0,70);
-  document.body.appendChild(d);
-  d.onclick=function(){d.remove();};
-},3000);
 </script>
