@@ -1831,6 +1831,8 @@ function applyHeroVideo() {
     vid.src = src;
     if(wrap) wrap.style.display = 'block';
     section.classList.add('has-video');
+    vid.load();
+    vid.play().catch(function() {});
   }
 }
 </script>
