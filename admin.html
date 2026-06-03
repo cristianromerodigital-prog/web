@@ -356,6 +356,10 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
         Contenido
       </div>
+      <div class="sidebar-item" onclick="showPage('crclub')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+        CR Club
+      </div>
       <div class="sidebar-item" onclick="showPage('settings')">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         Configuración
@@ -942,6 +946,126 @@ tr:hover td{background:rgba(255,255,255,0.02);}
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- CR CLUB -->
+      <div class="page" id="page-crclub">
+        <h2 class="section-h" style="margin-bottom:20px">CR Club</h2>
+
+        <!-- Tabs -->
+        <div style="display:flex;gap:8px;margin-bottom:24px;border-bottom:1px solid var(--border);padding-bottom:0;">
+          <button class="crclub-tab active" onclick="crclubTab('dashboard')" id="crclub-tab-dashboard" style="background:none;border:none;color:var(--gold);padding:8px 16px;cursor:pointer;font-family:inherit;font-size:13px;border-bottom:2px solid var(--gold);margin-bottom:-1px;">Dashboard</button>
+          <button class="crclub-tab" onclick="crclubTab('config')" id="crclub-tab-config" style="background:none;border:none;color:var(--gray2);padding:8px 16px;cursor:pointer;font-family:inherit;font-size:13px;border-bottom:2px solid transparent;margin-bottom:-1px;">Configuración</button>
+          <button class="crclub-tab" onclick="crclubTab('clients')" id="crclub-tab-clients" style="background:none;border:none;color:var(--gray2);padding:8px 16px;cursor:pointer;font-family:inherit;font-size:13px;border-bottom:2px solid transparent;margin-bottom:-1px;">Clientes</button>
+          <button class="crclub-tab" onclick="crclubTab('purchases')" id="crclub-tab-purchases" style="background:none;border:none;color:var(--gray2);padding:8px 16px;cursor:pointer;font-family:inherit;font-size:13px;border-bottom:2px solid transparent;margin-bottom:-1px;">Solicitudes <span id="crclub-badge" style="display:none;background:var(--gold);color:#000;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:bold;margin-left:4px;">0</span></button>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="crclub-panel-dashboard">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;">
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;">
+              <div style="font-size:11px;color:var(--gray2);letter-spacing:1px;margin-bottom:6px;">CLIENTES ACTIVOS</div>
+              <div id="crclub-stat-clients" style="font-size:28px;font-weight:bold;color:var(--white);">—</div>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;">
+              <div style="font-size:11px;color:var(--gray2);letter-spacing:1px;margin-bottom:6px;">CRÉDITO COMPROMETIDO</div>
+              <div id="crclub-stat-credit" style="font-size:28px;font-weight:bold;color:var(--gold);">—</div>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;">
+              <div style="font-size:11px;color:var(--gray2);letter-spacing:1px;margin-bottom:6px;">SOLICITUDES PENDIENTES</div>
+              <div id="crclub-stat-pending" style="font-size:28px;font-weight:bold;color:var(--white);">—</div>
+            </div>
+          </div>
+          <button onclick="crclubLoadDashboard()" style="background:var(--card);border:1px solid var(--border);color:var(--gray2);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;">↻ Actualizar</button>
+        </div>
+
+        <!-- Config -->
+        <div id="crclub-panel-config" style="display:none;">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px;max-width:500px;margin-bottom:24px;">
+            <div style="font-size:11px;color:var(--gold);letter-spacing:1px;margin-bottom:12px;">VALOR DEL PUNTO (CR)</div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <span style="color:var(--gray2);">$</span>
+              <input id="crclub-pts-value" type="number" value="10000" step="1000" style="background:var(--bg);border:1px solid var(--gold);color:var(--white);padding:8px 12px;border-radius:6px;font-size:18px;font-weight:bold;width:120px;font-family:inherit;">
+              <button onclick="crclubSaveConfig()" style="background:var(--gold);color:#000;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:bold;font-size:13px;">Guardar</button>
+            </div>
+            <p style="font-size:12px;color:var(--gray2);margin-top:8px;">Actualizá este valor junto con los precios de los packs para mantener el % de crédito constante.</p>
+          </div>
+
+          <div style="font-size:11px;color:var(--gray2);letter-spacing:1px;margin-bottom:12px;">DESGLOSE DE PRECIOS POR PACK</div>
+          <div style="overflow-x:auto;">
+            <table id="crclub-pack-table" style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead>
+                <tr style="border-bottom:1px solid var(--border);">
+                  <th style="padding:8px 0;text-align:left;color:var(--gray2);">Pack</th>
+                  <th style="padding:8px 4px;text-align:right;color:var(--gray2);">CRs</th>
+                  <th style="padding:8px 4px;text-align:right;color:#4a9eff;">Base (servicio)</th>
+                  <th style="padding:8px 4px;text-align:right;color:var(--gold);">+ Crédito</th>
+                  <th style="padding:8px 0;text-align:right;color:var(--white);">= Total cliente</th>
+                </tr>
+              </thead>
+              <tbody id="crclub-pack-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Clients -->
+        <div id="crclub-panel-clients" style="display:none;">
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead>
+                <tr style="border-bottom:1px solid var(--border);">
+                  <th style="padding:8px 0;text-align:left;color:var(--gray2);">ID</th>
+                  <th style="padding:8px 8px;text-align:left;color:var(--gray2);">Nombre</th>
+                  <th style="padding:8px 8px;text-align:left;color:var(--gray2);">Email</th>
+                  <th style="padding:8px 4px;text-align:right;color:var(--gray2);">CRs</th>
+                  <th style="padding:8px 4px;text-align:right;color:var(--gold);">Crédito</th>
+                  <th style="padding:8px 0;text-align:right;color:var(--gray2);">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="crclub-clients-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Purchases -->
+        <div id="crclub-panel-purchases" style="display:none;">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border);">
+                <th style="padding:8px 0;text-align:left;color:var(--gray2);">Fecha</th>
+                <th style="padding:8px 8px;text-align:left;color:var(--gray2);">Cliente</th>
+                <th style="padding:8px 4px;text-align:right;color:var(--gray2);">CRs</th>
+                <th style="padding:8px 4px;text-align:right;color:var(--gold);">Monto</th>
+                <th style="padding:8px 0;text-align:right;color:var(--gray2);">Estado / Acción</th>
+              </tr>
+            </thead>
+            <tbody id="crclub-purchases-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- Modal ajuste manual -->
+        <div id="crclub-adjust-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;width:380px;">
+            <h3 style="margin:0 0 16px;font-size:16px;">Ajuste manual de crédito</h3>
+            <div style="margin-bottom:12px;">
+              <div style="font-size:12px;color:var(--gray2);margin-bottom:4px;">Cliente: <span id="crclub-adjust-name" style="color:var(--white);"></span></div>
+              <input type="hidden" id="crclub-adjust-id">
+            </div>
+            <div style="margin-bottom:12px;">
+              <label style="font-size:12px;color:var(--gray2);display:block;margin-bottom:4px;">Crédito a ajustar (+ para sumar, - para restar)</label>
+              <input id="crclub-adjust-credit" type="number" placeholder="ej: 50000 o -50000" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--white);padding:8px;border-radius:6px;font-family:inherit;box-sizing:border-box;">
+            </div>
+            <div style="margin-bottom:16px;">
+              <label style="font-size:12px;color:var(--gray2);display:block;margin-bottom:4px;">Motivo (obligatorio)</label>
+              <input id="crclub-adjust-reason" type="text" placeholder="ej: Corrección por cancelación" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--white);padding:8px;border-radius:6px;font-family:inherit;box-sizing:border-box;">
+            </div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;">
+              <button onclick="document.getElementById('crclub-adjust-modal').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--gray2);padding:8px 16px;border-radius:6px;cursor:pointer;">Cancelar</button>
+              <button onclick="crclubConfirmAdjust()" style="background:var(--gold);color:#000;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:bold;">Confirmar</button>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- SETTINGS -->
@@ -2170,6 +2294,152 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
 <script>
 
+// ── CR CLUB ──
+const CRCLUB_URL = 'https://crclub-worker.cristian-romero-digital.workers.dev';
+
+async function crclubApi(path, method = 'GET', body = null) {
+  const opts = {
+    method,
+    headers: { 'Authorization': `Bearer ${CF_AUTH}`, 'Content-Type': 'application/json' }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(CRCLUB_URL + path, opts);
+  return r.json();
+}
+
+function crclubTab(name) {
+  ['dashboard','config','clients','purchases'].forEach(t => {
+    document.getElementById('crclub-panel-' + t).style.display = t === name ? '' : 'none';
+    const btn = document.getElementById('crclub-tab-' + t);
+    if (btn) {
+      btn.style.color = t === name ? 'var(--gold)' : 'var(--gray2)';
+      btn.style.borderBottomColor = t === name ? 'var(--gold)' : 'transparent';
+    }
+  });
+  if (name === 'dashboard') crclubLoadDashboard();
+  if (name === 'config') crclubLoadConfig();
+  if (name === 'clients') crclubLoadClients();
+  if (name === 'purchases') crclubLoadPurchases();
+}
+
+async function crclubLoadDashboard() {
+  const d = await crclubApi('/crclub/admin/dashboard');
+  document.getElementById('crclub-stat-clients').textContent = d.active_clients ?? 0;
+  document.getElementById('crclub-stat-credit').textContent = '$' + (d.total_credit_outstanding || 0).toLocaleString('es-AR');
+  document.getElementById('crclub-stat-pending').textContent = d.pending_purchases ?? 0;
+  const badge = document.getElementById('crclub-badge');
+  if (d.pending_purchases > 0) { badge.textContent = d.pending_purchases; badge.style.display = 'inline'; }
+  else badge.style.display = 'none';
+}
+
+async function crclubLoadConfig() {
+  const cfg = await crclubApi('/crclub/config');
+  document.getElementById('crclub-pts-value').value = cfg.pts_value;
+  crclubRenderPackTable(cfg);
+}
+
+function crclubRenderPackTable(cfg) {
+  const packs = [
+    { key: 'xv_01', label: 'XV 01 — Solo Fiesta', base: 790000 },
+    { key: 'xv_02', label: 'XV 02 — Recuerdo Esencial', base: 1180000 },
+    { key: 'xv_03', label: 'XV 03 — Experiencia Completa', base: 1340000 },
+    { key: 'xv_04', label: 'XV 04 — Historia Personalizada', base: 1790000 },
+    { key: 'boda_01', label: 'Boda 01 — Solo Fiesta', base: 990000 },
+    { key: 'boda_02', label: 'Boda 02 — Recuerdo Esencial', base: 1370000 },
+    { key: 'boda_03', label: 'Boda 03 — Experiencia Completa', base: 1890000 },
+    { key: 'boda_04', label: 'Boda 04 — Historia Personalizada', base: 2290000 },
+  ];
+  const tbody = document.getElementById('crclub-pack-tbody');
+  tbody.innerHTML = packs.map(p => {
+    const pts = cfg.pts_per_pack[p.key] || 0;
+    const credit = pts * cfg.pts_value;
+    const total = p.base + credit;
+    return `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px 0;color:var(--gray1)">${p.label}</td>
+      <td style="padding:8px 4px;text-align:right;color:var(--gold)">${pts}</td>
+      <td style="padding:8px 4px;text-align:right;color:#4a9eff">$${p.base.toLocaleString('es-AR')}</td>
+      <td style="padding:8px 4px;text-align:right;color:var(--gold)">$${credit.toLocaleString('es-AR')}</td>
+      <td style="padding:8px 0;text-align:right;color:var(--white);font-weight:bold">$${total.toLocaleString('es-AR')}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function crclubSaveConfig() {
+  const pts_value = parseInt(document.getElementById('crclub-pts-value').value);
+  if (!pts_value || pts_value < 1000) return alert('Valor inválido');
+  const r = await crclubApi('/crclub/admin/config', 'PUT', { pts_value });
+  if (r.ok) { alert('Configuración guardada'); crclubLoadConfig(); }
+  else alert('Error: ' + (r.error || 'desconocido'));
+}
+
+async function crclubLoadClients() {
+  const d = await crclubApi('/crclub/admin/clients');
+  const tbody = document.getElementById('crclub-clients-tbody');
+  if (!d.clients || !d.clients.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="padding:20px;color:var(--gray2);text-align:center">Sin clientes aún</td></tr>';
+    return;
+  }
+  tbody.innerHTML = d.clients.map(c => `
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px 0;color:var(--gray2);font-size:12px">${c.id}</td>
+      <td style="padding:8px 8px;color:var(--white)">${c.name}</td>
+      <td style="padding:8px 8px;color:var(--gray2);font-size:12px">${c.google_email}</td>
+      <td style="padding:8px 4px;text-align:right;color:var(--gold)">${c.pts_total}</td>
+      <td style="padding:8px 4px;text-align:right;color:var(--white)">$${(c.credit_available||0).toLocaleString('es-AR')}</td>
+      <td style="padding:8px 0;text-align:right">
+        <button onclick="crclubOpenAdjust('${c.id}','${c.name.replace(/'/g,"\\'")}')" style="background:none;border:1px solid var(--border);color:var(--gray2);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">Ajustar</button>
+      </td>
+    </tr>`).join('');
+}
+
+function crclubOpenAdjust(id, name) {
+  document.getElementById('crclub-adjust-id').value = id;
+  document.getElementById('crclub-adjust-name').textContent = name;
+  document.getElementById('crclub-adjust-credit').value = '';
+  document.getElementById('crclub-adjust-reason').value = '';
+  document.getElementById('crclub-adjust-modal').style.display = 'flex';
+}
+
+async function crclubConfirmAdjust() {
+  const client_id = document.getElementById('crclub-adjust-id').value;
+  const credit = parseInt(document.getElementById('crclub-adjust-credit').value);
+  const reason = document.getElementById('crclub-adjust-reason').value.trim();
+  if (!credit || !reason) return alert('Completá monto y motivo');
+  const r = await crclubApi('/crclub/admin/adjust', 'POST', { client_id, credit, reason });
+  if (r.ok) {
+    document.getElementById('crclub-adjust-modal').style.display = 'none';
+    crclubLoadClients();
+  } else alert('Error: ' + (r.error || 'desconocido'));
+}
+
+async function crclubLoadPurchases() {
+  const d = await crclubApi('/crclub/admin/purchases');
+  const tbody = document.getElementById('crclub-purchases-tbody');
+  if (!d.purchases || !d.purchases.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="padding:20px;color:var(--gray2);text-align:center">Sin solicitudes</td></tr>';
+    return;
+  }
+  tbody.innerHTML = d.purchases.map(p => `
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px 0;color:var(--gray2);font-size:12px">${p.created_at.slice(0,10)}</td>
+      <td style="padding:8px 8px;color:var(--white)">${p.client_name}<br><span style="font-size:11px;color:var(--gray2)">${p.client_whatsapp||''}</span></td>
+      <td style="padding:8px 4px;text-align:right;color:var(--gold)">${p.pts} CR</td>
+      <td style="padding:8px 4px;text-align:right;color:var(--white)">$${p.amount.toLocaleString('es-AR')}</td>
+      <td style="padding:8px 0;text-align:right">
+        ${p.status === 'pending'
+          ? `<button onclick="crclubConfirmPurchase(${p.id})" style="background:var(--gold);color:#000;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:bold">Confirmar pago</button>`
+          : `<span style="font-size:12px;color:var(--gray2)">${p.status}</span>`}
+      </td>
+    </tr>`).join('');
+}
+
+async function crclubConfirmPurchase(id) {
+  if (!confirm('¿Confirmar que recibiste el pago?')) return;
+  const r = await crclubApi(`/crclub/admin/purchases/${id}/confirm`, 'POST');
+  if (r.ok) crclubLoadPurchases();
+  else alert('Error: ' + (r.error || 'desconocido'));
+}
+
 // ── CLOUDFLARE SYNC ──
 const CF_URL = 'https://web.cristian-romero-digital.workers.dev';
 const CF_AUTH = 'crd2025';
@@ -2315,6 +2585,7 @@ function showPage(id) {
     ]).then(() => loadPresupuestoPage());
   }
   if (id === 'entregas') loadEntregasPage();
+  if (id === 'crclub') crclubLoadDashboard();
 }
 
 // ── MODAL ──
@@ -5496,7 +5767,7 @@ function parseFechaSlug(fecha) {
 
 function buildEntregaUrl(ev) {
   const slug = ev.slug || [makeEntregaSlug(ev.nombres), parseFechaSlug(ev.fecha)].filter(Boolean).join('-') || ev.numId || ev.id;
-  return 'https://cristianromerodigital.ar/entrega.html?id=' + encodeURIComponent(slug);
+  return 'https://cristianromeroproducciones.com.ar/entrega.html?id=' + encodeURIComponent(slug);
 }
 function updateEntregaPreview() {
   const raw = document.getElementById('ent-folder').value.trim();
