@@ -2384,6 +2384,17 @@ async function init() {
     if (cloud && typeof cloud === 'string') localStorage.setItem('crd_inv_base', cloud);
     else if (cloud) localStorage.setItem('crd_inv_base', JSON.stringify(cloud));
   }
+
+  // Presupuesto cfg: siempre sincronizar del cloud (fuente de verdad cross-browser)
+  const cloudPres = await fetchFromCloud('crd_presupuesto');
+  if (cloudPres && typeof cloudPres === 'object') localStorage.setItem('crd_presupuesto', JSON.stringify(cloudPres));
+  const cloudPresBoda = await fetchFromCloud('crd_presupuesto_boda');
+  if (cloudPresBoda && typeof cloudPresBoda === 'object') localStorage.setItem('crd_presupuesto_boda', JSON.stringify(cloudPresBoda));
+  const cloudEditable = await fetchFromCloud('crd_editable');
+  if (cloudEditable && typeof cloudEditable === 'object') localStorage.setItem('crd_editable', JSON.stringify(cloudEditable));
+  const cloudOpcionales = await fetchFromCloud('crd_opcionales');
+  if (Array.isArray(cloudOpcionales)) localStorage.setItem('crd_opcionales', JSON.stringify(cloudOpcionales));
+
   updateUnreadBadge();
   renderDashboard();
 }
