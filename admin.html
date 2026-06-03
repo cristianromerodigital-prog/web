@@ -2306,7 +2306,14 @@ function showPage(id) {
   if (id === 'content') { loadContentPage(); setTimeout(loadDestinations, 100); }
   if (id === 'invites') renderInvitesPage();
   if (id === 'contratos') initContratosPage();
-  if (id === 'presupuesto') loadPresupuestoPage();
+  if (id === 'presupuesto') {
+    Promise.all([
+      fetchFromCloud('crd_presupuesto').then(d => { if(d && typeof d==='object') localStorage.setItem('crd_presupuesto', JSON.stringify(d)); }),
+      fetchFromCloud('crd_presupuesto_boda').then(d => { if(d && typeof d==='object') localStorage.setItem('crd_presupuesto_boda', JSON.stringify(d)); }),
+      fetchFromCloud('crd_editable').then(d => { if(d && typeof d==='object') localStorage.setItem('crd_editable', JSON.stringify(d)); }),
+      fetchFromCloud('crd_opcionales').then(d => { if(Array.isArray(d)) localStorage.setItem('crd_opcionales', JSON.stringify(d)); }),
+    ]).then(() => loadPresupuestoPage());
+  }
   if (id === 'entregas') loadEntregasPage();
 }
 
