@@ -632,7 +632,15 @@ function getData() {
   catch(e) { return JSON.parse(JSON.stringify(PRESUPUESTO_DEFAULT)); }
 }
 function saveData(data) {
-  try { localStorage.setItem(_PR_KEY, JSON.stringify(data)); } catch(e) {}
+  const str = JSON.stringify(data);
+  try { localStorage.setItem(_PR_KEY, str); } catch(e) {}
+  try {
+    fetch(CF_URL + '/' + _PR_KEY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'crd2025' },
+      body: str
+    });
+  } catch(e) {}
 }
 
 function setText(id, val) {
