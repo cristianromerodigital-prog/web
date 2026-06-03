@@ -8,9 +8,9 @@ llas<!DOCTYPE html>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
 <style>
 :root {
-  --black:#080810;--black2:#0e0e18;--black3:#14141f;--black4:#1a1a28;
-  --cyan:#00d4d4;--violet:#7b4fff;--gold:#c9a84c;--gold2:#e8c96a;
-  --white:#f0eeea;--gray:#7a7a90;--gray2:#b0b0c8;
+  --black:#060c1a;--black2:#080f20;--black3:#0d1628;--black4:#111e35;
+  --cyan:#00d4d4;--violet:#7b4fff;--gold:#d4a843;--gold2:#e8c96a;
+  --white:#eeeae4;--gray:#4a5a78;--gray2:#8a9ab8;
   --green:#25d366;--red:#e05555;--orange:#f59e0b;
   --sidebar:240px;
 }
@@ -52,14 +52,14 @@ input,textarea,select{font-family:'DM Sans',sans-serif;}
 .sidebar-logo-text span{color:var(--gold);}
 .sidebar-logo-sub{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-top:4px;}
 .sidebar-nav{flex:1;padding:20px 0;overflow-y:auto;}
-.nav-section-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gray);padding:16px 24px 8px;}
+.nav-section-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#2a3a58;padding:16px 24px 8px;}
 .sidebar-item{
-  display:flex;align-items:center;gap:12px;padding:11px 24px;
+  display:flex;align-items:center;gap:10px;padding:9px 16px;margin:1px 8px;
   color:var(--gray2);font-size:13px;font-weight:400;transition:all 0.2s;
-  cursor:pointer;border-left:2px solid transparent;
+  cursor:pointer;border-radius:7px;
 }
 .sidebar-item:hover{color:var(--white);background:rgba(255,255,255,0.03);}
-.sidebar-item.active{color:var(--gold);border-left-color:var(--gold);background:rgba(201,168,76,0.05);}
+.sidebar-item.active{color:var(--gold);background:rgba(212,168,67,0.10);}
 .sidebar-item svg{width:16px;height:16px;flex-shrink:0;opacity:0.7;}
 .sidebar-item.active svg{opacity:1;}
 .badge{background:var(--red);color:white;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:auto;}
@@ -76,7 +76,7 @@ input,textarea,select{font-family:'DM Sans',sans-serif;}
 /* ── MAIN ── */
 .main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh;}
 .topbar-admin{
-  background:var(--black);border-bottom:1px solid rgba(255,255,255,0.04);
+  background:var(--black2);border-bottom:1px solid rgba(255,255,255,0.04);
   padding:16px 36px;display:flex;align-items:center;justify-content:space-between;
   position:sticky;top:0;z-index:50;
 }
@@ -92,11 +92,10 @@ input,textarea,select{font-family:'DM Sans',sans-serif;}
 
 /* ── CARDS ── */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px;}
-.stat-card{background:var(--black3);border:1px solid rgba(255,255,255,0.05);padding:24px;position:relative;overflow:hidden;}
-.stat-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:var(--gold);}
-.stat-card.cyan::before{background:var(--cyan);}
-.stat-card.violet::before{background:var(--violet);}
-.stat-card.green::before{background:var(--green);}
+.stat-card{background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06);padding:24px;border-radius:10px;transition:all 0.2s;}
+.stat-card:hover{border-color:rgba(212,168,67,0.2);background:rgba(212,168,67,0.03);transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,0.3);}
+.stat-card-icon{width:32px;height:32px;background:rgba(212,168,67,0.10);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
+.stat-card-icon svg{width:15px;height:15px;color:var(--gold);}
 .stat-card-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:12px;}
 .stat-card-value{font-family:'Cormorant Garamond',serif;font-size:40px;font-weight:300;color:var(--white);line-height:1;}
 .stat-card-sub{font-size:11px;color:var(--gray);margin-top:8px;}
@@ -104,16 +103,16 @@ input,textarea,select{font-family:'DM Sans',sans-serif;}
 /* ── SECTION HEADER ── */
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
 .section-h{font-size:18px;font-weight:500;color:var(--white);}
-.btn-add{background:var(--gold);color:var(--black);padding:10px 24px;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:700;border:none;transition:background 0.2s;}
+.btn-add{background:var(--gold);color:var(--black);padding:10px 24px;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:700;border:none;transition:background 0.2s;border-radius:6px;}
 .btn-add:hover{background:var(--gold2);}
-.btn-sm{padding:7px 16px;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;border:none;font-weight:600;transition:all 0.2s;cursor:pointer;}
+.btn-sm{padding:7px 16px;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;border:none;font-weight:600;transition:all 0.2s;cursor:pointer;border-radius:6px;}
 .btn-danger{background:rgba(224,85,85,0.15);color:var(--red);border:1px solid rgba(224,85,85,0.3);}
 .btn-danger:hover{background:var(--red);color:white;}
 .btn-edit{background:rgba(0,212,212,0.1);color:var(--cyan);border:1px solid rgba(0,212,212,0.2);}
 .btn-edit:hover{background:var(--cyan);color:var(--black);}
 .btn-pub{background:rgba(37,211,102,0.1);color:var(--green);border:1px solid rgba(37,211,102,0.2);}
 .btn-pub:hover{background:var(--green);color:var(--black);}
-.btn-sec{background:rgba(255,255,255,0.05);color:var(--gray2);border:1px solid rgba(255,255,255,0.1);}
+.btn-sec{background:rgba(255,255,255,0.05);color:var(--gray2);border:1px solid rgba(255,255,255,0.1);border-radius:6px;}
 .btn-sec:hover{background:rgba(255,255,255,0.1);color:var(--white);}
 
 /* ── TABS ── */
@@ -144,7 +143,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 /* ── MODAL ── */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500;align-items:flex-start;justify-content:center;padding:60px 20px;overflow-y:auto;}
 .modal-bg.open{display:flex;}
-.modal{background:var(--black2);border:1px solid rgba(255,255,255,0.07);width:100%;max-width:640px;padding:0;}
+.modal{background:var(--black2);border:1px solid rgba(255,255,255,0.07);width:100%;max-width:640px;padding:0;border-radius:10px;overflow:hidden;}
 .modal-header{padding:24px 28px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;}
 .modal-title{font-size:16px;font-weight:500;color:var(--white);}
 .modal-close{color:var(--gray);font-size:20px;background:none;border:none;transition:color 0.2s;line-height:1;}
@@ -153,7 +152,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 .modal-footer{padding:20px 28px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:flex-end;gap:12px;}
 .form-group{margin-bottom:20px;}
 .form-label{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:9px;font-weight:500;}
-.form-input,.form-textarea,.form-select{width:100%;background:var(--black3);border:1px solid rgba(255,255,255,0.07);color:var(--white);padding:12px 14px;font-size:13px;font-family:'DM Sans',sans-serif;font-weight:300;outline:none;transition:border-color 0.2s;resize:vertical;appearance:none;}
+.form-input,.form-textarea,.form-select{width:100%;background:var(--black3);border:1px solid rgba(255,255,255,0.07);color:var(--white);padding:12px 14px;font-size:13px;font-family:'DM Sans',sans-serif;font-weight:300;outline:none;transition:border-color 0.2s;resize:vertical;appearance:none;border-radius:6px;}
 .form-input:focus,.form-textarea:focus,.form-select:focus{border-color:var(--gold);}
 .form-input::placeholder,.form-textarea::placeholder{color:rgba(255,255,255,0.2);}
 .form-textarea{min-height:140px;}
@@ -388,26 +387,31 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       <div class="page active" id="page-dashboard">
         <div class="stats-row">
           <div class="stat-card">
+            <div class="stat-card-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
             <div class="stat-card-label">Fotos en Portfolio</div>
             <div class="stat-card-value" id="stat-portfolio">0</div>
             <div class="stat-card-sub">publicadas</div>
           </div>
           <div class="stat-card cyan">
+            <div class="stat-card-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></div>
             <div class="stat-card-label">Posts del Blog</div>
             <div class="stat-card-value" id="stat-posts">0</div>
             <div class="stat-card-sub">artículos</div>
           </div>
           <div class="stat-card violet">
+            <div class="stat-card-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div>
             <div class="stat-card-label">Mensajes</div>
             <div class="stat-card-value" id="stat-msgs">0</div>
             <div class="stat-card-sub">consultas recibidas</div>
           </div>
           <div class="stat-card green">
+            <div class="stat-card-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg></div>
             <div class="stat-card-label">Testimonios</div>
             <div class="stat-card-value" id="stat-test">0</div>
             <div class="stat-card-sub">reseñas activas</div>
           </div>
-          <div class="stat-card" style="border-top-color:var(--orange)">
+          <div class="stat-card">
+            <div class="stat-card-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg></div>
             <div class="stat-card-label">Espacio usado</div>
             <div class="stat-card-value" id="stat-storage" style="font-size:28px">--</div>
             <div class="stat-card-sub" id="stat-storage-sub">de ~5MB disponibles</div>
