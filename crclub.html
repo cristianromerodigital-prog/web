@@ -68,7 +68,8 @@
 <body>
 
 <div id="login-screen">
-  <div class="logo-cr"><span>CR</span></div>
+  <img id="login-logo" src="" alt="CR" style="display:none;width:90px;height:90px;object-fit:contain;border-radius:50%;margin-bottom:24px;filter:invert(1);">
+  <div class="logo-cr" id="login-logo-fallback"><span>CR</span></div>
   <div class="login-card">
     <div class="login-title">CR CLUB</div>
     <div class="login-sub">Tu programa de beneficios exclusivos</div>
@@ -93,7 +94,8 @@
 <div id="app-screen">
   <div class="app-header">
     <div class="app-logo">
-      <div class="app-logo-cr"><span>CR</span></div>
+      <img id="header-logo" src="" alt="CR" style="display:none;width:32px;height:32px;object-fit:contain;border-radius:50%;filter:invert(1);">
+      <div class="app-logo-cr" id="header-logo-fallback"><span>CR</span></div>
       <div class="app-title">CR CLUB</div>
     </div>
     <div style="text-align:right">
@@ -169,9 +171,26 @@
 
 <script>
 const CRCLUB = 'https://crclub-worker.cristian-romero-digital.workers.dev';
+const CF_SETTINGS = 'https://web.cristian-romero-digital.workers.dev/crd_settings';
 let _token = localStorage.getItem('crclub_token');
 let _client = null;
 let _config = null;
+
+function applyLogo(src) {
+  if (!src) return;
+  ['login-logo','header-logo'].forEach(id => {
+    const img = document.getElementById(id);
+    if (img) { img.src = src; img.style.display = 'block'; }
+  });
+  const lf = document.getElementById('login-logo-fallback');
+  const hf = document.getElementById('header-logo-fallback');
+  if (lf) lf.style.display = 'none';
+  if (hf) hf.style.display = 'none';
+}
+
+fetch(CF_SETTINGS).then(r => r.text()).then(raw => {
+  try { const s = JSON.parse(raw); if (s.logoUrl) applyLogo(s.logoUrl); } catch(e) {}
+}).catch(() => {});
 
 async function onGoogleLogin(res) {
   const r = await fetch(CRCLUB + '/crclub/auth', {
