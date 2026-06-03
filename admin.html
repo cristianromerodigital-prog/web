@@ -2394,6 +2394,7 @@ async function init() {
   if (cloudEditable && typeof cloudEditable === 'object') localStorage.setItem('crd_editable', JSON.stringify(cloudEditable));
   const cloudOpcionales = await fetchFromCloud('crd_opcionales');
   if (Array.isArray(cloudOpcionales)) localStorage.setItem('crd_opcionales', JSON.stringify(cloudOpcionales));
+  if (currentPage === 'presupuesto') loadPresupuestoPage();
 
   updateUnreadBadge();
   renderDashboard();
