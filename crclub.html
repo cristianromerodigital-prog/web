@@ -150,7 +150,7 @@
   </div>
 
   <div id="panel-buy" style="display:none"></div>
-  <div style="text-align:center;padding:24px 0 8px;font-size:11px;color:var(--gray2);">V1.01</div>
+  <div style="text-align:center;padding:24px 0 8px;font-size:11px;color:var(--gray2);">V1.02</div>
 </div>
 
 <script>
@@ -188,6 +188,15 @@ function applyLogo(src) {
 // INMEDIATO — caché dedicado (0ms, sin fetch)
 const _cachedLogo = localStorage.getItem('_crclub_logo');
 if (_cachedLogo) applyLogo(_cachedLogo);
+
+// INMEDIATO — fallback desde localStorage compartido con admin (mismo dominio)
+if (!_cachedLogo) {
+  try {
+    const _shared = JSON.parse(localStorage.getItem('crd_settings') || '{}');
+    const _sharedLogo = _shared.logoUrl || JSON.parse(localStorage.getItem('crd_site_logo') || 'null');
+    if (_sharedLogo) applyLogo(String(_sharedLogo).trim());
+  } catch(e) {}
+}
 
 // ASYNC — actualiza desde CF y persiste en caché para la próxima carga
 fetch(CONFIG.CF_SETTINGS_URL).then(r => r.json()).then(s => {
@@ -350,7 +359,7 @@ function crclubLogout() {
   document.getElementById('login-screen').style.display = 'flex';
 }
 
-// V1.01
+// V1.02
 
 initApp();
 </script>
