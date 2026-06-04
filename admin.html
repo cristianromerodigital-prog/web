@@ -370,7 +370,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.01</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.02</div>
     </div>
   </aside>
 
@@ -2643,10 +2643,14 @@ async function init() {
     const cloud = await fetchFromCloud('crd_messages');
     S.set('crd_messages', cloud || []);
   }
-  // Settings: siempre sincronizar del cloud (contiene logoUrl y otros datos críticos)
+  // Settings: sincronizar del cloud pero preservar logoUrl/logoFilter local si el cloud no los tiene
   const cloudSettings = await fetchFromCloud('crd_settings');
-  if (cloudSettings) S.set('crd_settings', cloudSettings);
-  else if (!S.get('crd_settings')) S.set('crd_settings', {availability:'Tomando fechas para 2025 y 2026',waSuffix: CONFIG.WA_DEFAULT,countdownDate:new Date(Date.now()+30*24*60*60*1000).toISOString(),countdownMsg:'Solo 2 fechas libres este mes',priceSilver:'',priceGold:'',pricePlatinum:''});
+  if (cloudSettings) {
+    const local = S.get('crd_settings') || {};
+    if (!cloudSettings.logoUrl && local.logoUrl) cloudSettings.logoUrl = local.logoUrl;
+    if (!cloudSettings.logoFilter && local.logoFilter) cloudSettings.logoFilter = local.logoFilter;
+    localStorage.setItem('crd_settings', JSON.stringify(cloudSettings));
+  } else if (!S.get('crd_settings')) S.set('crd_settings', {availability:'Tomando fechas para 2025 y 2026',waSuffix: CONFIG.WA_DEFAULT,countdownDate:new Date(Date.now()+30*24*60*60*1000).toISOString(),countdownMsg:'Solo 2 fechas libres este mes',priceSilver:'',priceGold:'',pricePlatinum:''});
   // Invitaciones: siempre sincronizar del cloud (fuente de verdad)
   const cloudInvites = await fetchFromCloud('crd_invites');
   if (cloudInvites !== null) S.set('crd_invites', cloudInvites);
