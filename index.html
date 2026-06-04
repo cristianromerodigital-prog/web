@@ -1170,7 +1170,7 @@ const CONFIG = {
 // ── EMAILJS INIT ──
 (function(){
   if(typeof emailjs !== 'undefined') {
-    const ejsCfg = S.get('crd_settings') || {};
+    const ejsCfg = JSON.parse(localStorage.getItem('crd_settings') || '{}');
     emailjs.init({ publicKey: ejsCfg.emailjsKey || CONFIG.EMAILJS_KEY });
   }
 })();
