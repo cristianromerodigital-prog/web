@@ -75,6 +75,7 @@
     <div class="login-sub">Tu programa de beneficios exclusivos</div>
     <div class="google-btn-wrap">
       <div id="g_id_onload"
+        data-client_id="219844741457-sun7sdnpuit836mief6p9p52dj7ckidq.apps.googleusercontent.com"
         data-callback="onGoogleLogin"
         data-auto_prompt="false">
       </div>
@@ -204,7 +205,6 @@ async function onGoogleLogin(res) {
 }
 
 async function initApp() {
-  document.getElementById('g_id_onload').dataset.clientId = CONFIG.GOOGLE_CLIENT_ID;
   if (!_token) return;
   try {
     const [me, cfg] = await Promise.all([
