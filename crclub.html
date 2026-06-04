@@ -9,18 +9,19 @@
   *{box-sizing:border-box;margin:0;padding:0}
   :root{--bg:#0d0d0d;--card:#141414;--border:#222;--gold:#c9a84c;--gold-light:#e8c96e;--white:#f0f0f0;--gray:#888;--gray2:#555}
   body{background:var(--bg);color:var(--white);font-family:'Helvetica Neue',Arial,sans-serif;min-height:100vh}
-  #login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;position:relative;background-size:cover;background-position:center 20%;}
-  #login-screen::before{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.72) 100%);z-index:0;}
-  #login-screen>*{position:relative;z-index:1;}
+  #login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;position:relative;overflow:hidden;}
+  #login-bg-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 20%;z-index:0;display:none;}
+  #login-screen::before{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.72) 100%);z-index:1;}
+  #login-screen>*:not(#login-bg-img){position:relative;z-index:2;}
   .logo-cr{width:70px;height:70px;border:2px solid var(--gold);transform:rotate(-5deg);display:flex;align-items:center;justify-content:center;margin-bottom:24px;}
   .logo-cr span{font-size:26px;font-weight:900;color:var(--white);letter-spacing:-1px;transform:rotate(5deg);display:block;}
   .login-card{background:rgba(10,10,10,0.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(201,168,76,0.25);border-radius:16px;padding:36px 32px;width:100%;max-width:380px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.6);}
   .login-title{font-size:24px;font-weight:800;margin-bottom:4px;letter-spacing:2px;color:var(--white);}
   .login-sub{font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:28px;letter-spacing:.5px;}
   .google-btn-wrap{display:flex;justify-content:center;}
-  body.app-active{background-size:cover;background-position:center 20%;background-attachment:fixed;}
-  body.app-active::before{content:'';position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:0;}
-  #app-screen{display:none;max-width:480px;margin:0 auto;padding:16px;position:relative;z-index:1;}
+  #app-bg-img{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 20%;z-index:0;display:none;}
+  #app-bg-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1;display:none;}
+  #app-screen{display:none;max-width:480px;margin:0 auto;padding:16px;position:relative;z-index:2;}
   .app-header{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border);margin-bottom:20px;}
   .app-logo{display:flex;align-items:center;gap:10px;}
   .app-logo-cr{width:32px;height:32px;border:1.5px solid var(--gold);transform:rotate(-5deg);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -72,6 +73,7 @@
 <body>
 
 <div id="login-screen">
+  <img id="login-bg-img" src="" alt="">
   <img id="login-logo" src="" alt="CR" style="display:none;width:90px;height:90px;object-fit:contain;border-radius:50%;margin-bottom:24px;filter:invert(1);">
   <div class="logo-cr" id="login-logo-fallback"><span>CR</span></div>
   <div class="login-card">
@@ -95,6 +97,8 @@
   </div>
 </div>
 
+<img id="app-bg-img" src="" alt="">
+<div id="app-bg-overlay"></div>
 <div id="app-screen">
   <div class="app-header">
     <div class="app-logo">
@@ -154,7 +158,7 @@
   </div>
 
   <div id="panel-buy" style="display:none"></div>
-  <div style="text-align:center;padding:24px 0 8px;font-size:11px;color:var(--gray2);">V1.08</div>
+  <div style="text-align:center;padding:24px 0 8px;font-size:11px;color:var(--gray2);">V1.09</div>
 </div>
 
 <script>
@@ -207,10 +211,9 @@ fetch(CONFIG.WORKER_URL + '/crclub/config').then(r => r.json()).then(cfg => {
   if (cfg && cfg.logoUrl) applyLogo(cfg.logoUrl);
   else fetch(CONFIG.CF_SETTINGS_URL).then(r => r.json()).then(s => { if (s && s.logoUrl) applyLogo(s.logoUrl); }).catch(()=>{});
   const loginBg = cfg.bgUrlLogin || cfg.bgUrl || '';
-  const appBg   = cfg.bgUrlApp   || '';
-  if (loginBg) document.getElementById('login-screen').style.backgroundImage = `url('${loginBg}')`;
-  if (appBg)   document.body.dataset.bgApp = appBg;
-  else if (loginBg) document.body.dataset.bgApp = loginBg;
+  const appBg   = cfg.bgUrlApp   || loginBg;
+  if (loginBg) { const i = document.getElementById('login-bg-img'); i.src = loginBg; i.style.display = 'block'; }
+  document.body.dataset.bgApp = appBg;
 }).catch(() => {
   fetch(CONFIG.CF_SETTINGS_URL).then(r => r.json()).then(s => { if (s && s.logoUrl) applyLogo(s.logoUrl); }).catch(()=>{});
 });
@@ -249,7 +252,11 @@ function showApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'block';
   document.body.classList.add('app-active');
-  if (document.body.dataset.bgApp) document.body.style.backgroundImage = `url('${document.body.dataset.bgApp}')`;
+  if (document.body.dataset.bgApp) {
+    const i = document.getElementById('app-bg-img');
+    i.src = document.body.dataset.bgApp; i.style.display = 'block';
+    document.getElementById('app-bg-overlay').style.display = 'block';
+  }
   document.getElementById('app-username').textContent = _client.name;
   document.getElementById('app-pts').textContent = _client.pts_total || 0;
   document.getElementById('app-credit').textContent = '$' + (_client.credit_available || 0).toLocaleString(CONFIG.LOCALE) + ' de crédito';
@@ -373,7 +380,7 @@ function crclubLogout() {
   document.getElementById('login-screen').style.display = 'flex';
 }
 
-// V1.08
+// V1.09
 
 initApp();
 </script>
