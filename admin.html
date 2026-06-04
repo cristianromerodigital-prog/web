@@ -370,7 +370,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.04</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.05</div>
     </div>
   </aside>
 
@@ -2442,7 +2442,7 @@ async function crclubLoadPurchases() {
   tbody.innerHTML = d.purchases.map(p => `
     <tr style="border-bottom:1px solid var(--border)">
       <td style="padding:8px 0;color:var(--gray2);font-size:12px">${p.created_at.slice(0,10)}</td>
-      <td style="padding:8px 8px;color:var(--white)">${p.client_name}<br><span style="font-size:11px;color:var(--gray2)">${p.client_whatsapp||''}</span></td>
+      <td style="padding:8px 8px;color:var(--white)">${p.client_name}<br><span style="font-size:11px;color:var(--gray2)">${p.client_email||''}</span>${p.client_whatsapp ? `<br><span style="font-size:11px;color:var(--gray2)">${p.client_whatsapp}</span>` : ''}</td>
       <td style="padding:8px 4px;text-align:right;color:var(--gold)">${p.pts} CR</td>
       <td style="padding:8px 4px;text-align:right;color:var(--white)">$${p.amount.toLocaleString('es-AR')}</td>
       <td style="padding:8px 0;text-align:right">
