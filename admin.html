@@ -370,7 +370,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.03</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.04</div>
     </div>
   </aside>
 
@@ -3705,9 +3705,10 @@ function syncLogoToCrclub(src) {
   if(!src) return;
   fetch(CONFIG.CRCLUB_URL + '/crclub/admin/config', {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'Authorization': CONFIG.CF_AUTH },
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + CONFIG.CF_AUTH },
     body: JSON.stringify({ logoUrl: src })
-  }).catch(e => console.warn('crclub logo sync failed:', e));
+  }).then(r => { if(!r.ok) console.warn('crclub logo sync status:', r.status); })
+    .catch(e => console.warn('crclub logo sync failed:', e));
 }
 function loadLogoPreview() {
   const logo = S.get('crd_site_logo') || (S.get('crd_settings') || {}).logoUrl || '';
