@@ -6,6 +6,8 @@
   <title>Presupuesto — Cristian Romero Digital</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -165,48 +167,24 @@
       body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       #toolbar { display: none !important; }
 
-      /* fuerza layout desktop — anula mobile CSS */
-      .page { width: 210mm !important; height: 297mm !important; margin: 0 !important; box-shadow: none !important; page-break-after: always; overflow: hidden; }
-      .page:last-child { page-break-after: avoid; height: auto !important; }
+      /* Escala 900px → 210mm proporcionalmente. El alto también escala y entra en A4 */
+      .page { width: 900px !important; zoom: 0.8819 !important; height: auto !important; margin: 0 !important; box-shadow: none !important; page-break-after: always; overflow: visible !important; }
+      .page:last-child { page-break-after: avoid; }
 
-      /* portada */
-      .cover-top { flex-direction: row !important; padding: 44px 60px 30px !important; }
-      .client-box { min-width: 320px !important; width: auto !important; }
-      .cover-gallery { padding: 0 60px !important; min-height: 380px !important; }
-      .cover-bottom { padding: 40px 60px 32px !important; flex-direction: row !important; }
-      .welcome { font-size: 60px !important; }
+      /* restaura layouts desktop que mobile CSS pudo haber pisado */
+      .cover-top { flex-direction: row !important; }
+      .cover-bottom { flex-direction: row !important; }
       .brand-block { text-align: right !important; }
-
-      /* sobre mi */
-      .sobre-body { padding: 0 60px 44px !important; }
-      .sobre-grid { grid-template-columns: 1fr 1fr !important; gap: 44px !important; }
-      .sobre-hdr { padding: 20px 0 !important; }
-
-      /* estilo */
-      .estilo-body { padding: 0 60px 44px !important; }
+      .sobre-grid { grid-template-columns: 1fr 1fr !important; }
       .estilo-gallery { grid-template-rows: 1fr 1fr !important; }
       .estilo-gallery .span2 { grid-column: 1 / 3 !important; }
-
-      /* packs */
-      .pack-body { padding: 0 60px 44px !important; }
+      .pack-body { min-height: 1225px !important; }
+      .pack-foot { margin-top: auto !important; }
       .pack-box { grid-template-columns: 300px 1fr !important; }
       .photos-col { display: grid !important; }
-      .content-col { padding: 30px 34px 26px !important; }
-      .total-val { font-size: 34px !important; }
       .includes-grid { grid-template-columns: 1fr 1fr !important; }
-
-      /* opcionales */
-      .opc-body { padding: 0 60px 44px !important; }
-      .opc-row { grid-template-columns: 1fr auto !important; }
-
-      /* contacto */
-      .contact-body { padding: 0 60px 44px !important; gap: 36px !important; }
       .pay-grid { grid-template-columns: 1fr 1fr !important; }
       .contact-row { flex-direction: row !important; }
-      .sec-title { font-size: 34px !important; }
-
-      /* footer bar */
-      .page-bar { padding: 12px 60px !important; flex-wrap: nowrap !important; font-size: 11px !important; }
       .cf-value { border-bottom: 1px dotted #999; }
     }
     @media screen and (max-width: 940px) {
@@ -259,7 +237,7 @@
 
 <div id="toolbar">
   <span class="hint">Clic en los campos blancos para completar datos del cliente</span>
-  <button onclick="window.print()">Imprimir / PDF</button>
+  <button onclick="generarPDF(this)">Imprimir / PDF</button>
 </div>
 
 <!-- ═══ PORTADA ═══ -->
@@ -308,9 +286,9 @@
     </div>
   </div>
   <div class="page-bar">
-    <span class="social" id="footer-ig">@cristian.romero.digital</span>
+    <span class="social" id="footer-ig" data-ig="">@cristian.romero.digital</span>
     <span class="validity" id="footer-validity-0">Válido por 15 días</span>
-    <span id="footer-phone-0">11 6255 7763</span>
+    <span id="footer-phone-0" data-phone="">11 6255 7763</span>
   </div>
 </div>
 
@@ -415,9 +393,9 @@
     </div>
   </div>
   <div class="page-bar">
-    <span class="social" id="footer-ig-1">@cristian.romero.digital</span>
+    <span class="social" id="footer-ig-1" data-ig="">@cristian.romero.digital</span>
     <span class="validity" id="footer-validity-1">Válido por 15 días</span>
-    <span id="footer-phone-1">11 6255 7763</span>
+    <span id="footer-phone-1" data-phone="">11 6255 7763</span>
   </div>
 </div>
 
@@ -455,9 +433,9 @@
     </div>
   </div>
   <div class="page-bar">
-    <span class="social" id="footer-ig-2">@cristian.romero.digital</span>
+    <span class="social" id="footer-ig-2" data-ig="">@cristian.romero.digital</span>
     <span class="validity" id="footer-validity-2">Válido por 15 días</span>
-    <span id="footer-phone-2">11 6255 7763</span>
+    <span id="footer-phone-2" data-phone="">11 6255 7763</span>
   </div>
 </div>
 
@@ -495,9 +473,9 @@
     </div>
   </div>
   <div class="page-bar">
-    <span class="social" id="footer-ig-3">@cristian.romero.digital</span>
+    <span class="social" id="footer-ig-3" data-ig="">@cristian.romero.digital</span>
     <span class="validity" id="footer-validity-3">Válido por 15 días</span>
-    <span id="footer-phone-3">11 6255 7763</span>
+    <span id="footer-phone-3" data-phone="">11 6255 7763</span>
   </div>
 </div>
 
@@ -535,9 +513,9 @@
     </div>
   </div>
   <div class="page-bar">
-    <span class="social" id="footer-ig-4">@cristian.romero.digital</span>
+    <span class="social" id="footer-ig-4" data-ig="">@cristian.romero.digital</span>
     <span class="validity" id="footer-validity-4">Válido por 15 días</span>
-    <span id="footer-phone-4">11 6255 7763</span>
+    <span id="footer-phone-4" data-phone="">11 6255 7763</span>
   </div>
 </div>
 
@@ -597,7 +575,7 @@
           </div>
           <div>
             <div class="cd-label">Instagram</div>
-            <div class="cd-value" id="contact-ig">@cristian.romero.digital</div>
+            <div class="cd-value" id="contact-ig" data-ig="">@cristian.romero.digital</div>
           </div>
         </div>
         <div class="contact-card">
@@ -606,7 +584,7 @@
           </div>
           <div>
             <div class="cd-label">WhatsApp</div>
-            <div class="cd-value" id="contact-phone">11 6255 7763</div>
+            <div class="cd-value" id="contact-phone" data-phone="">11 6255 7763</div>
           </div>
         </div>
       </div>
@@ -619,9 +597,9 @@
     </div>
   </div>
   <div class="page-bar">
-    <span class="social" id="footer-ig-5">@cristian.romero.digital</span>
+    <span class="social" id="footer-ig-5" data-ig="">@cristian.romero.digital</span>
     <span class="validity" id="footer-validity-5">Válido por 15 días</span>
-    <span id="footer-phone-5">11 6255 7763</span>
+    <span id="footer-phone-5" data-phone="">11 6255 7763</span>
   </div>
 </div>
 
@@ -647,12 +625,22 @@ const PRESUPUESTO_DEFAULT = {
   paymentMethods: 'Efectivo · Transferencia bancaria · Mercado Pago'
 };
 
+const _PR_KEY = new URLSearchParams(location.search).get('tipo') === 'boda' ? 'crd_presupuesto_boda' : 'crd_presupuesto';
+
 function getData() {
-  try { return JSON.parse(localStorage.getItem('crd_presupuesto')) || JSON.parse(JSON.stringify(PRESUPUESTO_DEFAULT)); }
+  try { return JSON.parse(localStorage.getItem(_PR_KEY)) || JSON.parse(JSON.stringify(PRESUPUESTO_DEFAULT)); }
   catch(e) { return JSON.parse(JSON.stringify(PRESUPUESTO_DEFAULT)); }
 }
 function saveData(data) {
-  try { localStorage.setItem('crd_presupuesto', JSON.stringify(data)); } catch(e) {}
+  const str = JSON.stringify(data);
+  try { localStorage.setItem(_PR_KEY, str); } catch(e) {}
+  try {
+    fetch(CF_URL + '/' + _PR_KEY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'crd2025' },
+      body: str
+    });
+  } catch(e) {}
 }
 
 function setText(id, val) {
@@ -693,7 +681,11 @@ function applyLogo(src) {
 function init() {
   const data = getData();
   let logo = null;
-  try { logo = JSON.parse(localStorage.getItem('crd_site_logo')); } catch(e) { logo = localStorage.getItem('crd_site_logo'); }
+  try {
+    const _sett = JSON.parse(localStorage.getItem('crd_settings')) || {};
+    logo = _sett.logoUrl || localStorage.getItem('crd_site_logo');
+    if (logo) { try { logo = JSON.parse(logo); } catch(e) {} }
+  } catch(e) { logo = localStorage.getItem('crd_site_logo'); }
   if(logo) applyLogo(logo);
   loadEditable();
 
@@ -860,10 +852,16 @@ function loadEditable() {
 
 document.querySelectorAll('[data-persist]').forEach(el => el.addEventListener('input', saveEditable));
 
-const CF_URL = 'https://web.cristian-romero-digital.workers.dev';
+const CONFIG = {
+  CF_URL:     'https://web.cristian-romero-digital.workers.dev',
+  LOCALE:     'es-AR',
+  WA_DEFAULT: '11 6255 7763',
+  IG_DEFAULT: '@cristian.romero.digital'
+};
+const CF_URL = CONFIG.CF_URL; // alias para compatibilidad con el código existente
 
 async function syncFromCloud() {
-  const keys = ['crd_presupuesto', 'crd_editable', 'crd_opcionales', 'crd_site_logo'];
+  const keys = [_PR_KEY, 'crd_editable', 'crd_opcionales', 'crd_site_logo', 'crd_settings'];
   await Promise.all(keys.map(async key => {
     try {
       const res = await fetch(CF_URL + '/' + key);
@@ -877,6 +875,102 @@ async function syncFromCloud() {
 document.addEventListener('DOMContentLoaded', async () => {
   await syncFromCloud();
   init();
+  // Aplicar WA e IG a spans del presupuesto
+  (function() {
+    let settings = {};
+    try { settings = JSON.parse(localStorage.getItem('crd_settings')) || {}; } catch(e) {}
+    const _phone = (settings.waSuffix || CONFIG.WA_DEFAULT).replace('+549','').replace('+54','').replace(/^\+/,'');
+    const _phoneFmt = _phone.length === 10 ? _phone.slice(0,2)+' '+_phone.slice(2,6)+' '+_phone.slice(6) : _phone;
+    const _igRaw = settings.instagram
+      ? (settings.instagram.startsWith('@') ? settings.instagram : '@'+settings.instagram)
+      : ((settings.entregaIgUrl||CONFIG.IG_DEFAULT).split('/').filter(Boolean).pop());
+    const _ig = _igRaw.startsWith('@') ? _igRaw : '@'+_igRaw;
+    document.querySelectorAll('[data-phone]').forEach(function(el){ if(_phoneFmt) el.textContent=_phoneFmt; });
+    document.querySelectorAll('[data-ig]').forEach(function(el){ if(_ig) el.textContent=_ig; });
+  })();
+});
+
+async function generarPDF(btn) {
+  btn.textContent = 'Generando…';
+  btn.disabled = true;
+  try {
+    const { jsPDF } = window.jspdf;
+    const pages = [...document.querySelectorAll('.page')];
+    let pdf = null;
+
+    for (let i = 0; i < pages.length; i++) {
+      const page = pages[i];
+      const w = page.offsetWidth;
+      const h = page.offsetHeight;
+
+      // Simula object-fit via CSS (sin drawImage, sin CORS issues)
+      const fixed = [];
+      page.querySelectorAll('.img-ph.loaded img').forEach(img => {
+        if (!img.naturalWidth || !img.naturalHeight) return;
+        const fit = getComputedStyle(img).objectFit;
+        if (!fit || fit === 'fill' || fit === 'none') return;
+        const par = img.parentElement;
+        const pw = par.offsetWidth, ph = par.offsetHeight;
+        const nw = img.naturalWidth, nh = img.naturalHeight;
+        const s = fit === 'cover' ? Math.max(pw/nw, ph/nh) : Math.min(pw/nw, ph/nh);
+        const sw = nw*s, sh = nh*s;
+        const orig = { objectFit: img.style.objectFit, width: img.style.width, height: img.style.height, left: img.style.left, top: img.style.top };
+        img.style.objectFit = 'none';
+        img.style.width = sw + 'px';
+        img.style.height = sh + 'px';
+        img.style.left = ((pw - sw) / 2) + 'px';
+        img.style.top = ((ph - sh) / 2) + 'px';
+        fixed.push({ img, orig });
+      });
+
+      const canvas = await html2canvas(page, {
+        scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff'
+      });
+
+      fixed.forEach(({ img, orig }) => Object.assign(img.style, orig));
+
+      const imgW = canvas.width;
+      const imgH = canvas.height;
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      if (i === 0) {
+        pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [imgW, imgH] });
+      } else {
+        pdf.addPage([imgW, imgH]);
+      }
+      pdf.addImage(imgData, 'JPEG', 0, 0, imgW, imgH);
+    }
+
+    pdf.save('presupuesto.pdf');
+  } finally {
+    btn.textContent = 'Imprimir / PDF';
+    btn.disabled = false;
+  }
+}
+
+window.addEventListener('beforeprint', () => {
+  document.querySelectorAll('.page-bar').forEach(el => {
+    el.style.position = 'absolute';
+    el.style.bottom = '0';
+    el.style.left = '0';
+    el.style.right = '0';
+  });
+  document.querySelectorAll('.pack-body').forEach(el => {
+    el.style.overflow = 'hidden';
+    el.style.paddingBottom = '50px';
+  });
+});
+
+window.addEventListener('afterprint', () => {
+  document.querySelectorAll('.page-bar').forEach(el => {
+    el.style.position = '';
+    el.style.bottom = '';
+    el.style.left = '';
+    el.style.right = '';
+  });
+  document.querySelectorAll('.pack-body').forEach(el => {
+    el.style.overflow = '';
+    el.style.paddingBottom = '';
+  });
 });
 </script>
 </body>
