@@ -9,12 +9,14 @@
   *{box-sizing:border-box;margin:0;padding:0}
   :root{--bg:#0d0d0d;--card:#141414;--border:#222;--gold:#c9a84c;--gold-light:#e8c96e;--white:#f0f0f0;--gray:#888;--gray2:#555}
   body{background:var(--bg);color:var(--white);font-family:'Helvetica Neue',Arial,sans-serif;min-height:100vh}
-  #login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;}
+  #login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;position:relative;background-image:url('https://lh3.googleusercontent.com/d/1SupIcKt9ovkDQttUsKaYsfxMiYFVXJW3');background-size:cover;background-position:center 20%;}
+  #login-screen::before{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.72) 100%);z-index:0;}
+  #login-screen>*{position:relative;z-index:1;}
   .logo-cr{width:70px;height:70px;border:2px solid var(--gold);transform:rotate(-5deg);display:flex;align-items:center;justify-content:center;margin-bottom:24px;}
   .logo-cr span{font-size:26px;font-weight:900;color:var(--white);letter-spacing:-1px;transform:rotate(5deg);display:block;}
-  .login-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:32px;width:100%;max-width:380px;text-align:center;}
-  .login-title{font-size:22px;font-weight:700;margin-bottom:4px;letter-spacing:1px;}
-  .login-sub{font-size:13px;color:var(--gray);margin-bottom:28px;}
+  .login-card{background:rgba(10,10,10,0.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(201,168,76,0.25);border-radius:16px;padding:36px 32px;width:100%;max-width:380px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.6);}
+  .login-title{font-size:24px;font-weight:800;margin-bottom:4px;letter-spacing:2px;color:var(--white);}
+  .login-sub{font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:28px;letter-spacing:.5px;}
   .google-btn-wrap{display:flex;justify-content:center;}
   #app-screen{display:none;max-width:480px;margin:0 auto;padding:16px;}
   .app-header{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border);margin-bottom:20px;}
@@ -150,7 +152,7 @@
   </div>
 
   <div id="panel-buy" style="display:none"></div>
-  <div style="text-align:center;padding:24px 0 8px;font-size:11px;color:var(--gray2);">V1.04</div>
+  <div style="text-align:center;padding:24px 0 8px;font-size:11px;color:var(--gray2);">V1.05</div>
 </div>
 
 <script>
@@ -366,7 +368,7 @@ function crclubLogout() {
   document.getElementById('login-screen').style.display = 'flex';
 }
 
-// V1.04
+// V1.05
 
 initApp();
 </script>
