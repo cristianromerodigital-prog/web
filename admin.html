@@ -3694,8 +3694,8 @@ function saveLogoConfig() {
   toast('Logo guardado ✓');
 }
 function loadLogoPreview() {
-  const logo = S.get('crd_site_logo');
-  const filter = S.get('crd_site_logo_filter') || '';
+  const logo = S.get('crd_site_logo') || (S.get('crd_settings') || {}).logoUrl || '';
+  const filter = S.get('crd_site_logo_filter') || (S.get('crd_settings') || {}).logoFilter || '';
   const img = document.getElementById('logo-preview-img');
   const empty = document.getElementById('logo-preview-empty');
   if(!img) return;
