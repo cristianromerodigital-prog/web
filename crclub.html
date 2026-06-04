@@ -174,6 +174,7 @@ let _config = null;
 
 function applyLogo(src) {
   if (!src) return;
+  localStorage.setItem('_crclub_logo', src); // caché dedicado para carga inmediata
   ['login-logo','header-logo'].forEach(id => {
     const img = document.getElementById(id);
     if (img) { img.src = src; img.style.display = 'block'; }
@@ -184,13 +185,11 @@ function applyLogo(src) {
   if (hf) hf.style.display = 'none';
 }
 
-// Inmediato desde localStorage (si estuvo en el admin antes)
-try {
-  const _lsLogo = JSON.parse(localStorage.getItem('crd_settings') || '{}').logoUrl
-               || localStorage.getItem('crd_site_logo');
-  if (_lsLogo) applyLogo(_lsLogo);
-} catch(e) {}
-// Async desde CF (actualiza si hay cambios)
+// INMEDIATO — caché dedicado (0ms, sin fetch)
+const _cachedLogo = localStorage.getItem('_crclub_logo');
+if (_cachedLogo) applyLogo(_cachedLogo);
+
+// ASYNC — actualiza desde CF y persiste en caché para la próxima carga
 fetch(CONFIG.CF_SETTINGS_URL).then(r => r.json()).then(s => {
   if (s && s.logoUrl) applyLogo(s.logoUrl);
 }).catch(() => {});
