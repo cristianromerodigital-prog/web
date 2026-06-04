@@ -286,9 +286,9 @@
     </div>
   </div>
   <div class="page-bar">
-    <span class="social" id="footer-ig">@cristian.romero.digital</span>
+    <span class="social" id="footer-ig" data-ig="">@cristian.romero.digital</span>
     <span class="validity" id="footer-validity-0">Válido por 15 días</span>
-    <span id="footer-phone-0">11 6255 7763</span>
+    <span id="footer-phone-0" data-phone="">11 6255 7763</span>
   </div>
 </div>
 
@@ -393,9 +393,9 @@
     </div>
   </div>
   <div class="page-bar">
-    <span class="social" id="footer-ig-1">@cristian.romero.digital</span>
+    <span class="social" id="footer-ig-1" data-ig="">@cristian.romero.digital</span>
     <span class="validity" id="footer-validity-1">Válido por 15 días</span>
-    <span id="footer-phone-1">11 6255 7763</span>
+    <span id="footer-phone-1" data-phone="">11 6255 7763</span>
   </div>
 </div>
 
@@ -433,9 +433,9 @@
     </div>
   </div>
   <div class="page-bar">
-    <span class="social" id="footer-ig-2">@cristian.romero.digital</span>
+    <span class="social" id="footer-ig-2" data-ig="">@cristian.romero.digital</span>
     <span class="validity" id="footer-validity-2">Válido por 15 días</span>
-    <span id="footer-phone-2">11 6255 7763</span>
+    <span id="footer-phone-2" data-phone="">11 6255 7763</span>
   </div>
 </div>
 
@@ -473,9 +473,9 @@
     </div>
   </div>
   <div class="page-bar">
-    <span class="social" id="footer-ig-3">@cristian.romero.digital</span>
+    <span class="social" id="footer-ig-3" data-ig="">@cristian.romero.digital</span>
     <span class="validity" id="footer-validity-3">Válido por 15 días</span>
-    <span id="footer-phone-3">11 6255 7763</span>
+    <span id="footer-phone-3" data-phone="">11 6255 7763</span>
   </div>
 </div>
 
@@ -513,9 +513,9 @@
     </div>
   </div>
   <div class="page-bar">
-    <span class="social" id="footer-ig-4">@cristian.romero.digital</span>
+    <span class="social" id="footer-ig-4" data-ig="">@cristian.romero.digital</span>
     <span class="validity" id="footer-validity-4">Válido por 15 días</span>
-    <span id="footer-phone-4">11 6255 7763</span>
+    <span id="footer-phone-4" data-phone="">11 6255 7763</span>
   </div>
 </div>
 
@@ -575,7 +575,7 @@
           </div>
           <div>
             <div class="cd-label">Instagram</div>
-            <div class="cd-value" id="contact-ig">@cristian.romero.digital</div>
+            <div class="cd-value" id="contact-ig" data-ig="">@cristian.romero.digital</div>
           </div>
         </div>
         <div class="contact-card">
@@ -584,7 +584,7 @@
           </div>
           <div>
             <div class="cd-label">WhatsApp</div>
-            <div class="cd-value" id="contact-phone">11 6255 7763</div>
+            <div class="cd-value" id="contact-phone" data-phone="">11 6255 7763</div>
           </div>
         </div>
       </div>
@@ -597,9 +597,9 @@
     </div>
   </div>
   <div class="page-bar">
-    <span class="social" id="footer-ig-5">@cristian.romero.digital</span>
+    <span class="social" id="footer-ig-5" data-ig="">@cristian.romero.digital</span>
     <span class="validity" id="footer-validity-5">Válido por 15 días</span>
-    <span id="footer-phone-5">11 6255 7763</span>
+    <span id="footer-phone-5" data-phone="">11 6255 7763</span>
   </div>
 </div>
 
@@ -681,7 +681,11 @@ function applyLogo(src) {
 function init() {
   const data = getData();
   let logo = null;
-  try { logo = JSON.parse(localStorage.getItem('crd_site_logo')); } catch(e) { logo = localStorage.getItem('crd_site_logo'); }
+  try {
+    const _sett = JSON.parse(localStorage.getItem('crd_settings')) || {};
+    logo = _sett.logoUrl || localStorage.getItem('crd_site_logo');
+    if (logo) { try { logo = JSON.parse(logo); } catch(e) {} }
+  } catch(e) { logo = localStorage.getItem('crd_site_logo'); }
   if(logo) applyLogo(logo);
   loadEditable();
 
@@ -848,10 +852,16 @@ function loadEditable() {
 
 document.querySelectorAll('[data-persist]').forEach(el => el.addEventListener('input', saveEditable));
 
-const CF_URL = 'https://web.cristian-romero-digital.workers.dev';
+const CONFIG = {
+  CF_URL:     'https://web.cristian-romero-digital.workers.dev',
+  LOCALE:     'es-AR',
+  WA_DEFAULT: '11 6255 7763',
+  IG_DEFAULT: '@cristian.romero.digital'
+};
+const CF_URL = CONFIG.CF_URL; // alias para compatibilidad con el código existente
 
 async function syncFromCloud() {
-  const keys = [_PR_KEY, 'crd_editable', 'crd_opcionales', 'crd_site_logo'];
+  const keys = [_PR_KEY, 'crd_editable', 'crd_opcionales', 'crd_site_logo', 'crd_settings'];
   await Promise.all(keys.map(async key => {
     try {
       const res = await fetch(CF_URL + '/' + key);
@@ -865,6 +875,19 @@ async function syncFromCloud() {
 document.addEventListener('DOMContentLoaded', async () => {
   await syncFromCloud();
   init();
+  // Aplicar WA e IG a spans del presupuesto
+  (function() {
+    let settings = {};
+    try { settings = JSON.parse(localStorage.getItem('crd_settings')) || {}; } catch(e) {}
+    const _phone = (settings.waSuffix || CONFIG.WA_DEFAULT).replace('+549','').replace('+54','').replace(/^\+/,'');
+    const _phoneFmt = _phone.length === 10 ? _phone.slice(0,2)+' '+_phone.slice(2,6)+' '+_phone.slice(6) : _phone;
+    const _igRaw = settings.instagram
+      ? (settings.instagram.startsWith('@') ? settings.instagram : '@'+settings.instagram)
+      : ((settings.entregaIgUrl||CONFIG.IG_DEFAULT).split('/').filter(Boolean).pop());
+    const _ig = _igRaw.startsWith('@') ? _igRaw : '@'+_igRaw;
+    document.querySelectorAll('[data-phone]').forEach(function(el){ if(_phoneFmt) el.textContent=_phoneFmt; });
+    document.querySelectorAll('[data-ig]').forEach(function(el){ if(_ig) el.textContent=_ig; });
+  })();
 });
 
 async function generarPDF(btn) {

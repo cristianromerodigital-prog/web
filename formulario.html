@@ -44,8 +44,11 @@
 <body>
 <div class="wrap">
   <div class="logo">
-    <div class="logo-name"><span>Cristian</span> Romero Digital</div>
-    <div class="logo-sub">Fotografía &amp; Video Profesional</div>
+    <img id="form-logo-img" src="" alt="CR" style="display:none;max-height:60px;max-width:180px;object-fit:contain;margin-bottom:8px">
+    <div id="form-logo-text">
+      <div class="logo-name"><span>Cristian</span> Romero Digital</div>
+      <div class="logo-sub">Fotografía &amp; Video Profesional</div>
+    </div>
   </div>
 
   <div id="form-area">
@@ -178,8 +181,12 @@
 </div>
 
 <script>
-// ← Reemplazá con la URL de tu Web App de Apps Script
-const APPS_URL = 'https://script.google.com/macros/s/AKfycbwSO6jVmpqq3TLI_bX2rwSkBGJxxSTqtiM4ogOp_5_tjdMZsbAlsVaCxPW9OXxkkH2_/exec';
+const CONFIG = {
+  CF_URL:   'https://web.cristian-romero-digital.workers.dev',
+  APPS_URL: 'https://script.google.com/macros/s/AKfycbwSO6jVmpqq3TLI_bX2rwSkBGJxxSTqtiM4ogOp_5_tjdMZsbAlsVaCxPW9OXxkkH2_/exec',
+  LOCALE:   'es-AR'
+};
+const APPS_URL = CONFIG.APPS_URL; // alias para compatibilidad
 
 let tipo = null;
 
@@ -271,6 +278,20 @@ function enviar() {
     alert('Error al enviar: ' + err.message);
   });
 }
+
+// Logo desde crd_settings
+fetch(CONFIG.CF_URL + '/crd_settings')
+  .then(function(r){ return r.json(); })
+  .then(function(s){
+    var logoUrl = s.logoUrl || localStorage.getItem('crd_site_logo');
+    if (logoUrl) {
+      var img = document.getElementById('form-logo-img');
+      var txt = document.getElementById('form-logo-text');
+      if (img) { img.src = logoUrl; img.style.display = 'block'; }
+      if (txt) txt.style.display = 'none';
+    }
+  })
+  .catch(function(){});
 </script>
 </body>
 </html>

@@ -9,7 +9,7 @@ llas<!DOCTYPE html>
 <style>
 :root {
   --black:#060c1a;--black2:#080f20;--black3:#0d1628;--black4:#111e35;
-  --cyan:#00d4d4;--violet:#7b4fff;--gold:#d4a843;--gold2:#e8c96a;
+  --cyan:#00d4d4;--violet:#7b4fff;--gold:#c9a84c;--gold2:#e8c96a;
   --white:#eeeae4;--gray:#4a5a78;--gray2:#8a9ab8;
   --green:#25d366;--red:#e05555;--orange:#f59e0b;
   --sidebar:240px;
@@ -303,7 +303,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       <div class="sidebar-logo-sub">Panel de Administración</div>
     </div>
     <nav class="sidebar-nav">
-      <div class="nav-section-label">Principal</div>
+      <div class="nav-section-label">Sitio</div>
       <div class="sidebar-item active" onclick="showPage('dashboard')">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
         Dashboard
@@ -324,6 +324,10 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
         Blog
       </div>
+      <div class="sidebar-item" onclick="showPage('content')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        Contenido
+      </div>
       <div class="nav-section-label">Clientes</div>
       <div class="sidebar-item" onclick="showPage('messages')" id="nav-messages">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
@@ -333,10 +337,6 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       <div class="sidebar-item" onclick="showPage('testimonials')">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
         Testimonios
-      </div>
-      <div class="sidebar-item" onclick="showPage('invites')">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-        Invitaciones
       </div>
       <div class="nav-section-label">Negocios</div>
       <div class="sidebar-item" onclick="showPage('contratos')">
@@ -351,15 +351,15 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
         Entregas
       </div>
-      <div class="nav-section-label">Sistema</div>
-      <div class="sidebar-item" onclick="showPage('content')">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-        Contenido
+      <div class="sidebar-item" onclick="showPage('invites')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        Invitaciones
       </div>
       <div class="sidebar-item" onclick="showPage('crclub')">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
         CR Club
       </div>
+      <div class="nav-section-label">Sistema</div>
       <div class="sidebar-item" onclick="showPage('settings')">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         Configuración
@@ -370,7 +370,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.00</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.01</div>
     </div>
   </aside>
 
@@ -1127,6 +1127,11 @@ tr:hover td{background:rgba(255,255,255,0.02);}
             <div class="form-group"><label class="form-label">Sitio Web (URL completa)</label><input class="form-input" id="set-entrega-web" placeholder="https://cristian-romero-digital.pages.dev"></div>
           </div>
         </div>
+          <div class="settings-section-title" style="margin-top:24px">EmailJS — Formulario de Contacto</div>
+          <p style="font-size:12px;color:var(--gray2);margin-bottom:16px;line-height:1.6">Keys para el formulario de contacto del sitio público. Encontralas en emailjs.com → Account → API Keys.</p>
+          <div class="form-group"><label class="form-label">Public Key</label><input class="form-input" id="set-emailjs-key" placeholder="odUJtdh1Z0U27ZkaN"></div>
+          <div class="form-group"><label class="form-label">Service ID</label><input class="form-input" id="set-emailjs-service" placeholder="service_35rtklk"></div>
+          <div class="form-group"><label class="form-label">Template ID (contacto)</label><input class="form-input" id="set-emailjs-template" placeholder="template_bdpe4yq"></div>
         <div class="settings-section">
           <div class="settings-section-title">Seguridad</div>
           <div class="settings-row">
@@ -2295,16 +2300,30 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
 <script>
 
+// ── CONFIG ──
+const CONFIG = {
+  CF_URL:             'https://web.cristian-romero-digital.workers.dev',
+  CRCLUB_URL:         'https://crclub-worker.cristian-romero-digital.workers.dev',
+  CF_AUTH:            'crd2025',
+  DEFAULT_USER:       'admin',
+  DEFAULT_PASS:       'crd2025',
+  CLOUDINARY_CLOUD:   'dqpu3yurj',
+  CLOUDINARY_PRESET:  'crd_portfolio',
+  LOCALE:             'es-AR',
+  WA_DEFAULT:         '+5491162557763',
+  IG_DEFAULT:         'https://instagram.com/cristian.romero.digital',
+  WEB_DEFAULT:        'https://cristianromeroproducciones.com.ar'
+};
+
 // ── CR CLUB ──
-const CRCLUB_URL = 'https://crclub-worker.cristian-romero-digital.workers.dev';
 
 async function crclubApi(path, method = 'GET', body = null) {
   const opts = {
     method,
-    headers: { 'Authorization': `Bearer ${CF_AUTH}`, 'Content-Type': 'application/json' }
+    headers: { 'Authorization': `Bearer ${CONFIG.CF_AUTH}`, 'Content-Type': 'application/json' }
   };
   if (body) opts.body = JSON.stringify(body);
-  const r = await fetch(CRCLUB_URL + path, opts);
+  const r = await fetch(CONFIG.CRCLUB_URL + path, opts);
   return r.json();
 }
 
@@ -2442,16 +2461,14 @@ async function crclubConfirmPurchase(id) {
 }
 
 // ── CLOUDFLARE SYNC ──
-const CF_URL = 'https://web.cristian-romero-digital.workers.dev';
-const CF_AUTH = 'crd2025';
 const CF_SYNC_KEYS = ["crd_portfolio","crd_testimonials","crd_posts","crd_settings","crd_content","crd_site_photos","crd_hero_video_url","crd_invites","crd_messages","crd_inv_base","crd_admin_creds","crd_presupuesto","crd_presupuesto_boda","crd_editable","crd_opcionales","crd_entregas","crd_pedidos","crd_contratos_cfg"];
 
 async function syncToCloud(key, value) {
   if (!CF_SYNC_KEYS.includes(key)) return;
   try {
-    await fetch(CF_URL + '/' + key, {
+    await fetch(CONFIG.CF_URL + '/' + key, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': CF_AUTH },
+      headers: { 'Content-Type': 'application/json', 'Authorization': CONFIG.CF_AUTH },
       body: value
     });
   } catch(e) {
@@ -2481,7 +2498,7 @@ function getCreds() {
     const stored = S.get(CREDS_KEY);
     if (stored && stored.user && stored.pass) return stored;
   } catch(e) {}
-  return { user:'admin', pass:'crd2025' };
+  return { user: CONFIG.DEFAULT_USER, pass: CONFIG.DEFAULT_PASS };
 }
 
 function doLogin() {
@@ -2514,14 +2531,14 @@ function doLogin() {
 })();
 
 function resetCredentials() {
-  if (confirm('¿Restablecer usuario y contraseña a los valores por defecto?\n\nUsuario: admin\nContraseña: crd2025')) {
+  if (confirm(`¿Restablecer usuario y contraseña a los valores por defecto?\n\nUsuario: ${CONFIG.DEFAULT_USER}\nContraseña: ${CONFIG.DEFAULT_PASS}`)) {
     localStorage.removeItem('crd_admin_creds');
     localStorage.removeItem('crd_session');
     syncToCloud('crd_admin_creds', 'null');
-    document.getElementById('login-user').value = 'admin';
+    document.getElementById('login-user').value = CONFIG.DEFAULT_USER;
     document.getElementById('login-pass').value = '';
     document.getElementById('login-error').style.display = 'none';
-    alert('Credenciales restablecidas.\nUsuario: admin\nContraseña: crd2025');
+    alert(`Credenciales restablecidas.\nUsuario: ${CONFIG.DEFAULT_USER}\nContraseña: ${CONFIG.DEFAULT_PASS}`);
   }
 }
 
@@ -2597,7 +2614,7 @@ document.querySelectorAll('.modal-bg').forEach(m => m.addEventListener('click', 
 // ── INIT ──
 async function fetchFromCloud(key) {
   try {
-    const res = await fetch(CF_URL + '/' + key, { headers: { 'Authorization': CF_AUTH } });
+    const res = await fetch(CONFIG.CF_URL + '/' + key, { headers: { 'Authorization': CONFIG.CF_AUTH } });
     if (!res.ok) return null;
     const data = await res.json();
     return Array.isArray(data) || (data && typeof data === 'object') ? data : null;
@@ -2629,7 +2646,7 @@ async function init() {
   // Settings: siempre sincronizar del cloud (contiene logoUrl y otros datos críticos)
   const cloudSettings = await fetchFromCloud('crd_settings');
   if (cloudSettings) S.set('crd_settings', cloudSettings);
-  else if (!S.get('crd_settings')) S.set('crd_settings', {availability:'Tomando fechas para 2025 y 2026',waSuffix:'+5491100000000',countdownDate:new Date(Date.now()+30*24*60*60*1000).toISOString(),countdownMsg:'Solo 2 fechas libres este mes',priceSilver:'',priceGold:'',pricePlatinum:''});
+  else if (!S.get('crd_settings')) S.set('crd_settings', {availability:'Tomando fechas para 2025 y 2026',waSuffix: CONFIG.WA_DEFAULT,countdownDate:new Date(Date.now()+30*24*60*60*1000).toISOString(),countdownMsg:'Solo 2 fechas libres este mes',priceSilver:'',priceGold:'',pricePlatinum:''});
   // Invitaciones: siempre sincronizar del cloud (fuente de verdad)
   const cloudInvites = await fetchFromCloud('crd_invites');
   if (cloudInvites !== null) S.set('crd_invites', cloudInvites);
@@ -3309,6 +3326,9 @@ function loadSettings() {
   document.getElementById('set-instagram').value = s.instagram || '';
   document.getElementById('set-entrega-ig').value  = s.entregaIgUrl  || '';
   document.getElementById('set-entrega-web').value = s.entregaWebUrl || '';
+  document.getElementById('set-emailjs-key').value      = s.emailjsKey            || '';
+  document.getElementById('set-emailjs-service').value  = s.emailjsServiceId       || '';
+  document.getElementById('set-emailjs-template').value = s.emailjsContactTemplate || '';
   loadLogoPreview();
   loadLogoLightPreview();
 }
@@ -3325,22 +3345,27 @@ function saveSettings() {
     document.getElementById('set-confpass').value='';
   }
   const cdRaw = document.getElementById('set-countdown-date').value;
+  const existing = S.get('crd_settings') || {};
   const s = {
-    availability: document.getElementById('set-availability').value.trim(),
-    countdownMsg: document.getElementById('set-countdown-msg').value.trim(),
-    countdownDate: cdRaw ? new Date(cdRaw).toISOString() : null,
-    priceXvSilver: document.getElementById('set-price-xv-silver').value.trim(),
-    priceXvGold: document.getElementById('set-price-xv-gold').value.trim(),
-    priceXvPlatinum: document.getElementById('set-price-xv-platinum').value.trim(),
-    priceBodaSilver: document.getElementById('set-price-boda-silver').value.trim(),
-    priceBodaGold: document.getElementById('set-price-boda-gold').value.trim(),
+    ...existing,
+    availability:      document.getElementById('set-availability').value.trim(),
+    countdownMsg:      document.getElementById('set-countdown-msg').value.trim(),
+    countdownDate:     cdRaw ? new Date(cdRaw).toISOString() : existing.countdownDate || null,
+    priceXvSilver:     document.getElementById('set-price-xv-silver').value.trim(),
+    priceXvGold:       document.getElementById('set-price-xv-gold').value.trim(),
+    priceXvPlatinum:   document.getElementById('set-price-xv-platinum').value.trim(),
+    priceBodaSilver:   document.getElementById('set-price-boda-silver').value.trim(),
+    priceBodaGold:     document.getElementById('set-price-boda-gold').value.trim(),
     priceBodaPlatinum: document.getElementById('set-price-boda-platinum').value.trim(),
-    priceBookXv: document.getElementById('set-price-book-xv').value.trim(),
-    priceBookBoda: document.getElementById('set-price-book-boda').value.trim(),
-    waSuffix: document.getElementById('set-wa').value.trim(),
-    instagram: document.getElementById('set-instagram').value.trim(),
-    entregaIgUrl:  document.getElementById('set-entrega-ig').value.trim(),
-    entregaWebUrl: document.getElementById('set-entrega-web').value.trim(),
+    priceBookXv:       document.getElementById('set-price-book-xv').value.trim(),
+    priceBookBoda:     document.getElementById('set-price-book-boda').value.trim(),
+    waSuffix:          document.getElementById('set-wa').value.trim(),
+    instagram:         document.getElementById('set-instagram').value.trim(),
+    entregaIgUrl:      document.getElementById('set-entrega-ig').value.trim(),
+    entregaWebUrl:     document.getElementById('set-entrega-web').value.trim(),
+    emailjsKey:              (document.getElementById('set-emailjs-key')      || {}).value?.trim() || existing.emailjsKey || '',
+    emailjsServiceId:        (document.getElementById('set-emailjs-service')  || {}).value?.trim() || existing.emailjsServiceId || '',
+    emailjsContactTemplate:  (document.getElementById('set-emailjs-template') || {}).value?.trim() || existing.emailjsContactTemplate || '',
   };
   S.set('crd_settings', s);
   toast('Configuración guardada ✓');
@@ -4473,7 +4498,7 @@ async function openCloudinaryBrowser() {
 
   try {
     // Use Cloudinary Search API via our Worker proxy
-    const res = await fetch(CF_URL + '/cloudinary_list?t=' + Date.now());
+    const res = await fetch(CONFIG.CF_URL + '/cloudinary_list?t=' + Date.now());
     const data = await res.json();
     
     if(!data || !data.resources || !data.resources.length) {
@@ -4526,8 +4551,8 @@ let cloudinaryWidget = null;
 function openCloudinaryWidget() {
   if(!cloudinaryWidget) {
     cloudinaryWidget = cloudinary.createUploadWidget({
-      cloudName: 'dqpu3yurj',
-      uploadPreset: 'crd_portfolio',
+      cloudName: CONFIG.CLOUDINARY_CLOUD,
+      uploadPreset: CONFIG.CLOUDINARY_PRESET,
       multiple: true,
       maxFiles: 20,
       resourceType: 'image',
@@ -4620,9 +4645,9 @@ async function genInviteUrl(inv) {
   const slug = nombre + (fecha ? '-' + fecha : '') + '-' + suffix;
   const base = getInvBaseUrl();
   try {
-    await fetch(CF_URL + '/invite/' + slug, {
+    await fetch(CONFIG.CF_URL + '/invite/' + slug, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': CF_AUTH },
+      headers: { 'Content-Type': 'application/json', 'Authorization': CONFIG.CF_AUTH },
       body: JSON.stringify(inv.config)
     });
     return base + '?i=' + slug;
@@ -4943,7 +4968,7 @@ async function openInvBrowser() {
   loading.style.display = 'block';
   loading.textContent = 'Cargando...';
   try {
-    const res = await fetch(CF_URL + '/cloudinary_list?t=' + Date.now());
+    const res = await fetch(CONFIG.CF_URL + '/cloudinary_list?t=' + Date.now());
     const data = await res.json();
     const resources = (data.resources || []).filter(r => r.resource_type === 'video' || r.resource_type === 'image');
     if (!resources.length) { loading.textContent = 'No se encontraron archivos. Subí primero usando ⬆ Subir.'; return; }
@@ -5108,10 +5133,10 @@ function uploadInvMediaXHR(file, type) {
 
   const fd = new FormData();
   fd.append('file', file);
-  fd.append('upload_preset', 'crd_portfolio');
+  fd.append('upload_preset', CONFIG.CLOUDINARY_PRESET);
   fd.append('folder', 'invitaciones');
   const xhr = new XMLHttpRequest();
-  xhr.open('POST', `https://api.cloudinary.com/v1_1/dqpu3yurj/${type}/upload`);
+  xhr.open('POST', `https://api.cloudinary.com/v1_1/${CONFIG.CLOUDINARY_CLOUD}/${type}/upload`);
   xhr.upload.onprogress = e => {
     if (e.lengthComputable) {
       const pct = Math.round(e.loaded / e.total * 100);
@@ -6192,8 +6217,8 @@ function loadEntregasPage() {
   updateEntregaPreview();
   // Siempre refrescar entregas y pedidos desde Cloudflare al abrir la sección
   Promise.all([
-    fetch(CF_URL + '/crd_entregas', { headers: { 'Authorization': CF_AUTH } }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch(CF_URL + '/crd_pedidos', { headers: { 'Authorization': CF_AUTH } }).then(r => r.ok ? r.json() : null).catch(() => null)
+    fetch(CONFIG.CF_URL + '/crd_entregas', { headers: { 'Authorization': CONFIG.CF_AUTH } }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch(CONFIG.CF_URL + '/crd_pedidos', { headers: { 'Authorization': CONFIG.CF_AUTH } }).then(r => r.ok ? r.json() : null).catch(() => null)
   ]).then(([ent, ped]) => {
     if (Array.isArray(ent)) localStorage.setItem('crd_entregas', JSON.stringify(ent));
     if (Array.isArray(ped)) localStorage.setItem('crd_pedidos', JSON.stringify(ped));
