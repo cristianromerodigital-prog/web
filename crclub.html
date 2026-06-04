@@ -150,7 +150,7 @@
   </div>
 
   <div id="panel-buy" style="display:none"></div>
-  <div style="text-align:center;padding:24px 0 8px;font-size:11px;color:var(--gray2);">V1.02</div>
+  <div style="text-align:center;padding:24px 0 8px;font-size:11px;color:var(--gray2);">V1.03</div>
 </div>
 
 <script>
@@ -198,10 +198,17 @@ if (!_cachedLogo) {
   } catch(e) {}
 }
 
-// ASYNC — actualiza desde CF y persiste en caché para la próxima carga
-fetch(CONFIG.CF_SETTINGS_URL).then(r => r.json()).then(s => {
-  if (s && s.logoUrl) applyLogo(s.logoUrl);
-}).catch(() => {});
+// ASYNC — intenta crclub config primero (cross-browser), luego CF settings como fallback
+fetch(CONFIG.WORKER_URL + '/crclub/config').then(r => r.json()).then(cfg => {
+  if (cfg && cfg.logoUrl) applyLogo(cfg.logoUrl);
+  else return fetch(CONFIG.CF_SETTINGS_URL).then(r => r.json()).then(s => {
+    if (s && s.logoUrl) applyLogo(s.logoUrl);
+  });
+}).catch(() => {
+  fetch(CONFIG.CF_SETTINGS_URL).then(r => r.json()).then(s => {
+    if (s && s.logoUrl) applyLogo(s.logoUrl);
+  }).catch(() => {});
+});
 
 async function onGoogleLogin(res) {
   const r = await fetch(CONFIG.WORKER_URL +'/crclub/auth', {
@@ -359,7 +366,7 @@ function crclubLogout() {
   document.getElementById('login-screen').style.display = 'flex';
 }
 
-// V1.02
+// V1.03
 
 initApp();
 </script>

@@ -370,7 +370,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.02</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.03</div>
     </div>
   </aside>
 
@@ -3583,9 +3583,11 @@ function applySidebarLogo(src) {
 
 function saveLogo() {
   if(!pendingLogoData) { toast('Seleccioná un logo primero','error'); return; }
-  S.set('crd_site_logo', pendingLogoData);
-  applySidebarLogo(pendingLogoData);
+  const _logoSrc = pendingLogoData;
+  S.set('crd_site_logo', _logoSrc);
+  applySidebarLogo(_logoSrc);
   pendingLogoData = null;
+  syncLogoToCrclub(_logoSrc);
   toast('Logo guardado ✓ — se aplica al abrir el sitio');
   loadLogoPreview();
 }
@@ -3692,10 +3694,20 @@ function saveLogoConfig() {
   setts.logoUrl = logoSrc;
   setts.logoFilter = filter;
   S.set('crd_settings', setts);
+  syncLogoToCrclub(logoSrc);
   applySidebarLogo(logoSrc);
   if(urlInp) urlInp.value = '';
   loadLogoPreview();
   toast('Logo guardado ✓');
+}
+
+function syncLogoToCrclub(src) {
+  if(!src) return;
+  fetch(CONFIG.CRCLUB_URL + '/crclub/admin/config', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': CONFIG.CF_AUTH },
+    body: JSON.stringify({ logoUrl: src })
+  }).catch(e => console.warn('crclub logo sync failed:', e));
 }
 function loadLogoPreview() {
   const logo = S.get('crd_site_logo') || (S.get('crd_settings') || {}).logoUrl || '';
