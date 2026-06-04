@@ -5,18 +5,24 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>CR Club — Cristian Romero Producciones</title>
 <script src="https://accounts.google.com/gsi/client" async></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   :root{--bg:#0d0d0d;--card:#141414;--border:#222;--gold:#c9a84c;--gold-light:#e8c96e;--white:#f0f0f0;--gray:#888;--gray2:#555}
   body{background:var(--bg);color:var(--white);font-family:'Helvetica Neue',Arial,sans-serif;min-height:100vh}
-  #login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;}
+  #login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;position:relative;overflow:hidden;}
+  #login-bg-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 20%;z-index:0;display:none;}
+  #login-screen::before{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.72) 100%);z-index:1;}
+  #login-screen>*:not(#login-bg-img){position:relative;z-index:2;}
   .logo-cr{width:70px;height:70px;border:2px solid var(--gold);transform:rotate(-5deg);display:flex;align-items:center;justify-content:center;margin-bottom:24px;}
   .logo-cr span{font-size:26px;font-weight:900;color:var(--white);letter-spacing:-1px;transform:rotate(5deg);display:block;}
-  .login-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:32px;width:100%;max-width:380px;text-align:center;}
-  .login-title{font-size:22px;font-weight:700;margin-bottom:4px;letter-spacing:1px;}
-  .login-sub{font-size:13px;color:var(--gray);margin-bottom:28px;}
+  .login-card{background:rgba(10,10,10,0.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(201,168,76,0.25);border-radius:16px;padding:36px 32px;width:100%;max-width:380px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.6);}
+  .login-title{font-size:24px;font-weight:800;margin-bottom:4px;letter-spacing:2px;color:var(--white);}
+  .login-sub{font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:28px;letter-spacing:.5px;}
   .google-btn-wrap{display:flex;justify-content:center;}
-  #app-screen{display:none;max-width:480px;margin:0 auto;padding:16px;}
+  #app-bg-img{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 20%;z-index:0;display:none;}
+  #app-bg-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1;display:none;}
+  #app-screen{display:none;max-width:480px;margin:0 auto;padding:16px;position:relative;z-index:2;}
   .app-header{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border);margin-bottom:20px;}
   .app-logo{display:flex;align-items:center;gap:10px;}
   .app-logo-cr{width:32px;height:32px;border:1.5px solid var(--gold);transform:rotate(-5deg);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -63,11 +69,27 @@
   .msg.ok{background:rgba(127,255,110,0.1);color:#7fff6e;border:1px solid #7fff6e44;}
   .msg.err{background:rgba(255,100,100,0.1);color:#ff8e8e;border:1px solid #ff8e8e44;}
   .loading{color:var(--gray);font-size:13px;padding:20px;text-align:center;}
+  .sub-tabs{display:flex;gap:8px;margin-bottom:18px;}
+  .sub-tab-btn{flex:1;background:var(--card);border:1px solid var(--border);color:var(--gray);padding:9px 0;border-radius:6px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;}
+  .sub-tab-btn.active{background:rgba(201,168,76,0.12);border-color:var(--gold);color:var(--gold);}
+  .code-display{background:var(--card);border:2px solid var(--gold);border-radius:12px;padding:20px;text-align:center;margin:14px 0;}
+  .code-chars{font-size:34px;font-weight:900;letter-spacing:6px;color:var(--gold-light);font-family:monospace;}
+  .code-timer{font-size:12px;color:var(--gray);margin-top:6px;}
+  .code-timer.urgent{color:#ff8e8e;}
+  #qr-box{display:flex;justify-content:center;margin:10px 0;}
+  #qr-box canvas,#qr-box img{border-radius:8px;}
+  .sender-card{background:var(--card);border:1px solid var(--gold);border-radius:10px;padding:16px;margin:12px 0;display:flex;align-items:center;gap:12px;}
+  .sender-avatar{width:40px;height:40px;border-radius:50%;background:rgba(201,168,76,0.2);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--gold);flex-shrink:0;}
+  .sender-name{font-size:14px;font-weight:700;color:var(--white);}
+  .sender-pts{font-size:13px;color:var(--gold);margin-top:2px;}
+  .sender-msg{font-size:12px;color:var(--gray);margin-top:2px;font-style:italic;}
+  .btn-wa{width:100%;background:#25D366;color:#fff;border:none;padding:11px;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px;}
 </style>
 </head>
 <body>
 
 <div id="login-screen">
+  <img id="login-bg-img" src="" alt="">
   <img id="login-logo" src="" alt="CR" style="display:none;width:90px;height:90px;object-fit:contain;border-radius:50%;margin-bottom:24px;filter:invert(1);">
   <div class="logo-cr" id="login-logo-fallback"><span>CR</span></div>
   <div class="login-card">
@@ -75,6 +97,7 @@
     <div class="login-sub">Tu programa de beneficios exclusivos</div>
     <div class="google-btn-wrap">
       <div id="g_id_onload"
+        data-client_id="219844741457-sun7sdnpuit836mief6p9p52dj7ckidq.apps.googleusercontent.com"
         data-callback="onGoogleLogin"
         data-auto_prompt="false">
       </div>
@@ -90,6 +113,8 @@
   </div>
 </div>
 
+<img id="app-bg-img" src="" alt="">
+<div id="app-bg-overlay"></div>
 <div id="app-screen">
   <div class="app-header">
     <div class="app-logo">
@@ -120,6 +145,7 @@
     <button class="tab-btn active" onclick="appTab('history')">Historial</button>
     <button class="tab-btn" onclick="appTab('redeem')">Canjear</button>
     <button class="tab-btn" onclick="appTab('buy')">Comprar CR</button>
+    <button class="tab-btn" onclick="appTab('transfer')">Transferir</button>
   </div>
 
   <div id="panel-history">
@@ -149,7 +175,64 @@
   </div>
 
   <div id="panel-buy" style="display:none"></div>
-  <div style="text-align:center;padding:24px 0 8px;font-size:11px;color:var(--gray2);">V1.01</div>
+
+  <div id="panel-transfer" style="display:none">
+    <div class="sub-tabs">
+      <button class="sub-tab-btn active" id="st-send" onclick="transferSection('send')">Enviar CR</button>
+      <button class="sub-tab-btn" id="st-receive" onclick="transferSection('receive')">Recibir CR</button>
+    </div>
+
+    <!-- ENVIAR -->
+    <div id="section-send">
+      <div class="form-group">
+        <label class="form-label">CR a enviar (máx: <span id="transfer-max">20</span>)</label>
+        <input class="form-input" id="transfer-pts" type="number" min="1" placeholder="ej: 5">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mensaje (opcional)</label>
+        <input class="form-input" id="transfer-msg" type="text" maxlength="80" placeholder="ej: Para tu boda ✨">
+      </div>
+      <button class="btn-primary" id="transfer-gen-btn" onclick="generateTransferCode()">Generar código</button>
+      <div id="transfer-gen-msg"></div>
+
+      <div id="transfer-code-box" style="display:none">
+        <div class="code-display">
+          <div style="font-size:11px;letter-spacing:2px;color:var(--gray);margin-bottom:6px;">TU CÓDIGO</div>
+          <div class="code-chars" id="transfer-code-chars">——————</div>
+          <div class="code-timer" id="transfer-countdown">15:00</div>
+        </div>
+        <div id="qr-box"></div>
+        <button class="btn-wa" onclick="shareTransferWA()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Compartir por WhatsApp
+        </button>
+      </div>
+    </div>
+
+    <!-- RECIBIR -->
+    <div id="section-receive" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Código recibido</label>
+        <input class="form-input" id="receive-code" type="text" maxlength="6" placeholder="ej: 4X9K2M" style="text-transform:uppercase;letter-spacing:4px;font-size:18px;text-align:center;">
+      </div>
+      <button class="btn-primary" id="receive-preview-btn" onclick="previewTransfer()">Verificar código</button>
+      <div id="receive-msg"></div>
+
+      <div id="receive-preview-box" style="display:none">
+        <div class="sender-card">
+          <div class="sender-avatar" id="receive-avatar">?</div>
+          <div>
+            <div class="sender-name" id="receive-sender-name">—</div>
+            <div class="sender-pts" id="receive-sender-pts">—</div>
+            <div class="sender-msg" id="receive-sender-msg"></div>
+          </div>
+        </div>
+        <button class="btn-primary" id="receive-confirm-btn" onclick="claimTransfer()">Confirmar recepción</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:24px 0 8px;font-size:11px;color:var(--gray2);">V1.10</div>
 </div>
 
 <script>
@@ -160,7 +243,7 @@ const CONFIG = {
   WA_NUMBER:           '11 6255 7763',
   PTS_VALUE_FALLBACK:  10000,
   TOKEN_KEY:           'crclub_token',
-  LOCALE:              CONFIG.LOCALE,
+  LOCALE:              'es-AR',
   BUY_PACKS: [
     { pts: 5,  label: 'Pack Cierre',    featured: false },
     { pts: 10, label: 'Pack Regalo ⭐', featured: true  },
@@ -173,6 +256,7 @@ let _config = null;
 
 function applyLogo(src) {
   if (!src) return;
+  localStorage.setItem('_crclub_logo', src); // caché dedicado para carga inmediata
   ['login-logo','header-logo'].forEach(id => {
     const img = document.getElementById(id);
     if (img) { img.src = src; img.style.display = 'block'; }
@@ -183,9 +267,30 @@ function applyLogo(src) {
   if (hf) hf.style.display = 'none';
 }
 
-fetch(CONFIG.CF_SETTINGS_URL).then(r => r.text()).then(raw => {
-  try { const s = JSON.parse(raw); if (s.logoUrl) applyLogo(s.logoUrl); } catch(e) {}
-}).catch(() => {});
+// INMEDIATO — caché dedicado (0ms, sin fetch)
+const _cachedLogo = localStorage.getItem('_crclub_logo');
+if (_cachedLogo) applyLogo(_cachedLogo);
+
+// INMEDIATO — fallback desde localStorage compartido con admin (mismo dominio)
+if (!_cachedLogo) {
+  try {
+    const _shared = JSON.parse(localStorage.getItem('crd_settings') || '{}');
+    const _sharedLogo = _shared.logoUrl || JSON.parse(localStorage.getItem('crd_site_logo') || 'null');
+    if (_sharedLogo) applyLogo(String(_sharedLogo).trim());
+  } catch(e) {}
+}
+
+// ASYNC — config desde crclub KV (logo + fondo)
+fetch(CONFIG.WORKER_URL + '/crclub/config').then(r => r.json()).then(cfg => {
+  if (cfg && cfg.logoUrl) applyLogo(cfg.logoUrl);
+  else fetch(CONFIG.CF_SETTINGS_URL).then(r => r.json()).then(s => { if (s && s.logoUrl) applyLogo(s.logoUrl); }).catch(()=>{});
+  const loginBg = cfg.bgUrlLogin || cfg.bgUrl || '';
+  const appBg   = cfg.bgUrlApp   || loginBg;
+  if (loginBg) { const i = document.getElementById('login-bg-img'); i.src = loginBg; i.style.display = 'block'; }
+  document.body.dataset.bgApp = appBg;
+}).catch(() => {
+  fetch(CONFIG.CF_SETTINGS_URL).then(r => r.json()).then(s => { if (s && s.logoUrl) applyLogo(s.logoUrl); }).catch(()=>{});
+});
 
 async function onGoogleLogin(res) {
   const r = await fetch(CONFIG.WORKER_URL +'/crclub/auth', {
@@ -204,7 +309,6 @@ async function onGoogleLogin(res) {
 }
 
 async function initApp() {
-  document.getElementById('g_id_onload').dataset.clientId = CONFIG.GOOGLE_CLIENT_ID;
   if (!_token) return;
   try {
     const [me, cfg] = await Promise.all([
@@ -221,6 +325,12 @@ async function initApp() {
 function showApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'block';
+  document.body.classList.add('app-active');
+  if (document.body.dataset.bgApp) {
+    const i = document.getElementById('app-bg-img');
+    i.src = document.body.dataset.bgApp; i.style.display = 'block';
+    document.getElementById('app-bg-overlay').style.display = 'block';
+  }
   document.getElementById('app-username').textContent = _client.name;
   document.getElementById('app-pts').textContent = _client.pts_total || 0;
   document.getElementById('app-credit').textContent = '$' + (_client.credit_available || 0).toLocaleString(CONFIG.LOCALE) + ' de crédito';
@@ -228,6 +338,14 @@ function showApp() {
   document.getElementById('redeem-max').textContent = Math.floor((_client.credit_available || 0) / ((_config && _config.pts_value) || CONFIG.PTS_VALUE_FALLBACK));
   renderBuyPacks();
   loadHistory();
+
+  // Auto-fill código desde deep link ?code=XXXXXX
+  const _urlCode = new URLSearchParams(window.location.search).get('code');
+  if (_urlCode) {
+    appTab('transfer');
+    transferSection('receive');
+    document.getElementById('receive-code').value = _urlCode.toUpperCase().trim();
+  }
 }
 
 function renderBuyPacks() {
@@ -262,8 +380,8 @@ async function loadHistory() {
     el.innerHTML = '<div class="loading">Sin movimientos aún</div>'; return;
   }
   el.innerHTML = d.transactions.map(t => {
-    const isEarn = t.type === 'earn' || t.type === 'purchase' || t.type === 'referral';
-    const isRedeem = t.type === 'redeem';
+    const isEarn   = t.type === 'earn' || t.type === 'purchase' || t.type === 'referral' || t.type === 'transfer_in';
+    const isRedeem = t.type === 'redeem' || t.type === 'transfer_out';
     const cls = isEarn ? 'tx-earn' : isRedeem ? 'tx-redeem' : 'tx-purchase';
     const sign = t.credit >= 0 ? '+' : '';
     return `<div class="tx-row ${cls}">
@@ -274,11 +392,11 @@ async function loadHistory() {
 }
 
 function appTab(name) {
-  ['history','redeem','buy'].forEach(t => {
+  ['history','redeem','buy','transfer'].forEach(t => {
     document.getElementById('panel-' + t).style.display = t === name ? '' : 'none';
   });
   document.querySelectorAll('.tab-btn').forEach((b, i) => {
-    b.classList.toggle('active', ['history','redeem','buy'][i] === name);
+    b.classList.toggle('active', ['history','redeem','buy','transfer'][i] === name);
   });
 }
 
@@ -344,7 +462,151 @@ function crclubLogout() {
   document.getElementById('login-screen').style.display = 'flex';
 }
 
-// V1.01
+// ─── Transfer ───────────────────────────────────────────────────────────────
+
+let _transferCountdownInterval = null;
+let _transferPendingCode = null;
+let _transferPendingData = null;
+
+function transferSection(name) {
+  document.getElementById('section-send').style.display    = name === 'send'    ? '' : 'none';
+  document.getElementById('section-receive').style.display = name === 'receive' ? '' : 'none';
+  document.getElementById('st-send').classList.toggle('active',    name === 'send');
+  document.getElementById('st-receive').classList.toggle('active', name === 'receive');
+}
+
+async function generateTransferCode() {
+  const pts = parseInt(document.getElementById('transfer-pts').value) || 0;
+  const message = document.getElementById('transfer-msg').value.trim();
+  const msgEl = document.getElementById('transfer-gen-msg');
+  msgEl.innerHTML = '';
+
+  if (pts < 1) { msgEl.innerHTML = '<div class="msg err">Ingresá la cantidad de CR a enviar</div>'; return; }
+
+  const btn = document.getElementById('transfer-gen-btn');
+  btn.disabled = true;
+  btn.textContent = 'Generando...';
+
+  const r = await fetch(CONFIG.WORKER_URL + '/crclub/transfer/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _token },
+    body: JSON.stringify({ pts, message })
+  }).then(r => r.json());
+
+  btn.disabled = false;
+  btn.textContent = 'Generar código';
+
+  if (!r.ok) { msgEl.innerHTML = '<div class="msg err">' + (r.error || 'Error al generar') + '</div>'; return; }
+
+  _transferPendingCode = r.code;
+  showTransferCode(r.code, r.expires_at, r.pts);
+}
+
+function showTransferCode(code, expiresAt, pts) {
+  document.getElementById('transfer-code-chars').textContent = code;
+  document.getElementById('transfer-code-box').style.display = '';
+
+  // QR
+  const qrBox = document.getElementById('qr-box');
+  qrBox.innerHTML = '';
+  const deepLink = window.location.origin + window.location.pathname + '?code=' + code;
+  new QRCode(qrBox, { text: deepLink, width: 160, height: 160, colorDark: '#c9a84c', colorLight: '#0d0d0d' });
+
+  // Countdown
+  if (_transferCountdownInterval) clearInterval(_transferCountdownInterval);
+  const expiresMs = new Date(expiresAt).getTime();
+  function tick() {
+    const remaining = Math.max(0, expiresMs - Date.now());
+    const mins = Math.floor(remaining / 60000);
+    const secs = Math.floor((remaining % 60000) / 1000);
+    const el = document.getElementById('transfer-countdown');
+    el.textContent = `Expira en ${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+    el.className = 'code-timer' + (remaining < 60000 ? ' urgent' : '');
+    if (remaining === 0) {
+      clearInterval(_transferCountdownInterval);
+      el.textContent = 'Código expirado';
+      document.getElementById('transfer-code-box').style.display = 'none';
+    }
+  }
+  tick();
+  _transferCountdownInterval = setInterval(tick, 1000);
+}
+
+function shareTransferWA() {
+  const code = _transferPendingCode;
+  if (!code) return;
+  const deepLink = window.location.origin + window.location.pathname + '?code=' + code;
+  const pts = document.getElementById('transfer-pts').value || '?';
+  const msg = document.getElementById('transfer-msg').value.trim();
+  let text = `Te envié ${pts} CR del CR Club ⭐\nUsá este código: *${code}*\nO abrí el link: ${deepLink}\n(válido 15 minutos)`;
+  if (msg) text += `\n\n"${msg}"`;
+  window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+}
+
+async function previewTransfer() {
+  const code = document.getElementById('receive-code').value.toUpperCase().trim();
+  const msgEl = document.getElementById('receive-msg');
+  msgEl.innerHTML = '';
+  if (code.length < 6) { msgEl.innerHTML = '<div class="msg err">El código debe tener 6 caracteres</div>'; return; }
+
+  const btn = document.getElementById('receive-preview-btn');
+  btn.disabled = true;
+  btn.textContent = 'Verificando...';
+
+  const r = await fetch(`${CONFIG.WORKER_URL}/crclub/transfer/preview?code=${code}`, {
+    headers: { Authorization: 'Bearer ' + _token }
+  }).then(r => r.json());
+
+  btn.disabled = false;
+  btn.textContent = 'Verificar código';
+
+  if (!r.ok) { msgEl.innerHTML = '<div class="msg err">' + (r.error || 'Error') + '</div>'; return; }
+
+  _transferPendingData = r;
+  const ptsValue = (_config && _config.pts_value) || CONFIG.PTS_VALUE_FALLBACK;
+  const creditStr = '$' + (r.pts * (r.pts_value || ptsValue)).toLocaleString(CONFIG.LOCALE);
+
+  document.getElementById('receive-avatar').textContent = r.from_name.charAt(0).toUpperCase();
+  document.getElementById('receive-sender-name').textContent = r.from_name;
+  document.getElementById('receive-sender-pts').textContent = `${r.pts} CR · ${creditStr} de crédito`;
+  const msgDiv = document.getElementById('receive-sender-msg');
+  msgDiv.textContent = r.message ? `"${r.message}"` : '';
+  msgDiv.style.display = r.message ? '' : 'none';
+
+  document.getElementById('receive-preview-box').style.display = '';
+}
+
+async function claimTransfer() {
+  const code = document.getElementById('receive-code').value.toUpperCase().trim();
+  const msgEl = document.getElementById('receive-msg');
+  const btn = document.getElementById('receive-confirm-btn');
+  btn.disabled = true;
+  btn.textContent = 'Procesando...';
+
+  const r = await fetch(CONFIG.WORKER_URL + '/crclub/transfer/claim', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _token },
+    body: JSON.stringify({ code })
+  }).then(r => r.json());
+
+  btn.disabled = false;
+  btn.textContent = 'Confirmar recepción';
+
+  if (!r.ok) { msgEl.innerHTML = '<div class="msg err">' + (r.error || 'Error') + '</div>'; return; }
+
+  _client.credit_available = r.credit_available;
+  _client.pts_total = r.pts_total;
+  document.getElementById('app-pts').textContent = r.pts_total;
+  document.getElementById('app-credit').textContent = '$' + r.credit_available.toLocaleString(CONFIG.LOCALE) + ' de crédito';
+
+  document.getElementById('receive-preview-box').style.display = 'none';
+  document.getElementById('receive-code').value = '';
+  _transferPendingData = null;
+  msgEl.innerHTML = `<div class="msg ok">¡Recibiste ${r.pts} CR de ${r.from_name}! Tu nuevo saldo: $${r.credit_available.toLocaleString(CONFIG.LOCALE)}</div>`;
+  loadHistory();
+}
+
+// V1.10
 
 initApp();
 </script>
