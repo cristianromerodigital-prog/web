@@ -429,7 +429,7 @@ footer small a{color:inherit}
 <footer>
   <p id="footer-names"></p>
   <img id="footer-logo" alt="Logo">
-  <small>Invitación digital · <a href="https://www.cristianromerodigital.ar" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:3px">Cristian Romero Digital</a> · <a href="https://www.instagram.com/cristian.romero.digital" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:3px">@cristian.romero.digital</a></small>
+  <small>Invitación digital · <a id="invite-footer-web" href="https://www.cristianromeroproducciones.com.ar" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:3px">Cristian Romero Producciones</a> · <a id="invite-footer-ig" href="https://www.instagram.com/cristian.romero.digital" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:3px">@cristian.romero.digital</a></small>
 </footer>
 
 </div><!-- /invite-app -->
@@ -439,7 +439,13 @@ footer small a{color:inherit}
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
 let cfg = null;
-const CF_URL_INV = 'https://web.cristian-romero-digital.workers.dev';
+const CONFIG = {
+  CF_URL:      'https://web.cristian-romero-digital.workers.dev',
+  IG_DEFAULT:  'https://www.instagram.com/cristian.romero.digital/',
+  WEB_DEFAULT: 'https://cristianromeroproducciones.com.ar',
+  LOCALE:      'es-AR'
+};
+const CF_URL_INV = CONFIG.CF_URL; // alias para compatibilidad
 
 // ── PARTÍCULAS AERO ──
 let _aeroRAF = null, _aeroCanvas = null;
@@ -778,6 +784,22 @@ async function init() {
     if (cfg.youtube_audio) initYoutubeAudio(cfg.youtube_audio);
     // sin sobre: unmute en primer scroll/touch/click (manejado dentro de initYoutubeAudio)
   }
+  // Load branding from crd_settings
+  try {
+    const sRes = await fetch(CF_URL_INV + '/crd_settings?t=' + Date.now());
+    const sText = await sRes.text();
+    if (sText && sText !== 'null') {
+      const s = JSON.parse(sText);
+      const webEl = document.getElementById('invite-footer-web');
+      const igEl  = document.getElementById('invite-footer-ig');
+      if (webEl) { webEl.href = s.entregaWebUrl || CONFIG.WEB_DEFAULT; }
+      if (igEl) {
+        const _igHref = s.entregaIgUrl || CONFIG.IG_DEFAULT;
+        igEl.href = _igHref;
+        if (s.entregaIgUrl) igEl.textContent = s.entregaIgUrl.replace('https://www.instagram.com/','@').replace('https://instagram.com/','@').replace(/\/$/,'');
+      }
+    }
+  } catch(e) {}
 }
 
 function startInviteParticles(type, size) {
