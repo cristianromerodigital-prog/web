@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>CR Club — Cristian Romero Producciones</title>
 <script src="https://accounts.google.com/gsi/client" async></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   :root{--bg:#0d0d0d;--card:#141414;--border:#222;--gold:#c9a84c;--gold-light:#e8c96e;--white:#f0f0f0;--gray:#888;--gray2:#555}
@@ -68,6 +69,21 @@
   .msg.ok{background:rgba(127,255,110,0.1);color:#7fff6e;border:1px solid #7fff6e44;}
   .msg.err{background:rgba(255,100,100,0.1);color:#ff8e8e;border:1px solid #ff8e8e44;}
   .loading{color:var(--gray);font-size:13px;padding:20px;text-align:center;}
+  .sub-tabs{display:flex;gap:8px;margin-bottom:18px;}
+  .sub-tab-btn{flex:1;background:var(--card);border:1px solid var(--border);color:var(--gray);padding:9px 0;border-radius:6px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;}
+  .sub-tab-btn.active{background:rgba(201,168,76,0.12);border-color:var(--gold);color:var(--gold);}
+  .code-display{background:var(--card);border:2px solid var(--gold);border-radius:12px;padding:20px;text-align:center;margin:14px 0;}
+  .code-chars{font-size:34px;font-weight:900;letter-spacing:6px;color:var(--gold-light);font-family:monospace;}
+  .code-timer{font-size:12px;color:var(--gray);margin-top:6px;}
+  .code-timer.urgent{color:#ff8e8e;}
+  #qr-box{display:flex;justify-content:center;margin:10px 0;}
+  #qr-box canvas,#qr-box img{border-radius:8px;}
+  .sender-card{background:var(--card);border:1px solid var(--gold);border-radius:10px;padding:16px;margin:12px 0;display:flex;align-items:center;gap:12px;}
+  .sender-avatar{width:40px;height:40px;border-radius:50%;background:rgba(201,168,76,0.2);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--gold);flex-shrink:0;}
+  .sender-name{font-size:14px;font-weight:700;color:var(--white);}
+  .sender-pts{font-size:13px;color:var(--gold);margin-top:2px;}
+  .sender-msg{font-size:12px;color:var(--gray);margin-top:2px;font-style:italic;}
+  .btn-wa{width:100%;background:#25D366;color:#fff;border:none;padding:11px;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px;}
 </style>
 </head>
 <body>
@@ -129,6 +145,7 @@
     <button class="tab-btn active" onclick="appTab('history')">Historial</button>
     <button class="tab-btn" onclick="appTab('redeem')">Canjear</button>
     <button class="tab-btn" onclick="appTab('buy')">Comprar CR</button>
+    <button class="tab-btn" onclick="appTab('transfer')">Transferir</button>
   </div>
 
   <div id="panel-history">
@@ -158,7 +175,64 @@
   </div>
 
   <div id="panel-buy" style="display:none"></div>
-  <div style="text-align:center;padding:24px 0 8px;font-size:11px;color:var(--gray2);">V1.09</div>
+
+  <div id="panel-transfer" style="display:none">
+    <div class="sub-tabs">
+      <button class="sub-tab-btn active" id="st-send" onclick="transferSection('send')">Enviar CR</button>
+      <button class="sub-tab-btn" id="st-receive" onclick="transferSection('receive')">Recibir CR</button>
+    </div>
+
+    <!-- ENVIAR -->
+    <div id="section-send">
+      <div class="form-group">
+        <label class="form-label">CR a enviar (máx: <span id="transfer-max">20</span>)</label>
+        <input class="form-input" id="transfer-pts" type="number" min="1" placeholder="ej: 5">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mensaje (opcional)</label>
+        <input class="form-input" id="transfer-msg" type="text" maxlength="80" placeholder="ej: Para tu boda ✨">
+      </div>
+      <button class="btn-primary" id="transfer-gen-btn" onclick="generateTransferCode()">Generar código</button>
+      <div id="transfer-gen-msg"></div>
+
+      <div id="transfer-code-box" style="display:none">
+        <div class="code-display">
+          <div style="font-size:11px;letter-spacing:2px;color:var(--gray);margin-bottom:6px;">TU CÓDIGO</div>
+          <div class="code-chars" id="transfer-code-chars">——————</div>
+          <div class="code-timer" id="transfer-countdown">15:00</div>
+        </div>
+        <div id="qr-box"></div>
+        <button class="btn-wa" onclick="shareTransferWA()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Compartir por WhatsApp
+        </button>
+      </div>
+    </div>
+
+    <!-- RECIBIR -->
+    <div id="section-receive" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Código recibido</label>
+        <input class="form-input" id="receive-code" type="text" maxlength="6" placeholder="ej: 4X9K2M" style="text-transform:uppercase;letter-spacing:4px;font-size:18px;text-align:center;">
+      </div>
+      <button class="btn-primary" id="receive-preview-btn" onclick="previewTransfer()">Verificar código</button>
+      <div id="receive-msg"></div>
+
+      <div id="receive-preview-box" style="display:none">
+        <div class="sender-card">
+          <div class="sender-avatar" id="receive-avatar">?</div>
+          <div>
+            <div class="sender-name" id="receive-sender-name">—</div>
+            <div class="sender-pts" id="receive-sender-pts">—</div>
+            <div class="sender-msg" id="receive-sender-msg"></div>
+          </div>
+        </div>
+        <button class="btn-primary" id="receive-confirm-btn" onclick="claimTransfer()">Confirmar recepción</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:24px 0 8px;font-size:11px;color:var(--gray2);">V1.10</div>
 </div>
 
 <script>
@@ -264,6 +338,14 @@ function showApp() {
   document.getElementById('redeem-max').textContent = Math.floor((_client.credit_available || 0) / ((_config && _config.pts_value) || CONFIG.PTS_VALUE_FALLBACK));
   renderBuyPacks();
   loadHistory();
+
+  // Auto-fill código desde deep link ?code=XXXXXX
+  const _urlCode = new URLSearchParams(window.location.search).get('code');
+  if (_urlCode) {
+    appTab('transfer');
+    transferSection('receive');
+    document.getElementById('receive-code').value = _urlCode.toUpperCase().trim();
+  }
 }
 
 function renderBuyPacks() {
@@ -298,8 +380,8 @@ async function loadHistory() {
     el.innerHTML = '<div class="loading">Sin movimientos aún</div>'; return;
   }
   el.innerHTML = d.transactions.map(t => {
-    const isEarn = t.type === 'earn' || t.type === 'purchase' || t.type === 'referral';
-    const isRedeem = t.type === 'redeem';
+    const isEarn   = t.type === 'earn' || t.type === 'purchase' || t.type === 'referral' || t.type === 'transfer_in';
+    const isRedeem = t.type === 'redeem' || t.type === 'transfer_out';
     const cls = isEarn ? 'tx-earn' : isRedeem ? 'tx-redeem' : 'tx-purchase';
     const sign = t.credit >= 0 ? '+' : '';
     return `<div class="tx-row ${cls}">
@@ -310,11 +392,11 @@ async function loadHistory() {
 }
 
 function appTab(name) {
-  ['history','redeem','buy'].forEach(t => {
+  ['history','redeem','buy','transfer'].forEach(t => {
     document.getElementById('panel-' + t).style.display = t === name ? '' : 'none';
   });
   document.querySelectorAll('.tab-btn').forEach((b, i) => {
-    b.classList.toggle('active', ['history','redeem','buy'][i] === name);
+    b.classList.toggle('active', ['history','redeem','buy','transfer'][i] === name);
   });
 }
 
@@ -380,7 +462,151 @@ function crclubLogout() {
   document.getElementById('login-screen').style.display = 'flex';
 }
 
-// V1.09
+// ─── Transfer ───────────────────────────────────────────────────────────────
+
+let _transferCountdownInterval = null;
+let _transferPendingCode = null;
+let _transferPendingData = null;
+
+function transferSection(name) {
+  document.getElementById('section-send').style.display    = name === 'send'    ? '' : 'none';
+  document.getElementById('section-receive').style.display = name === 'receive' ? '' : 'none';
+  document.getElementById('st-send').classList.toggle('active',    name === 'send');
+  document.getElementById('st-receive').classList.toggle('active', name === 'receive');
+}
+
+async function generateTransferCode() {
+  const pts = parseInt(document.getElementById('transfer-pts').value) || 0;
+  const message = document.getElementById('transfer-msg').value.trim();
+  const msgEl = document.getElementById('transfer-gen-msg');
+  msgEl.innerHTML = '';
+
+  if (pts < 1) { msgEl.innerHTML = '<div class="msg err">Ingresá la cantidad de CR a enviar</div>'; return; }
+
+  const btn = document.getElementById('transfer-gen-btn');
+  btn.disabled = true;
+  btn.textContent = 'Generando...';
+
+  const r = await fetch(CONFIG.WORKER_URL + '/crclub/transfer/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _token },
+    body: JSON.stringify({ pts, message })
+  }).then(r => r.json());
+
+  btn.disabled = false;
+  btn.textContent = 'Generar código';
+
+  if (!r.ok) { msgEl.innerHTML = '<div class="msg err">' + (r.error || 'Error al generar') + '</div>'; return; }
+
+  _transferPendingCode = r.code;
+  showTransferCode(r.code, r.expires_at, r.pts);
+}
+
+function showTransferCode(code, expiresAt, pts) {
+  document.getElementById('transfer-code-chars').textContent = code;
+  document.getElementById('transfer-code-box').style.display = '';
+
+  // QR
+  const qrBox = document.getElementById('qr-box');
+  qrBox.innerHTML = '';
+  const deepLink = window.location.origin + window.location.pathname + '?code=' + code;
+  new QRCode(qrBox, { text: deepLink, width: 160, height: 160, colorDark: '#c9a84c', colorLight: '#0d0d0d' });
+
+  // Countdown
+  if (_transferCountdownInterval) clearInterval(_transferCountdownInterval);
+  const expiresMs = new Date(expiresAt).getTime();
+  function tick() {
+    const remaining = Math.max(0, expiresMs - Date.now());
+    const mins = Math.floor(remaining / 60000);
+    const secs = Math.floor((remaining % 60000) / 1000);
+    const el = document.getElementById('transfer-countdown');
+    el.textContent = `Expira en ${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+    el.className = 'code-timer' + (remaining < 60000 ? ' urgent' : '');
+    if (remaining === 0) {
+      clearInterval(_transferCountdownInterval);
+      el.textContent = 'Código expirado';
+      document.getElementById('transfer-code-box').style.display = 'none';
+    }
+  }
+  tick();
+  _transferCountdownInterval = setInterval(tick, 1000);
+}
+
+function shareTransferWA() {
+  const code = _transferPendingCode;
+  if (!code) return;
+  const deepLink = window.location.origin + window.location.pathname + '?code=' + code;
+  const pts = document.getElementById('transfer-pts').value || '?';
+  const msg = document.getElementById('transfer-msg').value.trim();
+  let text = `Te envié ${pts} CR del CR Club ⭐\nUsá este código: *${code}*\nO abrí el link: ${deepLink}\n(válido 15 minutos)`;
+  if (msg) text += `\n\n"${msg}"`;
+  window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+}
+
+async function previewTransfer() {
+  const code = document.getElementById('receive-code').value.toUpperCase().trim();
+  const msgEl = document.getElementById('receive-msg');
+  msgEl.innerHTML = '';
+  if (code.length < 6) { msgEl.innerHTML = '<div class="msg err">El código debe tener 6 caracteres</div>'; return; }
+
+  const btn = document.getElementById('receive-preview-btn');
+  btn.disabled = true;
+  btn.textContent = 'Verificando...';
+
+  const r = await fetch(`${CONFIG.WORKER_URL}/crclub/transfer/preview?code=${code}`, {
+    headers: { Authorization: 'Bearer ' + _token }
+  }).then(r => r.json());
+
+  btn.disabled = false;
+  btn.textContent = 'Verificar código';
+
+  if (!r.ok) { msgEl.innerHTML = '<div class="msg err">' + (r.error || 'Error') + '</div>'; return; }
+
+  _transferPendingData = r;
+  const ptsValue = (_config && _config.pts_value) || CONFIG.PTS_VALUE_FALLBACK;
+  const creditStr = '$' + (r.pts * (r.pts_value || ptsValue)).toLocaleString(CONFIG.LOCALE);
+
+  document.getElementById('receive-avatar').textContent = r.from_name.charAt(0).toUpperCase();
+  document.getElementById('receive-sender-name').textContent = r.from_name;
+  document.getElementById('receive-sender-pts').textContent = `${r.pts} CR · ${creditStr} de crédito`;
+  const msgDiv = document.getElementById('receive-sender-msg');
+  msgDiv.textContent = r.message ? `"${r.message}"` : '';
+  msgDiv.style.display = r.message ? '' : 'none';
+
+  document.getElementById('receive-preview-box').style.display = '';
+}
+
+async function claimTransfer() {
+  const code = document.getElementById('receive-code').value.toUpperCase().trim();
+  const msgEl = document.getElementById('receive-msg');
+  const btn = document.getElementById('receive-confirm-btn');
+  btn.disabled = true;
+  btn.textContent = 'Procesando...';
+
+  const r = await fetch(CONFIG.WORKER_URL + '/crclub/transfer/claim', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _token },
+    body: JSON.stringify({ code })
+  }).then(r => r.json());
+
+  btn.disabled = false;
+  btn.textContent = 'Confirmar recepción';
+
+  if (!r.ok) { msgEl.innerHTML = '<div class="msg err">' + (r.error || 'Error') + '</div>'; return; }
+
+  _client.credit_available = r.credit_available;
+  _client.pts_total = r.pts_total;
+  document.getElementById('app-pts').textContent = r.pts_total;
+  document.getElementById('app-credit').textContent = '$' + r.credit_available.toLocaleString(CONFIG.LOCALE) + ' de crédito';
+
+  document.getElementById('receive-preview-box').style.display = 'none';
+  document.getElementById('receive-code').value = '';
+  _transferPendingData = null;
+  msgEl.innerHTML = `<div class="msg ok">¡Recibiste ${r.pts} CR de ${r.from_name}! Tu nuevo saldo: $${r.credit_available.toLocaleString(CONFIG.LOCALE)}</div>`;
+  loadHistory();
+}
+
+// V1.10
 
 initApp();
 </script>
