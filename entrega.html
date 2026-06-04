@@ -530,8 +530,7 @@ function applyLogo(src, filter) {
   const preImg  = document.getElementById('preloader-logo-img');
   const preWrap = document.getElementById('preloader-logo-wrap');
   const f = (filter !== undefined) ? filter : '';
-  if(heroImg) { heroImg.src = src; heroImg.style.filter = f; }
-  if(seal) seal.style.display = 'block';
+  // Hero logo oculto — requiere PNG con fondo transparente para verse bien sobre foto
   if(preImg) { preImg.src = src; preImg.style.filter = f; preWrap.style.display = 'flex'; document.querySelector('.loading-spinner').style.display = 'none'; }
 }
 
