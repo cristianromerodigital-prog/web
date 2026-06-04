@@ -9,7 +9,7 @@ llas<!DOCTYPE html>
 <style>
 :root {
   --black:#060c1a;--black2:#080f20;--black3:#0d1628;--black4:#111e35;
-  --cyan:#00d4d4;--violet:#7b4fff;--gold:#d4a843;--gold2:#e8c96a;
+  --cyan:#00d4d4;--violet:#7b4fff;--gold:#c9a84c;--gold2:#e8c96a;
   --white:#eeeae4;--gray:#4a5a78;--gray2:#8a9ab8;
   --green:#25d366;--red:#e05555;--orange:#f59e0b;
   --sidebar:240px;
@@ -2295,16 +2295,30 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
 <script>
 
+// ── CONFIG ──
+const CONFIG = {
+  CF_URL:             'https://web.cristian-romero-digital.workers.dev',
+  CRCLUB_URL:         'https://crclub-worker.cristian-romero-digital.workers.dev',
+  CF_AUTH:            'crd2025',
+  DEFAULT_USER:       'admin',
+  DEFAULT_PASS:       'crd2025',
+  CLOUDINARY_CLOUD:   'dqpu3yurj',
+  CLOUDINARY_PRESET:  'crd_portfolio',
+  LOCALE:             'es-AR',
+  WA_DEFAULT:         '+5491162557763',
+  IG_DEFAULT:         'https://instagram.com/cristian.romero.digital',
+  WEB_DEFAULT:        'https://cristianromeroproducciones.com.ar'
+};
+
 // ── CR CLUB ──
-const CRCLUB_URL = 'https://crclub-worker.cristian-romero-digital.workers.dev';
 
 async function crclubApi(path, method = 'GET', body = null) {
   const opts = {
     method,
-    headers: { 'Authorization': `Bearer ${CF_AUTH}`, 'Content-Type': 'application/json' }
+    headers: { 'Authorization': `Bearer ${CONFIG.CF_AUTH}`, 'Content-Type': 'application/json' }
   };
   if (body) opts.body = JSON.stringify(body);
-  const r = await fetch(CRCLUB_URL + path, opts);
+  const r = await fetch(CONFIG.CRCLUB_URL + path, opts);
   return r.json();
 }
 
@@ -2442,16 +2456,14 @@ async function crclubConfirmPurchase(id) {
 }
 
 // ── CLOUDFLARE SYNC ──
-const CF_URL = 'https://web.cristian-romero-digital.workers.dev';
-const CF_AUTH = 'crd2025';
 const CF_SYNC_KEYS = ["crd_portfolio","crd_testimonials","crd_posts","crd_settings","crd_content","crd_site_photos","crd_hero_video_url","crd_invites","crd_messages","crd_inv_base","crd_admin_creds","crd_presupuesto","crd_presupuesto_boda","crd_editable","crd_opcionales","crd_entregas","crd_pedidos","crd_contratos_cfg"];
 
 async function syncToCloud(key, value) {
   if (!CF_SYNC_KEYS.includes(key)) return;
   try {
-    await fetch(CF_URL + '/' + key, {
+    await fetch(CONFIG.CF_URL + '/' + key, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': CF_AUTH },
+      headers: { 'Content-Type': 'application/json', 'Authorization': CONFIG.CF_AUTH },
       body: value
     });
   } catch(e) {
@@ -2481,7 +2493,7 @@ function getCreds() {
     const stored = S.get(CREDS_KEY);
     if (stored && stored.user && stored.pass) return stored;
   } catch(e) {}
-  return { user:'admin', pass:'crd2025' };
+  return { user: CONFIG.DEFAULT_USER, pass: CONFIG.DEFAULT_PASS };
 }
 
 function doLogin() {
@@ -2514,14 +2526,14 @@ function doLogin() {
 })();
 
 function resetCredentials() {
-  if (confirm('¿Restablecer usuario y contraseña a los valores por defecto?\n\nUsuario: admin\nContraseña: crd2025')) {
+  if (confirm(`¿Restablecer usuario y contraseña a los valores por defecto?\n\nUsuario: ${CONFIG.DEFAULT_USER}\nContraseña: ${CONFIG.DEFAULT_PASS}`)) {
     localStorage.removeItem('crd_admin_creds');
     localStorage.removeItem('crd_session');
     syncToCloud('crd_admin_creds', 'null');
-    document.getElementById('login-user').value = 'admin';
+    document.getElementById('login-user').value = CONFIG.DEFAULT_USER;
     document.getElementById('login-pass').value = '';
     document.getElementById('login-error').style.display = 'none';
-    alert('Credenciales restablecidas.\nUsuario: admin\nContraseña: crd2025');
+    alert(`Credenciales restablecidas.\nUsuario: ${CONFIG.DEFAULT_USER}\nContraseña: ${CONFIG.DEFAULT_PASS}`);
   }
 }
 
@@ -2597,7 +2609,7 @@ document.querySelectorAll('.modal-bg').forEach(m => m.addEventListener('click', 
 // ── INIT ──
 async function fetchFromCloud(key) {
   try {
-    const res = await fetch(CF_URL + '/' + key, { headers: { 'Authorization': CF_AUTH } });
+    const res = await fetch(CONFIG.CF_URL + '/' + key, { headers: { 'Authorization': CF_AUTH } });
     if (!res.ok) return null;
     const data = await res.json();
     return Array.isArray(data) || (data && typeof data === 'object') ? data : null;
@@ -2629,7 +2641,7 @@ async function init() {
   // Settings: siempre sincronizar del cloud (contiene logoUrl y otros datos críticos)
   const cloudSettings = await fetchFromCloud('crd_settings');
   if (cloudSettings) S.set('crd_settings', cloudSettings);
-  else if (!S.get('crd_settings')) S.set('crd_settings', {availability:'Tomando fechas para 2025 y 2026',waSuffix:'+5491100000000',countdownDate:new Date(Date.now()+30*24*60*60*1000).toISOString(),countdownMsg:'Solo 2 fechas libres este mes',priceSilver:'',priceGold:'',pricePlatinum:''});
+  else if (!S.get('crd_settings')) S.set('crd_settings', {availability:'Tomando fechas para 2025 y 2026',waSuffix: CONFIG.WA_DEFAULT,countdownDate:new Date(Date.now()+30*24*60*60*1000).toISOString(),countdownMsg:'Solo 2 fechas libres este mes',priceSilver:'',priceGold:'',pricePlatinum:''});
   // Invitaciones: siempre sincronizar del cloud (fuente de verdad)
   const cloudInvites = await fetchFromCloud('crd_invites');
   if (cloudInvites !== null) S.set('crd_invites', cloudInvites);
@@ -4478,7 +4490,7 @@ async function openCloudinaryBrowser() {
 
   try {
     // Use Cloudinary Search API via our Worker proxy
-    const res = await fetch(CF_URL + '/cloudinary_list?t=' + Date.now());
+    const res = await fetch(CONFIG.CF_URL + '/cloudinary_list?t=' + Date.now());
     const data = await res.json();
     
     if(!data || !data.resources || !data.resources.length) {
@@ -4531,8 +4543,8 @@ let cloudinaryWidget = null;
 function openCloudinaryWidget() {
   if(!cloudinaryWidget) {
     cloudinaryWidget = cloudinary.createUploadWidget({
-      cloudName: 'dqpu3yurj',
-      uploadPreset: 'crd_portfolio',
+      cloudName: CONFIG.CLOUDINARY_CLOUD,
+      uploadPreset: CONFIG.CLOUDINARY_PRESET,
       multiple: true,
       maxFiles: 20,
       resourceType: 'image',
@@ -4625,9 +4637,9 @@ async function genInviteUrl(inv) {
   const slug = nombre + (fecha ? '-' + fecha : '') + '-' + suffix;
   const base = getInvBaseUrl();
   try {
-    await fetch(CF_URL + '/invite/' + slug, {
+    await fetch(CONFIG.CF_URL + '/invite/' + slug, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': CF_AUTH },
+      headers: { 'Content-Type': 'application/json', 'Authorization': CONFIG.CF_AUTH },
       body: JSON.stringify(inv.config)
     });
     return base + '?i=' + slug;
@@ -4948,7 +4960,7 @@ async function openInvBrowser() {
   loading.style.display = 'block';
   loading.textContent = 'Cargando...';
   try {
-    const res = await fetch(CF_URL + '/cloudinary_list?t=' + Date.now());
+    const res = await fetch(CONFIG.CF_URL + '/cloudinary_list?t=' + Date.now());
     const data = await res.json();
     const resources = (data.resources || []).filter(r => r.resource_type === 'video' || r.resource_type === 'image');
     if (!resources.length) { loading.textContent = 'No se encontraron archivos. Subí primero usando ⬆ Subir.'; return; }
@@ -6197,8 +6209,8 @@ function loadEntregasPage() {
   updateEntregaPreview();
   // Siempre refrescar entregas y pedidos desde Cloudflare al abrir la sección
   Promise.all([
-    fetch(CF_URL + '/crd_entregas', { headers: { 'Authorization': CF_AUTH } }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch(CF_URL + '/crd_pedidos', { headers: { 'Authorization': CF_AUTH } }).then(r => r.ok ? r.json() : null).catch(() => null)
+    fetch(CONFIG.CF_URL + '/crd_entregas', { headers: { 'Authorization': CONFIG.CF_AUTH } }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch(CONFIG.CF_URL + '/crd_pedidos', { headers: { 'Authorization': CONFIG.CF_AUTH } }).then(r => r.ok ? r.json() : null).catch(() => null)
   ]).then(([ent, ped]) => {
     if (Array.isArray(ent)) localStorage.setItem('crd_entregas', JSON.stringify(ent));
     if (Array.isArray(ped)) localStorage.setItem('crd_pedidos', JSON.stringify(ped));
