@@ -38,7 +38,7 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
 .hero-content { position:relative; z-index:2; text-align:center; padding:20px; animation:fadeUp 1.8s cubic-bezier(.16,1,.3,1) forwards; opacity:0; }
 @keyframes fadeUp { from{opacity:0;transform:translateY(40px)} to{opacity:1;transform:translateY(0)} }
 .hero-logo-seal { width:110px; height:110px; border-radius:50%; margin:32px auto 0; display:none; background:transparent; }
-.hero-logo { width:100%; height:100%; object-fit:contain; filter:invert(1); }
+.hero-logo { width:100%; height:100%; object-fit:contain; }
 .hero-brand { font-weight:200; font-size:clamp(9px,1.3vw,13px); letter-spacing:.5em; text-transform:uppercase; color:var(--cyan); margin-bottom:28px; opacity:.85; }
 .hero-names { font-family:'Cormorant Garamond',serif; font-weight:300; font-style:italic; font-size:clamp(48px,8vw,100px); line-height:1; color:var(--white); text-shadow:0 0 60px rgba(0,212,232,.2); margin-bottom:14px; }
 .hero-ampersand { color:var(--gold); }
@@ -57,7 +57,7 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
 #loading-screen { position:fixed; inset:0; z-index:500; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:24px; transition:opacity .6s; }
 #loading-screen.hidden { opacity:0; pointer-events:none; }
 #preloader-logo-wrap { display:none; flex-direction:column; align-items:center; gap:20px; }
-#preloader-logo-img { width:110px; height:110px; object-fit:contain; filter:invert(1); border-radius:50%; }
+#preloader-logo-img { width:110px; height:110px; object-fit:contain; border-radius:50%; }
 .preloader-bar { width:160px; height:1px; background:rgba(255,255,255,0.1); overflow:hidden; }
 .preloader-bar-fill { height:100%; background:linear-gradient(90deg,var(--cyan),var(--gold)); animation:preload 2s ease forwards; }
 @keyframes preload { from{width:0} to{width:100%} }
@@ -523,15 +523,16 @@ function startFrases() {
 }
 function stopFrases() { clearInterval(_fraseTimer); }
 
-function applyLogo(src) {
+function applyLogo(src, filter) {
   if(!src) return;
   const heroImg = document.getElementById('hero-logo');
   const seal    = document.getElementById('hero-logo-seal');
   const preImg  = document.getElementById('preloader-logo-img');
   const preWrap = document.getElementById('preloader-logo-wrap');
-  if(heroImg) heroImg.src = src;
+  const f = (filter !== undefined) ? filter : '';
+  if(heroImg) { heroImg.src = src; heroImg.style.filter = f; }
   if(seal) seal.style.display = 'block';
-  if(preImg) { preImg.src = src; preWrap.style.display = 'flex'; document.querySelector('.loading-spinner').style.display = 'none'; }
+  if(preImg) { preImg.src = src; preImg.style.filter = f; preWrap.style.display = 'flex'; document.querySelector('.loading-spinner').style.display = 'none'; }
 }
 
 async function init() {
@@ -573,7 +574,7 @@ async function init() {
     if(!raw) return;
     try {
       const sett = JSON.parse(raw);
-      if(sett.logoUrl) applyLogo(sett.logoUrl);
+      if(sett.logoUrl) applyLogo(sett.logoUrl, sett.logoFilter || '');
       const igBtn  = document.getElementById('ig-float');
       const webBtn = document.getElementById('web-float');
       if(igBtn  && sett.entregaIgUrl)  igBtn.href  = sett.entregaIgUrl;
