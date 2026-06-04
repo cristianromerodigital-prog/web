@@ -370,7 +370,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.07</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.08</div>
     </div>
   </aside>
 
@@ -1184,15 +1184,30 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           <p style="font-size:11px;color:var(--gray);margin-top:12px;letter-spacing:1px">Se sincroniza via Cloudflare a todos los dispositivos.</p>
         </div>
         <div class="settings-section">
-          <div class="settings-section-title">CR Club — Imagen de Fondo</div>
-          <p style="font-size:12px;color:var(--gray2);margin-bottom:16px;line-height:1.6">Foto que aparece de fondo en la pantalla de login y app del CR Club.</p>
-          <div id="crclub-bg-preview" style="width:100%;height:140px;background:#111;border-radius:8px;margin-bottom:12px;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;">
-            <span style="font-size:11px;color:var(--gray2)">Sin imagen</span>
-          </div>
-          <div style="display:flex;gap:8px;margin-bottom:8px">
-            <input id="crclub-bg-url" class="form-input" placeholder="URL o ID de Drive..." style="flex:1;font-size:12px;" oninput="crclubPreviewBg(this.value)">
-            <button class="btn-add" onclick="crclubSaveBg()">Guardar</button>
-            <button class="btn-sm btn-danger" onclick="crclubClearBg()">Quitar</button>
+          <div class="settings-section-title">CR Club — Fondos</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:8px">
+            <div>
+              <p style="font-size:11px;color:var(--gold);letter-spacing:1px;margin-bottom:8px">PANTALLA DE LOGIN</p>
+              <div id="crclub-bg-login-preview" style="width:100%;height:110px;background:#111;border-radius:6px;margin-bottom:8px;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:11px;color:var(--gray2)">Sin imagen</span>
+              </div>
+              <div style="display:flex;gap:6px">
+                <input id="crclub-bg-login-url" class="form-input" placeholder="URL o ID de Drive..." style="flex:1;font-size:11px;" oninput="crclubPreviewBg(this.value,'login')">
+                <button class="btn-add" onclick="crclubSaveBg('login')">Guardar</button>
+                <button class="btn-sm btn-danger" onclick="crclubClearBg('login')">✕</button>
+              </div>
+            </div>
+            <div>
+              <p style="font-size:11px;color:var(--gold);letter-spacing:1px;margin-bottom:8px">DENTRO DEL CLUB</p>
+              <div id="crclub-bg-app-preview" style="width:100%;height:110px;background:#111;border-radius:6px;margin-bottom:8px;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:11px;color:var(--gray2)">Sin imagen</span>
+              </div>
+              <div style="display:flex;gap:6px">
+                <input id="crclub-bg-app-url" class="form-input" placeholder="URL o ID de Drive..." style="flex:1;font-size:11px;" oninput="crclubPreviewBg(this.value,'app')">
+                <button class="btn-add" onclick="crclubSaveBg('app')">Guardar</button>
+                <button class="btn-sm btn-danger" onclick="crclubClearBg('app')">✕</button>
+              </div>
+            </div>
           </div>
         </div>
         <button class="btn-add" onclick="saveSettings()">Guardar configuración</button>
@@ -2405,25 +2420,31 @@ async function crclubSaveConfig() {
   else alert('Error: ' + (r.error || 'desconocido'));
 }
 
-function crclubPreviewBg(val) {
+function crclubPreviewBg(val, slot) {
   const url = val.trim().startsWith('http') ? val.trim() : (val.trim() ? `https://lh3.googleusercontent.com/d/${val.trim()}` : '');
-  const el = document.getElementById('crclub-bg-preview');
+  const id = slot === 'app' ? 'crclub-bg-app-preview' : 'crclub-bg-login-preview';
+  const el = document.getElementById(id);
+  if (!el) return;
   if (url) { el.style.backgroundImage = `url('${url}')`; el.innerHTML = ''; }
   else { el.style.backgroundImage = ''; el.innerHTML = '<span style="font-size:11px;color:var(--gray2)">Sin imagen</span>'; }
 }
 
-async function crclubSaveBg() {
-  const raw = document.getElementById('crclub-bg-url').value.trim();
+async function crclubSaveBg(slot) {
+  const inputId = slot === 'app' ? 'crclub-bg-app-url' : 'crclub-bg-login-url';
+  const raw = document.getElementById(inputId).value.trim();
   if (!raw) return toast('Ingresá una URL o ID de Drive', 'error');
   const url = raw.startsWith('http') ? raw : `https://lh3.googleusercontent.com/d/${raw}`;
-  const r = await crclubApi('/crclub/admin/config', 'PUT', { bgUrl: url });
-  if (r.ok) { toast('Fondo guardado ✓'); crclubLoadConfig(); }
+  const key = slot === 'app' ? 'bgUrlApp' : 'bgUrlLogin';
+  const r = await crclubApi('/crclub/admin/config', 'PUT', { [key]: url });
+  if (r.ok) toast('Fondo guardado ✓');
   else toast('Error: ' + (r.error || 'desconocido'), 'error');
 }
 
-async function crclubClearBg() {
-  const r = await crclubApi('/crclub/admin/config', 'PUT', { bgUrl: '' });
-  if (r.ok) { document.getElementById('crclub-bg-url').value = ''; crclubPreviewBg(''); toast('Fondo quitado'); crclubLoadConfig(); }
+async function crclubClearBg(slot) {
+  const inputId = slot === 'app' ? 'crclub-bg-app-url' : 'crclub-bg-login-url';
+  const key = slot === 'app' ? 'bgUrlApp' : 'bgUrlLogin';
+  const r = await crclubApi('/crclub/admin/config', 'PUT', { [key]: '' });
+  if (r.ok) { document.getElementById(inputId).value = ''; crclubPreviewBg('', slot); toast('Fondo quitado'); }
   else toast('Error', 'error');
 }
 
@@ -3370,10 +3391,14 @@ function loadSettings() {
   document.getElementById('set-emailjs-template').value = s.emailjsContactTemplate || '';
   loadLogoPreview();
   loadLogoLightPreview();
-  // Cargar fondo CR Club desde KV
+  // Cargar fondos CR Club desde KV
   fetch(CONFIG.CRCLUB_URL + '/crclub/config', { headers: { 'Authorization': 'Bearer ' + CONFIG.CF_AUTH } })
     .then(r => r.json()).then(cfg => {
-      if (cfg && cfg.bgUrl) { document.getElementById('crclub-bg-url').value = cfg.bgUrl; crclubPreviewBg(cfg.bgUrl); }
+      if (!cfg) return;
+      const loginUrl = cfg.bgUrlLogin || cfg.bgUrl || '';
+      const appUrl = cfg.bgUrlApp || '';
+      if (loginUrl) { document.getElementById('crclub-bg-login-url').value = loginUrl; crclubPreviewBg(loginUrl, 'login'); }
+      if (appUrl)   { document.getElementById('crclub-bg-app-url').value = appUrl;     crclubPreviewBg(appUrl, 'app'); }
     }).catch(() => {});
 }
 

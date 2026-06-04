@@ -154,7 +154,7 @@
   </div>
 
   <div id="panel-buy" style="display:none"></div>
-  <div style="text-align:center;padding:24px 0 8px;font-size:11px;color:var(--gray2);">V1.07</div>
+  <div style="text-align:center;padding:24px 0 8px;font-size:11px;color:var(--gray2);">V1.08</div>
 </div>
 
 <script>
@@ -206,17 +206,14 @@ if (!_cachedLogo) {
 fetch(CONFIG.WORKER_URL + '/crclub/config').then(r => r.json()).then(cfg => {
   if (cfg && cfg.logoUrl) applyLogo(cfg.logoUrl);
   else fetch(CONFIG.CF_SETTINGS_URL).then(r => r.json()).then(s => { if (s && s.logoUrl) applyLogo(s.logoUrl); }).catch(()=>{});
-  if (cfg && cfg.bgUrl) applyBg(cfg.bgUrl);
+  const loginBg = cfg.bgUrlLogin || cfg.bgUrl || '';
+  const appBg   = cfg.bgUrlApp   || '';
+  if (loginBg) document.getElementById('login-screen').style.backgroundImage = `url('${loginBg}')`;
+  if (appBg)   document.body.dataset.bgApp = appBg;
+  else if (loginBg) document.body.dataset.bgApp = loginBg;
 }).catch(() => {
   fetch(CONFIG.CF_SETTINGS_URL).then(r => r.json()).then(s => { if (s && s.logoUrl) applyLogo(s.logoUrl); }).catch(()=>{});
 });
-
-function applyBg(url) {
-  if (!url) return;
-  document.getElementById('login-screen').style.backgroundImage = `url('${url}')`;
-  document.body.style.setProperty('--crclub-bg', `url('${url}')`);
-  document.body.dataset.bg = url;
-}
 
 async function onGoogleLogin(res) {
   const r = await fetch(CONFIG.WORKER_URL +'/crclub/auth', {
@@ -252,7 +249,7 @@ function showApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'block';
   document.body.classList.add('app-active');
-  if (document.body.dataset.bg) document.body.style.backgroundImage = `url('${document.body.dataset.bg}')`;
+  if (document.body.dataset.bgApp) document.body.style.backgroundImage = `url('${document.body.dataset.bgApp}')`;
   document.getElementById('app-username').textContent = _client.name;
   document.getElementById('app-pts').textContent = _client.pts_total || 0;
   document.getElementById('app-credit').textContent = '$' + (_client.credit_available || 0).toLocaleString(CONFIG.LOCALE) + ' de crédito';
@@ -376,7 +373,7 @@ function crclubLogout() {
   document.getElementById('login-screen').style.display = 'flex';
 }
 
-// V1.07
+// V1.08
 
 initApp();
 </script>
