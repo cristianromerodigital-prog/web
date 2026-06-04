@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CR Club — Cristian Romero Producciones</title>
+<script src="https://accounts.google.com/gsi/client" async></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#0d0d0d;--card:#141414;--border:#222;--gold:#c9a84c;--gold-light:#e8c96e;--white:#f0f0f0;--gray:#888;--gray2:#555}
+  body{background:var(--bg);color:var(--white);font-family:'Helvetica Neue',Arial,sans-serif;min-height:100vh}
+  #login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;}
+  .logo-cr{width:70px;height:70px;border:2px solid var(--gold);transform:rotate(-5deg);display:flex;align-items:center;justify-content:center;margin-bottom:24px;}
+  .logo-cr span{font-size:26px;font-weight:900;color:var(--white);letter-spacing:-1px;transform:rotate(5deg);display:block;}
+  .login-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:32px;width:100%;max-width:380px;text-align:center;}
+  .login-title{font-size:22px;font-weight:700;margin-bottom:4px;letter-spacing:1px;}
+  .login-sub{font-size:13px;color:var(--gray);margin-bottom:28px;}
+  .google-btn-wrap{display:flex;justify-content:center;}
+  #app-screen{display:none;max-width:480px;margin:0 auto;padding:16px;}
+  .app-header{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border);margin-bottom:20px;}
+  .app-logo{display:flex;align-items:center;gap:10px;}
+  .app-logo-cr{width:32px;height:32px;border:1.5px solid var(--gold);transform:rotate(-5deg);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .app-logo-cr span{font-size:12px;font-weight:900;color:var(--white);transform:rotate(5deg);display:block;}
+  .app-title{font-size:14px;font-weight:700;letter-spacing:1px;color:var(--gold);}
+  .user-name{font-size:12px;color:var(--gray);}
+  .logout-btn{background:none;border:none;color:var(--gray);cursor:pointer;font-size:12px;padding:4px 8px;}
+  .balance-card{background:linear-gradient(135deg,#1a1500,#0d0d0d);border:1px solid var(--gold);border-radius:12px;padding:24px;margin-bottom:20px;text-align:center;}
+  .balance-label{font-size:11px;letter-spacing:2px;color:var(--gray);margin-bottom:8px;}
+  .balance-pts{font-size:42px;font-weight:900;color:var(--gold-light);line-height:1;}
+  .balance-unit{font-size:16px;color:var(--gold);margin-left:4px;}
+  .balance-credit{font-size:16px;color:var(--white);margin-top:6px;}
+  .referral-code{margin-top:14px;background:rgba(184,150,46,0.1);border-radius:6px;padding:8px 12px;display:inline-block;}
+  .referral-code span{font-size:11px;color:var(--gray);display:block;margin-bottom:2px;}
+  .referral-code strong{font-size:16px;color:var(--gold-light);letter-spacing:2px;}
+  .tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto;}
+  .tab-btn{background:none;border:none;border-bottom:2px solid transparent;color:var(--gray);padding:10px 14px;cursor:pointer;font-family:inherit;font-size:13px;white-space:nowrap;margin-bottom:-1px;}
+  .tab-btn.active{color:var(--gold);border-bottom-color:var(--gold);}
+  .tx-row{border-bottom:1px solid var(--border);padding:12px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+  .tx-desc{font-size:13px;color:var(--white);}
+  .tx-date{font-size:11px;color:var(--gray);margin-top:2px;}
+  .tx-pts{font-size:13px;font-weight:bold;text-align:right;}
+  .tx-credit{font-size:12px;color:var(--gray);text-align:right;margin-top:2px;}
+  .tx-earn .tx-pts{color:#7fff6e;}
+  .tx-redeem .tx-pts{color:#ff8e8e;}
+  .tx-purchase .tx-pts{color:#4a9eff;}
+  .form-group{margin-bottom:14px;}
+  .form-label{font-size:12px;color:var(--gray);display:block;margin-bottom:5px;}
+  .form-input{width:100%;background:var(--card);border:1px solid var(--border);color:var(--white);padding:10px 12px;border-radius:6px;font-family:inherit;font-size:14px;}
+  .form-input:focus{outline:none;border-color:var(--gold);}
+  .credit-preview{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;margin:12px 0;font-size:13px;}
+  .credit-preview .row{display:flex;justify-content:space-between;margin-bottom:4px;}
+  .credit-preview .total{font-size:15px;font-weight:bold;border-top:1px solid var(--border);padding-top:8px;margin-top:8px;}
+  .pack-cards{display:flex;flex-direction:column;gap:10px;}
+  .pack-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;display:flex;justify-content:space-between;align-items:center;}
+  .pack-card.featured{border-color:var(--gold);background:#1a1500;}
+  .pack-pts{font-size:24px;font-weight:900;color:var(--gold);}
+  .pack-price{font-size:18px;font-weight:bold;color:var(--white);}
+  .pack-desc{font-size:11px;color:var(--gray);margin-top:2px;}
+  .pack-btn{background:var(--gold);color:#000;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:bold;font-size:13px;}
+  .btn-primary{width:100%;background:var(--gold);color:#000;border:none;padding:12px;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer;margin-top:4px;}
+  .btn-primary:disabled{opacity:0.5;cursor:not-allowed;}
+  .msg{padding:12px;border-radius:8px;font-size:13px;margin-top:12px;text-align:center;}
+  .msg.ok{background:rgba(127,255,110,0.1);color:#7fff6e;border:1px solid #7fff6e44;}
+  .msg.err{background:rgba(255,100,100,0.1);color:#ff8e8e;border:1px solid #ff8e8e44;}
+  .loading{color:var(--gray);font-size:13px;padding:20px;text-align:center;}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <img id="login-logo" src="" alt="CR" style="display:none;width:90px;height:90px;object-fit:contain;border-radius:50%;margin-bottom:24px;filter:invert(1);">
+  <div class="logo-cr" id="login-logo-fallback"><span>CR</span></div>
+  <div class="login-card">
+    <div class="login-title">CR CLUB</div>
+    <div class="login-sub">Tu programa de beneficios exclusivos</div>
+    <div class="google-btn-wrap">
+      <div id="g_id_onload"
+        data-callback="onGoogleLogin"
+        data-auto_prompt="false">
+      </div>
+      <div class="g_id_signin"
+        data-type="standard"
+        data-size="large"
+        data-theme="filled_black"
+        data-text="signin_with"
+        data-shape="rectangular"
+        data-logo_alignment="left">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="app-screen">
+  <div class="app-header">
+    <div class="app-logo">
+      <img id="header-logo" src="" alt="CR" style="display:none;width:32px;height:32px;object-fit:contain;border-radius:50%;filter:invert(1);">
+      <div class="app-logo-cr" id="header-logo-fallback"><span>CR</span></div>
+      <div class="app-title">CR CLUB</div>
+    </div>
+    <div style="text-align:right">
+      <div class="user-name" id="app-username"></div>
+      <button class="logout-btn" onclick="crclubLogout()">Salir</button>
+    </div>
+  </div>
+
+  <div class="balance-card">
+    <div class="balance-label">TU SALDO</div>
+    <div>
+      <span class="balance-pts" id="app-pts">—</span>
+      <span class="balance-unit">CR</span>
+    </div>
+    <div class="balance-credit" id="app-credit">—</div>
+    <div class="referral-code">
+      <span>Tu código de referido</span>
+      <strong id="app-referral">—</strong>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="appTab('history')">Historial</button>
+    <button class="tab-btn" onclick="appTab('redeem')">Canjear</button>
+    <button class="tab-btn" onclick="appTab('buy')">Comprar CR</button>
+  </div>
+
+  <div id="panel-history">
+    <div id="history-list" class="loading">Cargando...</div>
+  </div>
+
+  <div id="panel-redeem" style="display:none">
+    <div class="form-group">
+      <label class="form-label">Servicio a contratar</label>
+      <input class="form-input" id="redeem-desc" type="text" placeholder="ej: Previa en Suite, Drone, Peluquería...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Precio del servicio ($)</label>
+      <input class="form-input" id="redeem-price" type="number" placeholder="ej: 100000" oninput="redeemPreview()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">CR a usar (máx: <span id="redeem-max">0</span>)</label>
+      <input class="form-input" id="redeem-pts" type="number" placeholder="0" oninput="redeemPreview()">
+    </div>
+    <div class="credit-preview" id="redeem-preview" style="display:none">
+      <div class="row"><span style="color:var(--gray)">Precio del servicio</span><span id="prev-price">—</span></div>
+      <div class="row"><span style="color:var(--gold)">Crédito a usar</span><span id="prev-credit" style="color:var(--gold)">—</span></div>
+      <div class="row total"><span>Pagás</span><span id="prev-total" style="color:var(--gold-light);font-size:18px">—</span></div>
+    </div>
+    <button class="btn-primary" id="redeem-btn" onclick="submitRedeem()">Confirmar canje</button>
+    <div id="redeem-msg"></div>
+  </div>
+
+  <div id="panel-buy" style="display:none"></div>
+  <div style="text-align:center;padding:24px 0 8px;font-size:11px;color:var(--gray2);">V1.00</div>
+</div>
+
+<script>
+const CONFIG = {
+  WORKER_URL:          'https://crclub-worker.cristian-romero-digital.workers.dev',
+  CF_SETTINGS_URL:     'https://web.cristian-romero-digital.workers.dev/crd_settings',
+  GOOGLE_CLIENT_ID:    '219844741457-sun7sdnpuit836mief6p9p52dj7ckidq.apps.googleusercontent.com',
+  WA_NUMBER:           '11 6255 7763',
+  PTS_VALUE_FALLBACK:  10000,
+  TOKEN_KEY:           'crclub_token',
+  LOCALE:              CONFIG.LOCALE,
+  BUY_PACKS: [
+    { pts: 5,  label: 'Pack Cierre',    featured: false },
+    { pts: 10, label: 'Pack Regalo ⭐', featured: true  },
+    { pts: 20, label: 'Pack Premium',   featured: false }
+  ]
+};
+let _token = localStorage.getItem(CONFIG.TOKEN_KEY);
+let _client = null;
+let _config = null;
+
+function applyLogo(src) {
+  if (!src) return;
+  ['login-logo','header-logo'].forEach(id => {
+    const img = document.getElementById(id);
+    if (img) { img.src = src; img.style.display = 'block'; }
+  });
+  const lf = document.getElementById('login-logo-fallback');
+  const hf = document.getElementById('header-logo-fallback');
+  if (lf) lf.style.display = 'none';
+  if (hf) hf.style.display = 'none';
+}
+
+fetch(CONFIG.CF_SETTINGS_URL).then(r => r.text()).then(raw => {
+  try { const s = JSON.parse(raw); if (s.logoUrl) applyLogo(s.logoUrl); } catch(e) {}
+}).catch(() => {});
+
+async function onGoogleLogin(res) {
+  const r = await fetch(CONFIG.WORKER_URL +'/crclub/auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id_token: res.credential })
+  }).then(r => r.json());
+  if (r.token) {
+    _token = r.token;
+    localStorage.setItem(CONFIG.TOKEN_KEY, _token);
+    _client = r.client;
+    showApp();
+  } else {
+    alert('Error al iniciar sesión: ' + (r.error || 'intenta de nuevo'));
+  }
+}
+
+async function initApp() {
+  document.getElementById('g_id_onload').dataset.clientId = CONFIG.GOOGLE_CLIENT_ID;
+  if (!_token) return;
+  try {
+    const [me, cfg] = await Promise.all([
+      fetch(CONFIG.WORKER_URL +'/crclub/me', { headers: { Authorization: 'Bearer ' + _token } }).then(r => r.json()),
+      fetch(CONFIG.WORKER_URL +'/crclub/config').then(r => r.json())
+    ]);
+    if (me.error) { localStorage.removeItem(CONFIG.TOKEN_KEY); return; }
+    _client = me;
+    _config = cfg;
+    showApp();
+  } catch(e) { console.error(e); }
+}
+
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  document.getElementById('app-username').textContent = _client.name;
+  document.getElementById('app-pts').textContent = _client.pts_total || 0;
+  document.getElementById('app-credit').textContent = '$' + (_client.credit_available || 0).toLocaleString(CONFIG.LOCALE) + ' de crédito';
+  document.getElementById('app-referral').textContent = _client.referral_code || '—';
+  document.getElementById('redeem-max').textContent = Math.floor((_client.credit_available || 0) / ((_config && _config.pts_value) || CONFIG.PTS_VALUE_FALLBACK));
+  renderBuyPacks();
+  loadHistory();
+}
+
+function renderBuyPacks() {
+  const v = (_config && _config.pts_value) || CONFIG.PTS_VALUE_FALLBACK;
+  const panel = document.getElementById('panel-buy');
+  panel.innerHTML = `
+    <p style="font-size:13px;color:var(--gray);margin-bottom:16px;">
+      Comprá CRs para acumular más crédito. Una vez que solicites la compra, transferí el monto
+      y enviá el comprobante por WhatsApp al <strong style="color:var(--white)">${CONFIG.WA_NUMBER}</strong>.
+      Tus CR se acreditarán dentro de las 24 hs hábiles.
+    </p>
+    <div class="pack-cards">
+      ${CONFIG.BUY_PACKS.map(p => `
+        <div class="pack-card${p.featured ? ' featured' : ''}">
+          <div><div class="pack-pts">${p.pts} CR</div><div class="pack-desc">${p.label}</div></div>
+          <div style="text-align:right">
+            <div class="pack-price">$${(p.pts * v).toLocaleString(CONFIG.LOCALE)}</div>
+            <button class="pack-btn" onclick="submitBuy(${p.pts})">Solicitar</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <div id="buy-msg"></div>
+  `;
+}
+
+async function loadHistory() {
+  const el = document.getElementById('history-list');
+  el.innerHTML = '<div class="loading">Cargando...</div>';
+  const d = await fetch(CONFIG.WORKER_URL +'/crclub/history', { headers: { Authorization: 'Bearer ' + _token } }).then(r => r.json());
+  if (!d.transactions || !d.transactions.length) {
+    el.innerHTML = '<div class="loading">Sin movimientos aún</div>'; return;
+  }
+  el.innerHTML = d.transactions.map(t => {
+    const isEarn = t.type === 'earn' || t.type === 'purchase' || t.type === 'referral';
+    const isRedeem = t.type === 'redeem';
+    const cls = isEarn ? 'tx-earn' : isRedeem ? 'tx-redeem' : 'tx-purchase';
+    const sign = t.credit >= 0 ? '+' : '';
+    return `<div class="tx-row ${cls}">
+      <div><div class="tx-desc">${t.description || t.type}</div><div class="tx-date">${t.created_at.slice(0,10)} · 1 CR = $${t.pts_value.toLocaleString(CONFIG.LOCALE)}</div></div>
+      <div><div class="tx-pts">${sign}${t.pts} CR</div><div class="tx-credit">${sign}$${Math.abs(t.credit).toLocaleString(CONFIG.LOCALE)}</div></div>
+    </div>`;
+  }).join('');
+}
+
+function appTab(name) {
+  ['history','redeem','buy'].forEach(t => {
+    document.getElementById('panel-' + t).style.display = t === name ? '' : 'none';
+  });
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', ['history','redeem','buy'][i] === name);
+  });
+}
+
+function redeemPreview() {
+  const price = parseInt(document.getElementById('redeem-price').value) || 0;
+  const pts = parseInt(document.getElementById('redeem-pts').value) || 0;
+  const ptsValue = (_config && _config.pts_value) || CONFIG.PTS_VALUE_FALLBACK;
+  const creditToUse = Math.min(pts * ptsValue, _client ? (_client.credit_available || 0) : 0, price);
+  const toPay = Math.max(0, price - creditToUse);
+  const preview = document.getElementById('redeem-preview');
+  if (price > 0 && pts > 0) {
+    preview.style.display = '';
+    document.getElementById('prev-price').textContent = '$' + price.toLocaleString(CONFIG.LOCALE);
+    document.getElementById('prev-credit').textContent = '-$' + creditToUse.toLocaleString(CONFIG.LOCALE);
+    document.getElementById('prev-total').textContent = '$' + toPay.toLocaleString(CONFIG.LOCALE);
+  } else { preview.style.display = 'none'; }
+}
+
+async function submitRedeem() {
+  const desc = document.getElementById('redeem-desc').value.trim();
+  const price = parseInt(document.getElementById('redeem-price').value) || 0;
+  const pts = parseInt(document.getElementById('redeem-pts').value) || 0;
+  const ptsValue = (_config && _config.pts_value) || CONFIG.PTS_VALUE_FALLBACK;
+  const creditToUse = Math.min(pts * ptsValue, _client ? (_client.credit_available || 0) : 0, price);
+  const msg = document.getElementById('redeem-msg');
+  if (!desc || !price || !pts) { msg.innerHTML = '<div class="msg err">Completá todos los campos</div>'; return; }
+  if (creditToUse <= 0) { msg.innerHTML = '<div class="msg err">Sin crédito suficiente</div>'; return; }
+  const btn = document.getElementById('redeem-btn');
+  btn.disabled = true;
+  const r = await fetch(CONFIG.WORKER_URL +'/crclub/redeem', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _token },
+    body: JSON.stringify({ description: desc, credit_to_use: creditToUse })
+  }).then(r => r.json());
+  btn.disabled = false;
+  if (r.ok) {
+    _client.credit_available = r.credit_available;
+    msg.innerHTML = '<div class="msg ok">¡Canje realizado! Crédito restante: $' + r.credit_available.toLocaleString(CONFIG.LOCALE) + '</div>';
+    document.getElementById('app-credit').textContent = '$' + r.credit_available.toLocaleString(CONFIG.LOCALE) + ' de crédito';
+    document.getElementById('redeem-desc').value = '';
+    document.getElementById('redeem-price').value = '';
+    document.getElementById('redeem-pts').value = '';
+    document.getElementById('redeem-preview').style.display = 'none';
+  } else { msg.innerHTML = '<div class="msg err">' + (r.error || 'Error al canjear') + '</div>'; }
+}
+
+async function submitBuy(pts) {
+  const msg = document.getElementById('buy-msg');
+  const r = await fetch(CONFIG.WORKER_URL +'/crclub/purchase-request', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _token },
+    body: JSON.stringify({ pts })
+  }).then(r => r.json());
+  if (r.ok) {
+    msg.innerHTML = `<div class="msg ok">${r.message}<br><strong>${r.payment_info}</strong></div>`;
+  } else { msg.innerHTML = '<div class="msg err">' + (r.error || 'Error') + '</div>'; }
+}
+
+function crclubLogout() {
+  localStorage.removeItem(CONFIG.TOKEN_KEY);
+  _token = null; _client = null;
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+// V1.00
+
+initApp();
+</script>
+</body>
+</html>
