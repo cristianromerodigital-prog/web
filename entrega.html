@@ -37,8 +37,8 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
 .hero-overlay { position:absolute; inset:0; background: radial-gradient(ellipse at 20% 80%, rgba(123,47,212,.45) 0%, transparent 55%), radial-gradient(ellipse at 80% 20%, rgba(0,212,232,.3) 0%, transparent 55%), linear-gradient(to bottom, rgba(10,10,15,.1) 0%, rgba(10,10,15,.75) 100%); }
 .hero-content { position:relative; z-index:2; text-align:center; padding:20px; animation:fadeUp 1.8s cubic-bezier(.16,1,.3,1) forwards; opacity:0; }
 @keyframes fadeUp { from{opacity:0;transform:translateY(40px)} to{opacity:1;transform:translateY(0)} }
-.hero-logo-seal { width:110px; height:110px; border-radius:50%; margin:32px auto 0; display:none; background:transparent; }
-.hero-logo { width:100%; height:100%; object-fit:contain; filter: invert(1) drop-shadow(0 0 10px rgba(200,168,75,0.6)); mix-blend-mode: screen; }
+.hero-logo-seal { width:80px; height:80px; border-radius:50%; margin:28px auto 0; display:none; background:rgba(0,0,0,0.55); border:1px solid rgba(200,168,75,0.35); box-shadow:0 0 18px rgba(200,168,75,0.25); backdrop-filter:blur(3px); overflow:hidden; }
+.hero-logo { width:100%; height:100%; object-fit:contain; padding:8px; filter: invert(1); }
 .hero-brand { font-weight:200; font-size:clamp(9px,1.3vw,13px); letter-spacing:.5em; text-transform:uppercase; color:var(--cyan); margin-bottom:28px; opacity:.85; }
 .hero-names { font-family:'Cormorant Garamond',serif; font-weight:300; font-style:italic; font-size:clamp(48px,8vw,100px); line-height:1; color:var(--white); text-shadow:0 0 60px rgba(0,212,232,.2); margin-bottom:14px; }
 .hero-ampersand { color:var(--gold); }
@@ -530,7 +530,8 @@ function applyLogo(src, filter) {
   const preImg  = document.getElementById('preloader-logo-img');
   const preWrap = document.getElementById('preloader-logo-wrap');
   const f = (filter !== undefined) ? filter : '';
-  // Hero logo oculto — requiere PNG con fondo transparente para verse bien sobre foto
+  if(heroImg) { heroImg.src = src; }
+  if(seal) seal.style.display = 'block';
   if(preImg) { preImg.src = src; preImg.style.filter = f; preWrap.style.display = 'flex'; document.querySelector('.loading-spinner').style.display = 'none'; }
 }
 
