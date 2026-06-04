@@ -9,7 +9,7 @@
   *{box-sizing:border-box;margin:0;padding:0}
   :root{--bg:#0d0d0d;--card:#141414;--border:#222;--gold:#c9a84c;--gold-light:#e8c96e;--white:#f0f0f0;--gray:#888;--gray2:#555}
   body{background:var(--bg);color:var(--white);font-family:'Helvetica Neue',Arial,sans-serif;min-height:100vh}
-  #login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;position:relative;background-image:url('https://lh3.googleusercontent.com/d/1SupIcKt9ovkDQttUsKaYsfxMiYFVXJW3');background-size:cover;background-position:center 20%;}
+  #login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;position:relative;background-size:cover;background-position:center 20%;}
   #login-screen::before{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.72) 100%);z-index:0;}
   #login-screen>*{position:relative;z-index:1;}
   .logo-cr{width:70px;height:70px;border:2px solid var(--gold);transform:rotate(-5deg);display:flex;align-items:center;justify-content:center;margin-bottom:24px;}
@@ -18,7 +18,7 @@
   .login-title{font-size:24px;font-weight:800;margin-bottom:4px;letter-spacing:2px;color:var(--white);}
   .login-sub{font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:28px;letter-spacing:.5px;}
   .google-btn-wrap{display:flex;justify-content:center;}
-  body.app-active{background-image:url('https://lh3.googleusercontent.com/d/1SupIcKt9ovkDQttUsKaYsfxMiYFVXJW3');background-size:cover;background-position:center 20%;background-attachment:fixed;}
+  body.app-active{background-size:cover;background-position:center 20%;background-attachment:fixed;}
   body.app-active::before{content:'';position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:0;}
   #app-screen{display:none;max-width:480px;margin:0 auto;padding:16px;position:relative;z-index:1;}
   .app-header{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border);margin-bottom:20px;}
@@ -154,7 +154,7 @@
   </div>
 
   <div id="panel-buy" style="display:none"></div>
-  <div style="text-align:center;padding:24px 0 8px;font-size:11px;color:var(--gray2);">V1.06</div>
+  <div style="text-align:center;padding:24px 0 8px;font-size:11px;color:var(--gray2);">V1.07</div>
 </div>
 
 <script>
@@ -202,17 +202,21 @@ if (!_cachedLogo) {
   } catch(e) {}
 }
 
-// ASYNC — intenta crclub config primero (cross-browser), luego CF settings como fallback
+// ASYNC — config desde crclub KV (logo + fondo)
 fetch(CONFIG.WORKER_URL + '/crclub/config').then(r => r.json()).then(cfg => {
   if (cfg && cfg.logoUrl) applyLogo(cfg.logoUrl);
-  else return fetch(CONFIG.CF_SETTINGS_URL).then(r => r.json()).then(s => {
-    if (s && s.logoUrl) applyLogo(s.logoUrl);
-  });
+  else fetch(CONFIG.CF_SETTINGS_URL).then(r => r.json()).then(s => { if (s && s.logoUrl) applyLogo(s.logoUrl); }).catch(()=>{});
+  if (cfg && cfg.bgUrl) applyBg(cfg.bgUrl);
 }).catch(() => {
-  fetch(CONFIG.CF_SETTINGS_URL).then(r => r.json()).then(s => {
-    if (s && s.logoUrl) applyLogo(s.logoUrl);
-  }).catch(() => {});
+  fetch(CONFIG.CF_SETTINGS_URL).then(r => r.json()).then(s => { if (s && s.logoUrl) applyLogo(s.logoUrl); }).catch(()=>{});
 });
+
+function applyBg(url) {
+  if (!url) return;
+  document.getElementById('login-screen').style.backgroundImage = `url('${url}')`;
+  document.body.style.setProperty('--crclub-bg', `url('${url}')`);
+  document.body.dataset.bg = url;
+}
 
 async function onGoogleLogin(res) {
   const r = await fetch(CONFIG.WORKER_URL +'/crclub/auth', {
@@ -248,6 +252,7 @@ function showApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'block';
   document.body.classList.add('app-active');
+  if (document.body.dataset.bg) document.body.style.backgroundImage = `url('${document.body.dataset.bg}')`;
   document.getElementById('app-username').textContent = _client.name;
   document.getElementById('app-pts').textContent = _client.pts_total || 0;
   document.getElementById('app-credit').textContent = '$' + (_client.credit_available || 0).toLocaleString(CONFIG.LOCALE) + ' de crédito';
@@ -371,7 +376,7 @@ function crclubLogout() {
   document.getElementById('login-screen').style.display = 'flex';
 }
 
-// V1.06
+// V1.07
 
 initApp();
 </script>
