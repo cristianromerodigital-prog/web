@@ -370,7 +370,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.09</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.10</div>
     </div>
   </aside>
 
@@ -1193,6 +1193,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
               </div>
               <div style="display:flex;gap:6px">
                 <input id="crclub-bg-login-url" class="form-input" placeholder="URL o ID de Drive..." style="flex:1;font-size:11px;" oninput="crclubPreviewBg(this.value,'login')">
+                <button class="btn-sm" onclick="pickCrclubBgDrive('login')">Drive</button>
                 <button class="btn-add" onclick="crclubSaveBg('login')">Guardar</button>
                 <button class="btn-sm btn-danger" onclick="crclubClearBg('login')">✕</button>
               </div>
@@ -1204,6 +1205,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
               </div>
               <div style="display:flex;gap:6px">
                 <input id="crclub-bg-app-url" class="form-input" placeholder="URL o ID de Drive..." style="flex:1;font-size:11px;" oninput="crclubPreviewBg(this.value,'app')">
+                <button class="btn-sm" onclick="pickCrclubBgDrive('app')">Drive</button>
                 <button class="btn-add" onclick="crclubSaveBg('app')">Guardar</button>
                 <button class="btn-sm btn-danger" onclick="crclubClearBg('app')">✕</button>
               </div>
@@ -3708,6 +3710,15 @@ function pickLogoDrive() {
     if(inp) inp.value = url;
     previewLogoFromUrl(url);
     toast('URL lista — guardá con "Guardar logo"');
+  });
+}
+function pickCrclubBgDrive(slot) {
+  openDriveBrowser(selectedUrl => {
+    const m = selectedUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    const url = m ? 'https://lh3.googleusercontent.com/d/'+m[1] : selectedUrl;
+    const inputId = slot === 'app' ? 'crclub-bg-app-url' : 'crclub-bg-login-url';
+    document.getElementById(inputId).value = url;
+    crclubPreviewBg(url, slot);
   });
 }
 function previewLogoFromUrl(url) {
