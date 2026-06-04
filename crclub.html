@@ -184,8 +184,8 @@ function applyLogo(src) {
   if (hf) hf.style.display = 'none';
 }
 
-fetch(CONFIG.CF_SETTINGS_URL).then(r => r.text()).then(raw => {
-  try { const s = JSON.parse(raw); if (s.logoUrl) applyLogo(s.logoUrl); } catch(e) {}
+fetch(CONFIG.CF_SETTINGS_URL).then(r => r.json()).then(s => {
+  if (s && s.logoUrl) applyLogo(s.logoUrl);
 }).catch(() => {});
 
 async function onGoogleLogin(res) {
