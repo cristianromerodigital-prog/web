@@ -2609,7 +2609,7 @@ document.querySelectorAll('.modal-bg').forEach(m => m.addEventListener('click', 
 // ── INIT ──
 async function fetchFromCloud(key) {
   try {
-    const res = await fetch(CONFIG.CF_URL + '/' + key, { headers: { 'Authorization': CF_AUTH } });
+    const res = await fetch(CONFIG.CF_URL + '/' + key, { headers: { 'Authorization': CONFIG.CF_AUTH } });
     if (!res.ok) return null;
     const data = await res.json();
     return Array.isArray(data) || (data && typeof data === 'object') ? data : null;
