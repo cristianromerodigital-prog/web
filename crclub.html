@@ -511,12 +511,7 @@ fetch(CONFIG.WORKER_URL + '/crclub/config').then(r => r.json()).then(cfg => {
   const appBg   = cfg.bgUrlApp   || loginBg;
   if (loginBg) { const i = document.getElementById('login-bg-img'); i.src = loginBg; i.style.display = 'block'; }
   document.body.dataset.bgApp = appBg;
-  // Fondo principal (página completa)
-  if (cfg.bgUrlMain) {
-    const fb = document.getElementById('app-full-bg');
-    fb.src = cfg.bgUrlMain; fb.style.display = 'block';
-    document.getElementById('app-full-bg-overlay').style.display = 'block';
-  }
+  if (cfg.bgUrlMain) document.body.dataset.bgMain = cfg.bgUrlMain;
 }).catch(() => {
   fetch(CONFIG.CF_SETTINGS_URL).then(r => r.json()).then(s => { if (s && s.logoUrl) applyLogo(s.logoUrl); }).catch(()=>{});
 });
@@ -559,6 +554,13 @@ function showApp() {
   if (bgApp) {
     const rp = document.getElementById('rp-photo');
     rp.src = bgApp; rp.style.display = 'block';
+  }
+
+  const bgMain = document.body.dataset.bgMain;
+  if (bgMain) {
+    const fb = document.getElementById('app-full-bg');
+    fb.src = bgMain; fb.style.display = 'block';
+    document.getElementById('app-full-bg-overlay').style.display = 'block';
   }
 
   const name = _client.name || '';
@@ -853,6 +855,8 @@ function crclubLogout() {
   _token = null; _client = null;
   document.getElementById('app-screen').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app-full-bg').style.display = 'none';
+  document.getElementById('app-full-bg-overlay').style.display = 'none';
 }
 
 // ─── Transfer ───────────────────────────────────────────────────────────────
