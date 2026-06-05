@@ -24,14 +24,14 @@ body{background:radial-gradient(ellipse at 20% 50%,#0f0d18 0%,#0a0a0d 55%,#0d0b0
 #login-screen>*:not(#login-bg-img){position:relative;z-index:2}
 .login-logo-box{width:72px;height:72px;border:2px solid var(--gold);transform:rotate(-5deg);display:flex;align-items:center;justify-content:center;margin-bottom:24px}
 .login-logo-box span{font-size:26px;font-weight:900;transform:rotate(5deg);display:block}
-.login-card{background:rgba(8,8,14,0.20);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);border:1px solid rgba(201,168,76,0.22);border-top:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:36px 32px;width:100%;max-width:380px;text-align:center;box-shadow:0 8px 48px rgba(0,0,0,0.45),inset 0 1px 0 rgba(255,255,255,0.06)}
+.login-card{background:rgba(8,8,14,0.42);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);border:1px solid rgba(201,168,76,0.22);border-top:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:36px 32px;width:100%;max-width:380px;text-align:center;box-shadow:0 8px 48px rgba(0,0,0,0.45),inset 0 1px 0 rgba(255,255,255,0.06)}
 .login-title{font-size:24px;font-weight:800;letter-spacing:2px;margin-bottom:4px}
 .login-sub{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:28px;letter-spacing:.5px}
 .google-btn-wrap{display:flex;justify-content:center}
 
 /* ── LAYOUT DESKTOP ── */
 #app-screen{display:none}
-.app-layout{display:flex;height:100vh;overflow:hidden}
+.app-layout{display:flex;height:100vh;overflow:hidden;position:relative;z-index:1}
 
 /* Sidebar */
 .sidebar{width:215px;flex-shrink:0;background:var(--glass-bg);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);border-right:1px solid var(--glass-border);display:flex;flex-direction:column;box-shadow:inset -1px 0 0 rgba(255,255,255,0.03)}
@@ -234,6 +234,8 @@ body{background:radial-gradient(ellipse at 20% 50%,#0f0d18 0%,#0a0a0d 55%,#0d0b0
 <body>
 
 <img id="login-bg-img" src="" alt="" style="display:none;position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-1">
+<img id="app-full-bg" src="" alt="" style="display:none;position:fixed;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:0;pointer-events:none">
+<div id="app-full-bg-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.52);z-index:0;pointer-events:none"></div>
 
 <!-- ── LOGIN ── -->
 <div id="login-screen">
@@ -509,6 +511,12 @@ fetch(CONFIG.WORKER_URL + '/crclub/config').then(r => r.json()).then(cfg => {
   const appBg   = cfg.bgUrlApp   || loginBg;
   if (loginBg) { const i = document.getElementById('login-bg-img'); i.src = loginBg; i.style.display = 'block'; }
   document.body.dataset.bgApp = appBg;
+  // Fondo principal (página completa)
+  if (cfg.bgUrlMain) {
+    const fb = document.getElementById('app-full-bg');
+    fb.src = cfg.bgUrlMain; fb.style.display = 'block';
+    document.getElementById('app-full-bg-overlay').style.display = 'block';
+  }
 }).catch(() => {
   fetch(CONFIG.CF_SETTINGS_URL).then(r => r.json()).then(s => { if (s && s.logoUrl) applyLogo(s.logoUrl); }).catch(()=>{});
 });
