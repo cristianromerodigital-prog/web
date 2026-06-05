@@ -370,7 +370,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.12</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.13</div>
     </div>
   </aside>
 
@@ -2783,7 +2783,8 @@ async function crclubLoadRewards() {
         <td style="padding:9px 10px;border-bottom:1px solid var(--border);font-weight:700;color:${r.currency === 'cr' ? '#c9a84c' : '#9b6fff'}">${r.cost}</td>
         <td style="padding:9px 10px;border-bottom:1px solid var(--border)">${estado}</td>
         <td style="padding:9px 10px;border-bottom:1px solid var(--border)">
-          <button onclick='crclubShowRewardForm(${JSON.stringify(r)})' style="background:var(--card);color:#c9a84c;border:1px solid var(--border);padding:4px 9px;border-radius:5px;font-size:11px;cursor:pointer">Editar</button>
+          <button onclick="crclubToggleReward(${r.id},${!!r.active})" style="background:var(--card);color:${r.active ? '#7fff6e' : '#555'};border:1px solid ${r.active ? '#7fff6e44' : 'var(--border)'};padding:4px 9px;border-radius:5px;font-size:11px;cursor:pointer" title="${r.active ? 'Desactivar' : 'Activar'}">${r.active ? '✓ ON' : '✗ OFF'}</button>
+          <button onclick='crclubShowRewardForm(${JSON.stringify(r)})' style="background:var(--card);color:#c9a84c;border:1px solid var(--border);padding:4px 9px;border-radius:5px;font-size:11px;cursor:pointer;margin-left:3px">Editar</button>
           <button onclick="crclubDeleteReward(${r.id},'${r.name}')" style="background:var(--card);color:#ff8e8e;border:1px solid var(--border);padding:4px 9px;border-radius:5px;font-size:11px;cursor:pointer;margin-left:3px">✕</button>
         </td>
       </tr>`;
@@ -2852,6 +2853,15 @@ async function crclubSaveReward() {
     }
   } catch(e) {
     msgEl.textContent = 'Error de red'; msgEl.style.color = '#ff8e8e';
+  }
+}
+
+async function crclubToggleReward(id, currentActive) {
+  try {
+    await crclubApi('/crclub/admin/rewards/' + id, 'PUT', { active: currentActive ? 0 : 1 });
+    crclubLoadRewards();
+  } catch(e) {
+    alert('Error al cambiar estado: ' + e.message);
   }
 }
 
