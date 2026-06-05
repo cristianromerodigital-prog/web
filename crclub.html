@@ -291,6 +291,9 @@ body{background:radial-gradient(ellipse at 20% 50%,#0f0d18 0%,#0a0a0d 55%,#0d0b0
         <div class="sb-item" onclick="crclubLogout()">
           <span class="sb-icon">→</span> Cerrar sesión
         </div>
+        <a href="crclub-terminos.html" target="_blank" style="display:flex;align-items:center;gap:10px;padding:8px 16px;color:var(--gray2);font-size:11px;text-decoration:none;opacity:0.6" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+          <span style="width:18px;text-align:center">📋</span> Términos y condiciones
+        </a>
       </div>
     </aside>
 
@@ -447,9 +450,6 @@ body{background:radial-gradient(ellipse at 20% 50%,#0f0d18 0%,#0a0a0d 55%,#0d0b0
   </div>
 </div>
 
-<div style="text-align:center;padding:20px 0 8px;font-size:11px;color:var(--gray2)">
-  <a href="crclub-terminos.html" style="color:var(--gray2);text-decoration:none;border-bottom:1px solid rgba(136,136,136,0.3);padding-bottom:1px" target="_blank">Términos y condiciones del CR Club</a>
-</div>
 <div style="display:none" id="app-version">V1.11</div>
 
 <script>
@@ -685,7 +685,7 @@ async function loadHistory() {
               <div class="act-dot ${cur}">${icon}</div>
               <div>
                 <div class="act-desc">${t.description || t.type}</div>
-                <div class="act-sub">${t.created_at.slice(0,10)}</div>
+                <div class="act-sub">${(t.created_at||'').slice(0,10)}</div>
               </div>
             </div>
             <div style="text-align:right">
@@ -708,7 +708,7 @@ async function loadHistory() {
           const unit = isStar ? '⭐' : '💎';
           const creditLine = !isStar && t.pts_value ? `<div class="tx-credit">${sign}$${Math.abs(t.credit || 0).toLocaleString(CONFIG.LOCALE)}</div>` : '';
           return `<div class="tx-row ${cls}">
-            <div><div class="tx-desc">${t.description || t.type}</div><div class="tx-date">${t.created_at.slice(0,10)}</div></div>
+            <div><div class="tx-desc">${t.description || t.type}</div><div class="tx-date">${(t.created_at||'').slice(0,10)}</div></div>
             <div><div class="tx-pts">${sign}${Math.abs(t.pts)} ${unit}</div>${creditLine}</div>
           </div>`;
         }).join('');
