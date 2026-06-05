@@ -241,7 +241,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 }
 .cnt-tab.active, .cnt-subtab.active { background:var(--gold); color:var(--black); }
 .cnt-tab:hover:not(.active), .cnt-subtab:hover:not(.active) { color:var(--white); }
-.cnt-panel { }
+.cnt-panel { display:block; }
 .cnt-stat-row { display:grid; grid-template-columns:100px 1fr 28px; gap:8px; align-items:center; margin-bottom:8px; }
 .cnt-svc-card { background:var(--black3); border:1px solid rgba(255,255,255,0.06); padding:20px; margin-bottom:12px; border-radius:2px; }
 .cnt-svc-card-header { font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); margin-bottom:12px; }
@@ -370,7 +370,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.10</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.11</div>
     </div>
   </aside>
 
@@ -960,6 +960,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           <button class="crclub-tab" onclick="crclubTab('clients')" id="crclub-tab-clients" style="background:none;border:none;color:var(--gray2);padding:8px 16px;cursor:pointer;font-family:inherit;font-size:13px;border-bottom:2px solid transparent;margin-bottom:-1px;">Clientes</button>
           <button class="crclub-tab" onclick="crclubTab('purchases')" id="crclub-tab-purchases" style="background:none;border:none;color:var(--gray2);padding:8px 16px;cursor:pointer;font-family:inherit;font-size:13px;border-bottom:2px solid transparent;margin-bottom:-1px;">Solicitudes <span id="crclub-badge" style="display:none;background:var(--gold);color:#000;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:bold;margin-left:4px;">0</span></button>
           <button class="crclub-tab" onclick="crclubTab('rewards')" id="crclub-tab-rewards" style="background:none;border:none;color:var(--gray2);padding:8px 16px;cursor:pointer;font-family:inherit;font-size:13px;border-bottom:2px solid transparent;margin-bottom:-1px;">Recompensas</button>
+          <button class="crclub-tab" onclick="crclubTab('canjes')" id="crclub-tab-canjes" style="background:none;border:none;color:var(--gray2);padding:8px 16px;cursor:pointer;font-family:inherit;font-size:13px;border-bottom:2px solid transparent;margin-bottom:-1px;">Canjes</button>
         </div>
 
         <!-- Dashboard -->
@@ -1125,6 +1126,29 @@ tr:hover td{background:rgba(255,255,255,0.02);}
             <div id="crclub-earn-rates-list"></div>
             <button onclick="crclubSaveEarnRates()" style="background:var(--gold);color:#000;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:bold;font-size:13px;margin-top:12px;">Guardar tasas</button>
           </div>
+        </div>
+
+        <!-- Canjes -->
+        <div id="crclub-panel-canjes" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <span style="font-size:12px;color:var(--gray2)" id="crclub-canjes-count">— canjes</span>
+            <button onclick="crclubLoadCanjes()" style="background:var(--card);border:1px solid var(--border);color:var(--gray2);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px">↻ Actualizar</button>
+          </div>
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border)">
+                <th style="padding:8px 6px;text-align:left;color:var(--gray2);font-weight:500">Fecha</th>
+                <th style="padding:8px 6px;text-align:left;color:var(--gray2);font-weight:500">Cliente</th>
+                <th style="padding:8px 6px;text-align:left;color:var(--gray2);font-weight:500">Recompensa</th>
+                <th style="padding:8px 6px;text-align:right;color:var(--gray2);font-weight:500">Costo</th>
+                <th style="padding:8px 6px;text-align:center;color:var(--gray2);font-weight:500">Estado</th>
+                <th style="padding:8px 6px"></th>
+              </tr>
+            </thead>
+            <tbody id="crclub-canjes-tbody">
+              <tr><td colspan="6" style="padding:20px;color:var(--gray2);text-align:center">Sin canjes aún</td></tr>
+            </tbody>
+          </table>
         </div>
 
         <!-- Modal ajuste manual -->
@@ -2459,7 +2483,7 @@ async function crclubApi(path, method = 'GET', body = null) {
 }
 
 function crclubTab(name) {
-  ['dashboard','config','clients','purchases','rewards'].forEach(t => {
+  ['dashboard','config','clients','purchases','rewards','canjes'].forEach(t => {
     document.getElementById('crclub-panel-' + t).style.display = t === name ? '' : 'none';
     const btn = document.getElementById('crclub-tab-' + t);
     if (btn) {
@@ -2472,6 +2496,7 @@ function crclubTab(name) {
   if (name === 'clients') crclubLoadClients();
   if (name === 'purchases') crclubLoadPurchases();
   if (name === 'rewards') { crclubLoadRewards(); crclubApi('/crclub/config').then(cfg => crclubRenderEarnRates(cfg.earn_rates)); }
+  if (name === 'canjes') crclubLoadCanjes();
 }
 
 async function crclubLoadDashboard() {
@@ -2488,6 +2513,7 @@ async function crclubLoadConfig() {
   const cfg = await crclubApi('/crclub/config');
   document.getElementById('crclub-pts-value').value = cfg.pts_value;
   if (cfg.star_value) document.getElementById('crclub-star-value').value = cfg.star_value;
+  if (cfg.emailjsCanjeTemplate) document.getElementById('crclub-emailjs-template').value = cfg.emailjsCanjeTemplate;
   crclubRenderPackTable(cfg);
   crclubRenderEarnRates(cfg.earn_rates);
   // bgUrl se carga en loadSettings(), no acá
@@ -2560,8 +2586,54 @@ async function crclubSaveConfig() {
   const star_value = parseInt(document.getElementById('crclub-star-value').value);
   if (!pts_value || pts_value < 1000) return alert('Valor de CR inválido (mínimo 1000)');
   if (!star_value || star_value < 100) return alert('Valor de Estrella inválido (mínimo 100)');
-  const r = await crclubApi('/crclub/admin/config', 'PUT', { pts_value, star_value });
+  const emailjsCanjeTemplate = (document.getElementById('crclub-emailjs-template').value || '').trim();
+  const payload = { pts_value, star_value };
+  if (emailjsCanjeTemplate) payload.emailjsCanjeTemplate = emailjsCanjeTemplate;
+  const r = await crclubApi('/crclub/admin/config', 'PUT', payload);
   if (r.ok) { alert('Configuración guardada'); crclubLoadConfig(); }
+  else alert('Error: ' + (r.error || 'desconocido'));
+}
+
+async function crclubLoadCanjes() {
+  const tbody = document.getElementById('crclub-canjes-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" style="padding:20px;text-align:center;color:var(--gray2);font-size:12px">Cargando...</td></tr>';
+  try {
+    const d = await crclubApi('/crclub/admin/transactions');
+    const list = d.transactions || [];
+    document.getElementById('crclub-canjes-count').textContent = list.length + ' canje' + (list.length !== 1 ? 's' : '');
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="padding:20px;text-align:center;color:var(--gray2);font-size:12px">Sin canjes aún</td></tr>';
+      return;
+    }
+    tbody.innerHTML = list.map(t => {
+      const isCancelled = t.status === 'cancelled';
+      const curBadge = (t.currency === 'star' || t.type === 'redeem_star')
+        ? `<span style="color:#9b6fff;font-size:10px">⭐ ${Math.abs(t.pts)}</span>`
+        : `<span style="color:#c9a84c;font-size:10px">💎 ${Math.abs(t.pts)}</span>`;
+      const statusBadge = isCancelled
+        ? `<span style="background:rgba(255,100,100,0.1);color:#ff8e8e;border:1px solid rgba(255,100,100,0.2);border-radius:4px;padding:2px 7px;font-size:10px">Cancelado</span>`
+        : `<span style="background:rgba(127,255,110,0.08);color:#7fff6e;border:1px solid #7fff6e22;border-radius:4px;padding:2px 7px;font-size:10px">Activo</span>`;
+      const cancelBtn = !isCancelled
+        ? `<button onclick="crclubCancelCanje(${t.id},'${(t.client_name||'').replace(/'/g,'')}','${(t.description||'').replace(/'/g,'')}')" style="background:var(--card);color:#ff8e8e;border:1px solid rgba(255,100,100,0.3);padding:3px 9px;border-radius:4px;cursor:pointer;font-size:11px">Cancelar</button>`
+        : '';
+      return `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:8px 6px;color:var(--gray2);font-size:11px">${t.created_at.slice(0,10)}</td>
+        <td style="padding:8px 6px;color:var(--white);font-size:12px">${t.client_name||'—'}<br><span style="font-size:10px;color:var(--gray2)">${t.client_email||''}</span></td>
+        <td style="padding:8px 6px;color:var(--gray2);font-size:11px">${(t.description||'').replace('Canje: ','')}</td>
+        <td style="padding:8px 6px;text-align:right">${curBadge}</td>
+        <td style="padding:8px 6px;text-align:center">${statusBadge}</td>
+        <td style="padding:8px 6px;text-align:right">${cancelBtn}</td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="6" style="padding:20px;text-align:center;color:#ff8e8e;font-size:12px">Error cargando canjes</td></tr>';
+  }
+}
+
+async function crclubCancelCanje(txId, clientName, desc) {
+  if (!confirm(`¿Cancelar el canje "${desc}" de ${clientName}?\n\nSe devolverán los puntos al cliente.`)) return;
+  const r = await crclubApi(`/crclub/admin/transactions/${txId}/cancel`, 'POST');
+  if (r.ok) { crclubLoadCanjes(); }
   else alert('Error: ' + (r.error || 'desconocido'));
 }
 
