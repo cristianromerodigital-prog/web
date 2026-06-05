@@ -370,7 +370,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.13</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.14</div>
     </div>
   </aside>
 
@@ -1167,8 +1167,8 @@ tr:hover td{background:rgba(255,255,255,0.02);}
               </select>
             </div>
             <div style="margin-bottom:14px;">
-              <label id="crclub-adjust-amount-label" style="font-size:11px;color:var(--gray2);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px;">Crédito a ajustar en $ (+ para sumar, - para restar)</label>
-              <input id="crclub-adjust-credit" type="number" placeholder="ej: 50000 o -50000" style="width:100%;background:#060c1a;border:1px solid rgba(255,255,255,0.12);color:var(--white);padding:10px;border-radius:6px;font-family:inherit;box-sizing:border-box;font-size:13px;">
+              <label id="crclub-adjust-amount-label" style="font-size:11px;color:var(--gray2);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px;">💎 CR a ajustar (+ para sumar, - para restar)</label>
+              <input id="crclub-adjust-credit" type="number" placeholder="ej: 5 o -2" style="width:100%;background:#060c1a;border:1px solid rgba(255,255,255,0.12);color:var(--white);padding:10px;border-radius:6px;font-family:inherit;box-sizing:border-box;font-size:13px;">
             </div>
             <div style="margin-bottom:20px;">
               <label style="font-size:11px;color:var(--gray2);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px;">Motivo (obligatorio)</label>
@@ -2707,8 +2707,8 @@ function crclubAdjustCurrencyChange() {
     label.textContent = '⭐ Estrellas a ajustar (+ para sumar, - para restar)';
     input.placeholder = 'ej: 3 o -1';
   } else {
-    label.textContent = 'Crédito a ajustar en $ (+ para sumar, - para restar)';
-    input.placeholder = 'ej: 50000 o -50000';
+    label.textContent = '💎 CR a ajustar (+ para sumar, - para restar)';
+    input.placeholder = 'ej: 5 o -2';
   }
 }
 
@@ -2720,7 +2720,7 @@ async function crclubConfirmAdjust() {
   if (!amount || !reason) return alert('Completá monto y motivo');
   const payload = currency === 'star'
     ? { client_id, pts: amount, description: reason, currency: 'star' }
-    : { client_id, credit: amount, reason };
+    : { client_id, pts: amount, reason };
   const r = await crclubApi('/crclub/admin/adjust', 'POST', payload);
   if (r.ok) {
     document.getElementById('crclub-adjust-modal').style.display = 'none';
