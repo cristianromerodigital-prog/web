@@ -370,7 +370,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.11</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.12</div>
     </div>
   </aside>
 
@@ -1152,31 +1152,31 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         </div>
 
         <!-- Modal ajuste manual -->
-        <div id="crclub-adjust-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;">
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;width:380px;">
-            <h3 style="margin:0 0 16px;font-size:16px;">Ajuste manual</h3>
-            <div style="margin-bottom:12px;">
-              <div style="font-size:12px;color:var(--gray2);margin-bottom:4px;">Cliente: <span id="crclub-adjust-name" style="color:var(--white);"></span></div>
+        <div id="crclub-adjust-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center;">
+          <div style="background:#0d1628;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:28px;width:400px;box-shadow:0 24px 64px rgba(0,0,0,0.7);">
+            <h3 style="margin:0 0 20px;font-size:15px;letter-spacing:1px;color:var(--white);">Ajuste manual</h3>
+            <div style="margin-bottom:14px;">
+              <div style="font-size:12px;color:var(--gray2);margin-bottom:4px;">Cliente: <span id="crclub-adjust-name" style="color:var(--white);font-weight:600;"></span></div>
               <input type="hidden" id="crclub-adjust-id">
             </div>
-            <div style="margin-bottom:12px;">
-              <label style="font-size:12px;color:var(--gray2);display:block;margin-bottom:4px;">Moneda</label>
-              <select id="crclub-adjust-currency" onchange="crclubAdjustCurrencyChange()" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--white);padding:8px;border-radius:6px;font-family:inherit;box-sizing:border-box;">
+            <div style="margin-bottom:14px;">
+              <label style="font-size:11px;color:var(--gray2);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px;">Moneda</label>
+              <select id="crclub-adjust-currency" onchange="crclubAdjustCurrencyChange()" style="width:100%;background:#060c1a;border:1px solid rgba(255,255,255,0.12);color:var(--white);padding:10px;border-radius:6px;font-family:inherit;box-sizing:border-box;font-size:13px;">
                 <option value="cr">💎 CR — ajustar crédito en pesos</option>
                 <option value="star">⭐ Estrellas — ajustar cantidad de estrellas</option>
               </select>
             </div>
-            <div style="margin-bottom:12px;">
-              <label id="crclub-adjust-amount-label" style="font-size:12px;color:var(--gray2);display:block;margin-bottom:4px;">Crédito a ajustar en $ (+ para sumar, - para restar)</label>
-              <input id="crclub-adjust-credit" type="number" placeholder="ej: 50000 o -50000" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--white);padding:8px;border-radius:6px;font-family:inherit;box-sizing:border-box;">
+            <div style="margin-bottom:14px;">
+              <label id="crclub-adjust-amount-label" style="font-size:11px;color:var(--gray2);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px;">Crédito a ajustar en $ (+ para sumar, - para restar)</label>
+              <input id="crclub-adjust-credit" type="number" placeholder="ej: 50000 o -50000" style="width:100%;background:#060c1a;border:1px solid rgba(255,255,255,0.12);color:var(--white);padding:10px;border-radius:6px;font-family:inherit;box-sizing:border-box;font-size:13px;">
             </div>
-            <div style="margin-bottom:16px;">
-              <label style="font-size:12px;color:var(--gray2);display:block;margin-bottom:4px;">Motivo (obligatorio)</label>
-              <input id="crclub-adjust-reason" type="text" placeholder="ej: Corrección por cancelación" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--white);padding:8px;border-radius:6px;font-family:inherit;box-sizing:border-box;">
+            <div style="margin-bottom:20px;">
+              <label style="font-size:11px;color:var(--gray2);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px;">Motivo (obligatorio)</label>
+              <input id="crclub-adjust-reason" type="text" placeholder="ej: Seguís en IG" style="width:100%;background:#060c1a;border:1px solid rgba(255,255,255,0.12);color:var(--white);padding:10px;border-radius:6px;font-family:inherit;box-sizing:border-box;font-size:13px;">
             </div>
-            <div style="display:flex;gap:8px;justify-content:flex-end;">
-              <button onclick="document.getElementById('crclub-adjust-modal').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--gray2);padding:8px 16px;border-radius:6px;cursor:pointer;">Cancelar</button>
-              <button onclick="crclubConfirmAdjust()" style="background:var(--gold);color:#000;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:bold;">Confirmar</button>
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+              <button onclick="document.getElementById('crclub-adjust-modal').style.display='none'" style="background:none;border:1px solid rgba(255,255,255,0.12);color:var(--gray2);padding:9px 18px;border-radius:6px;cursor:pointer;font-size:13px;">Cancelar</button>
+              <button onclick="crclubConfirmAdjust()" style="background:var(--gold);color:#000;border:none;padding:9px 22px;border-radius:6px;cursor:pointer;font-weight:700;font-size:13px;">Confirmar</button>
             </div>
           </div>
         </div>
