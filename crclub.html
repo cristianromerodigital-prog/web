@@ -328,13 +328,7 @@ body{background:var(--bg);color:var(--white);font-family:'Helvetica Neue',Arial,
         </div>
 
         <div class="sec-label">Cómo sumás</div>
-        <div class="earn-grid">
-          <div class="earn-card"><div class="earn-icon">📷</div><div class="earn-name">Sesión realizada</div><div class="earn-pts cr">+500 💎</div></div>
-          <div class="earn-card"><div class="earn-icon">👥</div><div class="earn-name">Referido firma</div><div class="earn-pts cr">+300 💎</div></div>
-          <div class="earn-card"><div class="earn-icon">📸</div><div class="earn-name">Seguís en IG</div><div class="earn-pts star">+1 ⭐</div></div>
-          <div class="earn-card"><div class="earn-icon">💬</div><div class="earn-name">Dejás reseña</div><div class="earn-pts star">+2 ⭐</div></div>
-          <div class="earn-card"><div class="earn-icon">🎂</div><div class="earn-name">Cumpleaños</div><div class="earn-pts star">+1 ⭐</div></div>
-        </div>
+        <div class="earn-grid" id="earn-grid"></div>
 
         <div class="sec-label">Tu actividad reciente</div>
         <div id="act-list"><div class="loading">Cargando...</div></div>
@@ -564,6 +558,7 @@ function showApp() {
   }
 
   renderBalance();
+  renderEarnGrid();
   renderBuyPacks();
   loadHistory();
   loadRewards();
@@ -574,6 +569,26 @@ function showApp() {
     transferSection('receive');
     document.getElementById('receive-code').value = _urlCode.toUpperCase().trim();
   }
+}
+
+function renderEarnGrid() {
+  const el = document.getElementById('earn-grid');
+  if (!el) return;
+  const rates = (_config && _config.earn_rates) || [
+    { icon:'📷', name:'Sesión realizada', pts:500, currency:'cr' },
+    { icon:'👥', name:'Referido firma',   pts:300, currency:'cr' },
+    { icon:'📸', name:'Seguís en IG',     pts:1,   currency:'star' },
+    { icon:'💬', name:'Dejás reseña',     pts:2,   currency:'star' },
+    { icon:'🎂', name:'Cumpleaños',       pts:1,   currency:'star' }
+  ];
+  el.innerHTML = rates.map(r => {
+    const unit = r.currency === 'cr' ? '💎' : '⭐';
+    return `<div class="earn-card">
+      <div class="earn-icon">${r.icon}</div>
+      <div class="earn-name">${r.name}</div>
+      <div class="earn-pts ${r.currency}">+${r.pts} ${unit}</div>
+    </div>`;
+  }).join('');
 }
 
 function renderBalance() {
