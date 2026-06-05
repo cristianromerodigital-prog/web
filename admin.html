@@ -1018,6 +1018,12 @@ tr:hover td{background:rgba(255,255,255,0.02);}
               <tbody id="crclub-pack-tbody"></tbody>
             </table>
           </div>
+
+          <div style="margin-top:24px;">
+            <div style="font-size:11px;color:var(--gray2);letter-spacing:1px;margin-bottom:12px;">CÓMO SUMÁS — TASAS DE ACUMULACIÓN</div>
+            <div id="crclub-earn-rates-list"></div>
+            <button onclick="crclubSaveEarnRates()" style="background:var(--gold);color:#000;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:bold;font-size:13px;margin-top:12px;">Guardar tasas</button>
+          </div>
         </div>
 
         <!-- Clients -->
@@ -2470,6 +2476,7 @@ async function crclubLoadConfig() {
   document.getElementById('crclub-pts-value').value = cfg.pts_value;
   if (cfg.star_value) document.getElementById('crclub-star-value').value = cfg.star_value;
   crclubRenderPackTable(cfg);
+  crclubRenderEarnRates(cfg.earn_rates);
   // bgUrl se carga en loadSettings(), no acá
 }
 
@@ -2497,6 +2504,42 @@ function crclubRenderPackTable(cfg) {
       <td style="padding:8px 0;text-align:right;color:var(--white);font-weight:bold">$${total.toLocaleString('es-AR')}</td>
     </tr>`;
   }).join('');
+}
+
+function crclubRenderEarnRates(rates) {
+  const defaults = [
+    { icon:'📷', name:'Sesión realizada', pts:500, currency:'cr' },
+    { icon:'👥', name:'Referido firma',   pts:300, currency:'cr' },
+    { icon:'📸', name:'Seguís en IG',     pts:1,   currency:'star' },
+    { icon:'💬', name:'Dejás reseña',     pts:2,   currency:'star' },
+    { icon:'🎂', name:'Cumpleaños',       pts:1,   currency:'star' }
+  ];
+  const list = rates || defaults;
+  const el = document.getElementById('crclub-earn-rates-list');
+  if (!el) return;
+  el.innerHTML = list.map((r, i) => `
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;" data-earn-idx="${i}">
+      <input value="${r.icon}" maxlength="2" style="background:var(--bg);border:1px solid var(--border);color:var(--white);padding:6px 8px;border-radius:6px;font-size:16px;width:44px;text-align:center;font-family:inherit;" class="earn-icon-input">
+      <input value="${r.name}" style="background:var(--bg);border:1px solid var(--border);color:var(--white);padding:6px 10px;border-radius:6px;font-size:12px;width:180px;font-family:inherit;" class="earn-name-input">
+      <input type="number" value="${r.pts}" min="1" style="background:var(--bg);border:1px solid var(--border);color:var(--white);padding:6px 8px;border-radius:6px;font-size:12px;width:70px;font-family:inherit;" class="earn-pts-input">
+      <select style="background:var(--bg);border:1px solid var(--border);color:var(--white);padding:6px 8px;border-radius:6px;font-size:12px;font-family:inherit;" class="earn-currency-select">
+        <option value="cr" ${r.currency==='cr'?'selected':''}>💎 CR</option>
+        <option value="star" ${r.currency==='star'?'selected':''}>⭐ Estrella</option>
+      </select>
+    </div>`).join('');
+}
+
+async function crclubSaveEarnRates() {
+  const rows = document.querySelectorAll('#crclub-earn-rates-list [data-earn-idx]');
+  const earn_rates = Array.from(rows).map(row => ({
+    icon:     row.querySelector('.earn-icon-input').value.trim(),
+    name:     row.querySelector('.earn-name-input').value.trim(),
+    pts:      parseInt(row.querySelector('.earn-pts-input').value) || 1,
+    currency: row.querySelector('.earn-currency-select').value
+  }));
+  const r = await crclubApi('/crclub/admin/config', 'PUT', { earn_rates });
+  if (r.ok) alert('Tasas guardadas');
+  else alert('Error: ' + (r.error || 'desconocido'));
 }
 
 async function crclubSaveConfig() {
