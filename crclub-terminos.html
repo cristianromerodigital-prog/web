@@ -306,11 +306,18 @@ function renderEarnTable(rates) {
 fetch(WORKER_URL + '/crclub/config')
   .then(r => r.json())
   .then(cfg => {
-    if (cfg.logoUrl) applyLogo(cfg.logoUrl);
+    // Logo: no está en crclub config → buscar en crd_settings
+    if (cfg.logoUrl) {
+      applyLogo(cfg.logoUrl);
+    } else {
+      fetch(CF_SETTINGS_URL)
+        .then(r => r.json())
+        .then(s => { if (s && s.logoUrl) applyLogo(s.logoUrl); })
+        .catch(() => {});
+    }
     renderEarnTable(cfg.earn_rates);
   })
   .catch(() => {
-    // Fallback logo desde CF settings
     fetch(CF_SETTINGS_URL)
       .then(r => r.json())
       .then(s => { if (s && s.logoUrl) applyLogo(s.logoUrl); })
