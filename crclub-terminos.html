@@ -69,7 +69,8 @@ a:hover{text-decoration:underline}
 
   <!-- Header -->
   <div class="header">
-    <div class="logo-box"><span>CR</span></div>
+    <img id="header-logo" src="" alt="CR" style="display:none;width:80px;height:80px;object-fit:contain;margin-bottom:20px;filter:invert(1)">
+    <div class="logo-box" id="header-logo-fallback"><span>CR</span></div>
     <h1>CR <span>Club</span></h1>
     <p>Programa de beneficios exclusivos</p>
     <p style="font-size:13px;color:var(--gray);margin-top:4px;">Cristian Romero Producciones</p>
@@ -137,32 +138,8 @@ a:hover{text-decoration:underline}
           <th>Tipo</th>
         </tr>
       </thead>
-      <tbody>
-        <tr>
-          <td>Sesión de fotografía o video completada</td>
-          <td><span class="pts-val cr">+500</span></td>
-          <td><span class="badge-cr">💎 CR</span></td>
-        </tr>
-        <tr>
-          <td>Referido que firma un contrato de servicio</td>
-          <td><span class="pts-val cr">+300</span></td>
-          <td><span class="badge-cr">💎 CR</span></td>
-        </tr>
-        <tr>
-          <td>Seguir la cuenta oficial en Instagram</td>
-          <td><span class="pts-val star">+1</span></td>
-          <td><span class="badge-star">⭐ Estrella</span></td>
-        </tr>
-        <tr>
-          <td>Dejar una reseña pública del servicio</td>
-          <td><span class="pts-val star">+2</span></td>
-          <td><span class="badge-star">⭐ Estrellas</span></td>
-        </tr>
-        <tr>
-          <td>Cumpleaños del cliente</td>
-          <td><span class="pts-val star">+1</span></td>
-          <td><span class="badge-star">⭐ Estrella</span></td>
-        </tr>
+      <tbody id="earn-rates-tbody">
+        <tr><td colspan="3" style="padding:16px;text-align:center;color:var(--gray2);font-size:12px">Cargando...</td></tr>
       </tbody>
     </table>
     <p style="font-size:11px;color:var(--gray2);margin-top:14px;line-height:1.6">Los puntos son acreditados manualmente por Cristian Romero Producciones una vez verificada la acción correspondiente. Las acciones de engagement (Instagram, reseñas) se validan una única vez por cliente.</p>
@@ -288,6 +265,59 @@ a:hover{text-decoration:underline}
   </div>
 
 </div>
+
+<script>
+const WORKER_URL = 'https://crclub-worker.cristian-romero-digital.workers.dev';
+const CF_SETTINGS_URL = 'https://web.cristian-romero-digital.workers.dev/crd_settings';
+
+const EARN_DEFAULTS = [
+  { icon:'📷', name:'Sesión de fotografía o video completada', pts:500, currency:'cr' },
+  { icon:'👥', name:'Referido que firma un contrato de servicio', pts:300, currency:'cr' },
+  { icon:'📸', name:'Seguir la cuenta oficial en Instagram', pts:1, currency:'star' },
+  { icon:'💬', name:'Dejar una reseña pública del servicio', pts:2, currency:'star' },
+  { icon:'🎂', name:'Cumpleaños del cliente', pts:1, currency:'star' }
+];
+
+function applyLogo(src) {
+  if (!src) return;
+  const img = document.getElementById('header-logo');
+  img.src = src; img.style.display = 'block';
+  document.getElementById('header-logo-fallback').style.display = 'none';
+}
+
+function renderEarnTable(rates) {
+  const tbody = document.getElementById('earn-rates-tbody');
+  const list = (rates && rates.length) ? rates : EARN_DEFAULTS;
+  tbody.innerHTML = list.map(r => {
+    const isCr = r.currency === 'cr';
+    const badge = isCr
+      ? `<span class="badge-cr">💎 CR</span>`
+      : `<span class="badge-star">⭐ Estrella${r.pts > 1 ? 's' : ''}</span>`;
+    const cls = isCr ? 'cr' : 'star';
+    return `<tr>
+      <td>${r.icon ? r.icon + ' ' : ''}${r.name}</td>
+      <td><span class="pts-val ${cls}">+${r.pts}</span></td>
+      <td>${badge}</td>
+    </tr>`;
+  }).join('');
+}
+
+// Cargar logo y tasas desde config público del worker
+fetch(WORKER_URL + '/crclub/config')
+  .then(r => r.json())
+  .then(cfg => {
+    if (cfg.logoUrl) applyLogo(cfg.logoUrl);
+    renderEarnTable(cfg.earn_rates);
+  })
+  .catch(() => {
+    // Fallback logo desde CF settings
+    fetch(CF_SETTINGS_URL)
+      .then(r => r.json())
+      .then(s => { if (s && s.logoUrl) applyLogo(s.logoUrl); })
+      .catch(() => {});
+    renderEarnTable(null);
+  });
+</script>
 
 </body>
 </html>
