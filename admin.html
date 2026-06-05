@@ -993,6 +993,16 @@ tr:hover td{background:rgba(255,255,255,0.02);}
             <p style="font-size:12px;color:var(--gray2);margin-top:8px;">Actualizá este valor junto con los precios de los packs para mantener el % de crédito constante.</p>
           </div>
 
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px;max-width:500px;margin-bottom:24px;">
+            <div style="font-size:11px;color:#9b6fff;letter-spacing:1px;margin-bottom:12px;">VALOR DE LA ESTRELLA (⭐)</div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <span style="color:var(--gray2);">$</span>
+              <input id="crclub-star-value" type="number" value="5000" step="500" style="background:var(--bg);border:1px solid #9b6fff;color:var(--white);padding:8px 12px;border-radius:6px;font-size:18px;font-weight:bold;width:120px;font-family:inherit;">
+              <button onclick="crclubSaveConfig()" style="background:#7b52d6;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:bold;font-size:13px;">Guardar</button>
+            </div>
+            <p style="font-size:12px;color:var(--gray2);margin-top:8px;">Valor en pesos de cada ⭐ Estrella al momento del canje.</p>
+          </div>
+
           <div style="font-size:11px;color:var(--gray2);letter-spacing:1px;margin-bottom:12px;">DESGLOSE DE PRECIOS POR PACK</div>
           <div style="overflow-x:auto;">
             <table id="crclub-pack-table" style="width:100%;border-collapse:collapse;font-size:13px;">
@@ -1020,6 +1030,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                   <th style="padding:8px 8px;text-align:left;color:var(--gray2);">Nombre</th>
                   <th style="padding:8px 8px;text-align:left;color:var(--gray2);">Email</th>
                   <th style="padding:8px 4px;text-align:right;color:var(--gray2);">CRs</th>
+                  <th style="padding:8px 4px;text-align:right;color:#9b6fff;">⭐</th>
                   <th style="padding:8px 4px;text-align:right;color:var(--gold);">Crédito</th>
                   <th style="padding:8px 0;text-align:right;color:var(--gray2);">Acciones</th>
                 </tr>
@@ -1112,13 +1123,20 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <!-- Modal ajuste manual -->
         <div id="crclub-adjust-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;">
           <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;width:380px;">
-            <h3 style="margin:0 0 16px;font-size:16px;">Ajuste manual de crédito</h3>
+            <h3 style="margin:0 0 16px;font-size:16px;">Ajuste manual</h3>
             <div style="margin-bottom:12px;">
               <div style="font-size:12px;color:var(--gray2);margin-bottom:4px;">Cliente: <span id="crclub-adjust-name" style="color:var(--white);"></span></div>
               <input type="hidden" id="crclub-adjust-id">
             </div>
             <div style="margin-bottom:12px;">
-              <label style="font-size:12px;color:var(--gray2);display:block;margin-bottom:4px;">Crédito a ajustar (+ para sumar, - para restar)</label>
+              <label style="font-size:12px;color:var(--gray2);display:block;margin-bottom:4px;">Moneda</label>
+              <select id="crclub-adjust-currency" onchange="crclubAdjustCurrencyChange()" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--white);padding:8px;border-radius:6px;font-family:inherit;box-sizing:border-box;">
+                <option value="cr">💎 CR — ajustar crédito en pesos</option>
+                <option value="star">⭐ Estrellas — ajustar cantidad de estrellas</option>
+              </select>
+            </div>
+            <div style="margin-bottom:12px;">
+              <label id="crclub-adjust-amount-label" style="font-size:12px;color:var(--gray2);display:block;margin-bottom:4px;">Crédito a ajustar en $ (+ para sumar, - para restar)</label>
               <input id="crclub-adjust-credit" type="number" placeholder="ej: 50000 o -50000" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--white);padding:8px;border-radius:6px;font-family:inherit;box-sizing:border-box;">
             </div>
             <div style="margin-bottom:16px;">
@@ -2450,6 +2468,7 @@ async function crclubLoadDashboard() {
 async function crclubLoadConfig() {
   const cfg = await crclubApi('/crclub/config');
   document.getElementById('crclub-pts-value').value = cfg.pts_value;
+  if (cfg.star_value) document.getElementById('crclub-star-value').value = cfg.star_value;
   crclubRenderPackTable(cfg);
   // bgUrl se carga en loadSettings(), no acá
 }
@@ -2482,8 +2501,10 @@ function crclubRenderPackTable(cfg) {
 
 async function crclubSaveConfig() {
   const pts_value = parseInt(document.getElementById('crclub-pts-value').value);
-  if (!pts_value || pts_value < 1000) return alert('Valor inválido');
-  const r = await crclubApi('/crclub/admin/config', 'PUT', { pts_value });
+  const star_value = parseInt(document.getElementById('crclub-star-value').value);
+  if (!pts_value || pts_value < 1000) return alert('Valor de CR inválido (mínimo 1000)');
+  if (!star_value || star_value < 100) return alert('Valor de Estrella inválido (mínimo 100)');
+  const r = await crclubApi('/crclub/admin/config', 'PUT', { pts_value, star_value });
   if (r.ok) { alert('Configuración guardada'); crclubLoadConfig(); }
   else alert('Error: ' + (r.error || 'desconocido'));
 }
@@ -2532,6 +2553,7 @@ async function crclubLoadClients() {
       <td style="padding:8px 8px;color:var(--white)">${c.name}</td>
       <td style="padding:8px 8px;color:var(--gray2);font-size:12px">${c.google_email}</td>
       <td style="padding:8px 4px;text-align:right;color:var(--gold)">${c.pts_total}</td>
+      <td style="padding:8px 4px;text-align:right;color:#9b6fff">${c.stars_available||0}</td>
       <td style="padding:8px 4px;text-align:right;color:var(--white)">$${(c.credit_available||0).toLocaleString('es-AR')}</td>
       <td style="padding:8px 0;text-align:right">
         <button onclick="crclubOpenAdjust('${c.id}','${c.name.replace(/'/g,"\\'")}')" style="background:none;border:1px solid var(--border);color:var(--gray2);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px">Ajustar</button>
@@ -2544,15 +2566,34 @@ function crclubOpenAdjust(id, name) {
   document.getElementById('crclub-adjust-name').textContent = name;
   document.getElementById('crclub-adjust-credit').value = '';
   document.getElementById('crclub-adjust-reason').value = '';
+  document.getElementById('crclub-adjust-currency').value = 'cr';
+  crclubAdjustCurrencyChange();
   document.getElementById('crclub-adjust-modal').style.display = 'flex';
+}
+
+function crclubAdjustCurrencyChange() {
+  const cur = document.getElementById('crclub-adjust-currency').value;
+  const label = document.getElementById('crclub-adjust-amount-label');
+  const input = document.getElementById('crclub-adjust-credit');
+  if (cur === 'star') {
+    label.textContent = '⭐ Estrellas a ajustar (+ para sumar, - para restar)';
+    input.placeholder = 'ej: 3 o -1';
+  } else {
+    label.textContent = 'Crédito a ajustar en $ (+ para sumar, - para restar)';
+    input.placeholder = 'ej: 50000 o -50000';
+  }
 }
 
 async function crclubConfirmAdjust() {
   const client_id = document.getElementById('crclub-adjust-id').value;
-  const credit = parseInt(document.getElementById('crclub-adjust-credit').value);
+  const currency = document.getElementById('crclub-adjust-currency').value;
+  const amount = parseInt(document.getElementById('crclub-adjust-credit').value);
   const reason = document.getElementById('crclub-adjust-reason').value.trim();
-  if (!credit || !reason) return alert('Completá monto y motivo');
-  const r = await crclubApi('/crclub/admin/adjust', 'POST', { client_id, credit, reason });
+  if (!amount || !reason) return alert('Completá monto y motivo');
+  const payload = currency === 'star'
+    ? { client_id, pts: amount, description: reason, currency: 'star' }
+    : { client_id, credit: amount, reason };
+  const r = await crclubApi('/crclub/admin/adjust', 'POST', payload);
   if (r.ok) {
     document.getElementById('crclub-adjust-modal').style.display = 'none';
     crclubLoadClients();
