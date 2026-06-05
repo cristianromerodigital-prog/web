@@ -959,6 +959,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           <button class="crclub-tab" onclick="crclubTab('config')" id="crclub-tab-config" style="background:none;border:none;color:var(--gray2);padding:8px 16px;cursor:pointer;font-family:inherit;font-size:13px;border-bottom:2px solid transparent;margin-bottom:-1px;">Configuración</button>
           <button class="crclub-tab" onclick="crclubTab('clients')" id="crclub-tab-clients" style="background:none;border:none;color:var(--gray2);padding:8px 16px;cursor:pointer;font-family:inherit;font-size:13px;border-bottom:2px solid transparent;margin-bottom:-1px;">Clientes</button>
           <button class="crclub-tab" onclick="crclubTab('purchases')" id="crclub-tab-purchases" style="background:none;border:none;color:var(--gray2);padding:8px 16px;cursor:pointer;font-family:inherit;font-size:13px;border-bottom:2px solid transparent;margin-bottom:-1px;">Solicitudes <span id="crclub-badge" style="display:none;background:var(--gold);color:#000;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:bold;margin-left:4px;">0</span></button>
+          <button class="crclub-tab" onclick="crclubTab('rewards')" id="crclub-tab-rewards" style="background:none;border:none;color:var(--gray2);padding:8px 16px;cursor:pointer;font-family:inherit;font-size:13px;border-bottom:2px solid transparent;margin-bottom:-1px;">Recompensas</button>
         </div>
 
         <!-- Dashboard -->
@@ -1042,6 +1043,70 @@ tr:hover td{background:rgba(255,255,255,0.02);}
             </thead>
             <tbody id="crclub-purchases-tbody"></tbody>
           </table>
+        </div>
+
+        <!-- Recompensas -->
+        <div id="crclub-panel-rewards" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <span style="font-size:12px;color:var(--gray2)" id="crclub-rewards-count">— recompensas</span>
+            <button onclick="crclubShowRewardForm(null)" style="background:var(--gold);color:#000;border:none;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">+ Nueva recompensa</button>
+          </div>
+
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead>
+              <tr>
+                <th style="text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);font-size:9px;letter-spacing:1px;color:var(--gray2);text-transform:uppercase">Nombre</th>
+                <th style="text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);font-size:9px;letter-spacing:1px;color:var(--gray2);text-transform:uppercase">Descripción</th>
+                <th style="text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);font-size:9px;letter-spacing:1px;color:var(--gray2);text-transform:uppercase">Moneda</th>
+                <th style="text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);font-size:9px;letter-spacing:1px;color:var(--gray2);text-transform:uppercase">Costo</th>
+                <th style="text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);font-size:9px;letter-spacing:1px;color:var(--gray2);text-transform:uppercase">Estado</th>
+                <th style="padding:6px 10px;border-bottom:1px solid var(--border)"></th>
+              </tr>
+            </thead>
+            <tbody id="crclub-rewards-tbody">
+              <tr><td colspan="6" style="padding:20px;text-align:center;color:var(--gray2);font-size:12px">Cargando...</td></tr>
+            </tbody>
+          </table>
+
+          <div id="crclub-reward-form" style="display:none;margin-top:14px;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:16px">
+            <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:12px" id="crclub-reward-form-title">Nueva recompensa</div>
+            <input type="hidden" id="crclub-reward-id">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div style="display:flex;flex-direction:column;gap:3px">
+                <label style="font-size:9px;color:var(--gray2);letter-spacing:1px;text-transform:uppercase">Nombre *</label>
+                <input id="crclub-reward-name" type="text" placeholder="Sesión Express" style="background:var(--card);border:1px solid var(--border);color:var(--white);padding:7px 10px;border-radius:6px;font-size:12px;font-family:inherit;width:160px">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:3px">
+                <label style="font-size:9px;color:var(--gray2);letter-spacing:1px;text-transform:uppercase">Descripción</label>
+                <input id="crclub-reward-desc" type="text" placeholder="Descripción corta" style="background:var(--card);border:1px solid var(--border);color:var(--white);padding:7px 10px;border-radius:6px;font-size:12px;font-family:inherit;width:200px">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:3px">
+                <label style="font-size:9px;color:var(--gray2);letter-spacing:1px;text-transform:uppercase">Moneda *</label>
+                <select id="crclub-reward-currency" style="background:var(--card);border:1px solid var(--border);color:var(--white);padding:7px 10px;border-radius:6px;font-size:12px;font-family:inherit;width:130px">
+                  <option value="cr">💎 CR (Puntos)</option>
+                  <option value="star">⭐ Estrellas</option>
+                </select>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:3px">
+                <label style="font-size:9px;color:var(--gray2);letter-spacing:1px;text-transform:uppercase">Costo *</label>
+                <input id="crclub-reward-cost" type="number" min="1" placeholder="500" style="background:var(--card);border:1px solid var(--border);color:var(--white);padding:7px 10px;border-radius:6px;font-size:12px;font-family:inherit;width:90px">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:3px">
+                <label style="font-size:9px;color:var(--gray2);letter-spacing:1px;text-transform:uppercase">Imagen URL</label>
+                <input id="crclub-reward-img" type="text" placeholder="https://..." style="background:var(--card);border:1px solid var(--border);color:var(--white);padding:7px 10px;border-radius:6px;font-size:12px;font-family:inherit;width:200px">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:3px">
+                <label style="font-size:9px;color:var(--gray2);letter-spacing:1px;text-transform:uppercase">Estado</label>
+                <select id="crclub-reward-active" style="background:var(--card);border:1px solid var(--border);color:var(--white);padding:7px 10px;border-radius:6px;font-size:12px;font-family:inherit;width:100px">
+                  <option value="1">Activa</option>
+                  <option value="0">Inactiva</option>
+                </select>
+              </div>
+              <button onclick="crclubSaveReward()" style="background:var(--gold);color:#000;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;align-self:flex-end">Guardar</button>
+              <button onclick="document.getElementById('crclub-reward-form').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--gray2);padding:8px 12px;border-radius:6px;font-size:12px;cursor:pointer;align-self:flex-end">Cancelar</button>
+            </div>
+            <div id="crclub-reward-msg" style="margin-top:8px;font-size:12px"></div>
+          </div>
         </div>
 
         <!-- Modal ajuste manual -->
@@ -2357,7 +2422,7 @@ async function crclubApi(path, method = 'GET', body = null) {
 }
 
 function crclubTab(name) {
-  ['dashboard','config','clients','purchases'].forEach(t => {
+  ['dashboard','config','clients','purchases','rewards'].forEach(t => {
     document.getElementById('crclub-panel-' + t).style.display = t === name ? '' : 'none';
     const btn = document.getElementById('crclub-tab-' + t);
     if (btn) {
@@ -2369,6 +2434,7 @@ function crclubTab(name) {
   if (name === 'config') crclubLoadConfig();
   if (name === 'clients') crclubLoadClients();
   if (name === 'purchases') crclubLoadPurchases();
+  if (name === 'rewards') crclubLoadRewards();
 }
 
 async function crclubLoadDashboard() {
@@ -2519,6 +2585,117 @@ async function crclubConfirmPurchase(id) {
   const r = await crclubApi(`/crclub/admin/purchases/${id}/confirm`, 'POST');
   if (r.ok) crclubLoadPurchases();
   else alert('Error: ' + (r.error || 'desconocido'));
+}
+
+async function crclubLoadRewards() {
+  const tbody = document.getElementById('crclub-rewards-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" style="padding:20px;text-align:center;color:var(--gray2);font-size:12px">Cargando...</td></tr>';
+  try {
+    const d = await fetch(CONFIG.CRCLUB_URL + '/crclub/admin/rewards', {
+      headers: { Authorization: 'Bearer ' + CONFIG.CF_AUTH }
+    }).then(r => r.json());
+    const rewards = d.rewards || [];
+    document.getElementById('crclub-rewards-count').textContent = rewards.length + ' recompensa' + (rewards.length !== 1 ? 's' : '');
+    if (!rewards.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="padding:20px;text-align:center;color:var(--gray2);font-size:12px">Sin recompensas. Creá la primera.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rewards.map(r => {
+      const curBadge = r.currency === 'cr'
+        ? `<span style="background:rgba(201,168,76,0.1);color:#c9a84c;border:1px solid rgba(201,168,76,0.2);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700">💎 CR</span>`
+        : `<span style="background:rgba(155,111,255,0.1);color:#9b6fff;border:1px solid rgba(155,111,255,0.2);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700">⭐ Estrellas</span>`;
+      const estado = r.active
+        ? `<span style="background:rgba(127,255,110,0.08);color:#7fff6e;border:1px solid #7fff6e22;border-radius:4px;padding:2px 7px;font-size:10px">Activa</span>`
+        : `<span style="background:rgba(100,100,100,0.08);color:#555;border:1px solid #33333322;border-radius:4px;padding:2px 7px;font-size:10px">Inactiva</span>`;
+      return `<tr>
+        <td style="padding:9px 10px;border-bottom:1px solid var(--border)"><strong>${r.name}</strong></td>
+        <td style="padding:9px 10px;border-bottom:1px solid var(--border);color:var(--gray2);font-size:11px">${r.description || '—'}</td>
+        <td style="padding:9px 10px;border-bottom:1px solid var(--border)">${curBadge}</td>
+        <td style="padding:9px 10px;border-bottom:1px solid var(--border);font-weight:700;color:${r.currency === 'cr' ? '#c9a84c' : '#9b6fff'}">${r.cost}</td>
+        <td style="padding:9px 10px;border-bottom:1px solid var(--border)">${estado}</td>
+        <td style="padding:9px 10px;border-bottom:1px solid var(--border)">
+          <button onclick='crclubShowRewardForm(${JSON.stringify(r)})' style="background:var(--card);color:#c9a84c;border:1px solid var(--border);padding:4px 9px;border-radius:5px;font-size:11px;cursor:pointer">Editar</button>
+          <button onclick="crclubDeleteReward(${r.id},'${r.name}')" style="background:var(--card);color:#ff8e8e;border:1px solid var(--border);padding:4px 9px;border-radius:5px;font-size:11px;cursor:pointer;margin-left:3px">✕</button>
+        </td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="6" style="padding:20px;text-align:center;color:#ff8e8e;font-size:12px">Error cargando recompensas</td></tr>';
+  }
+}
+
+function crclubShowRewardForm(reward) {
+  document.getElementById('crclub-reward-form').style.display = '';
+  document.getElementById('crclub-reward-msg').textContent = '';
+  if (reward) {
+    document.getElementById('crclub-reward-form-title').textContent = 'Editar recompensa';
+    document.getElementById('crclub-reward-id').value = reward.id;
+    document.getElementById('crclub-reward-name').value = reward.name;
+    document.getElementById('crclub-reward-desc').value = reward.description || '';
+    document.getElementById('crclub-reward-currency').value = reward.currency;
+    document.getElementById('crclub-reward-cost').value = reward.cost;
+    document.getElementById('crclub-reward-img').value = reward.image_url || '';
+    document.getElementById('crclub-reward-active').value = reward.active ? '1' : '0';
+  } else {
+    document.getElementById('crclub-reward-form-title').textContent = 'Nueva recompensa';
+    document.getElementById('crclub-reward-id').value = '';
+    document.getElementById('crclub-reward-name').value = '';
+    document.getElementById('crclub-reward-desc').value = '';
+    document.getElementById('crclub-reward-currency').value = 'cr';
+    document.getElementById('crclub-reward-cost').value = '';
+    document.getElementById('crclub-reward-img').value = '';
+    document.getElementById('crclub-reward-active').value = '1';
+  }
+  document.getElementById('crclub-reward-name').focus();
+}
+
+async function crclubSaveReward() {
+  const id = document.getElementById('crclub-reward-id').value;
+  const name = document.getElementById('crclub-reward-name').value.trim();
+  const cost = parseInt(document.getElementById('crclub-reward-cost').value);
+  const msgEl = document.getElementById('crclub-reward-msg');
+  if (!name) { msgEl.textContent = 'El nombre es obligatorio'; msgEl.style.color = '#ff8e8e'; return; }
+  if (!cost || cost <= 0) { msgEl.textContent = 'El costo debe ser mayor a 0'; msgEl.style.color = '#ff8e8e'; return; }
+
+  const payload = {
+    name,
+    description: document.getElementById('crclub-reward-desc').value.trim(),
+    currency: document.getElementById('crclub-reward-currency').value,
+    cost,
+    image_url: document.getElementById('crclub-reward-img').value.trim(),
+    active: document.getElementById('crclub-reward-active').value === '1'
+  };
+
+  try {
+    const url = id
+      ? CONFIG.CRCLUB_URL + '/crclub/admin/rewards/' + id
+      : CONFIG.CRCLUB_URL + '/crclub/admin/rewards';
+    const r = await fetch(url, {
+      method: id ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + CONFIG.CF_AUTH },
+      body: JSON.stringify(payload)
+    }).then(r => r.json());
+    if (r.ok) {
+      document.getElementById('crclub-reward-form').style.display = 'none';
+      crclubLoadRewards();
+    } else {
+      msgEl.textContent = r.error || 'Error al guardar'; msgEl.style.color = '#ff8e8e';
+    }
+  } catch(e) {
+    msgEl.textContent = 'Error de red'; msgEl.style.color = '#ff8e8e';
+  }
+}
+
+async function crclubDeleteReward(id, name) {
+  if (!confirm('¿Eliminar la recompensa "' + name + '"?')) return;
+  try {
+    const r = await fetch(CONFIG.CRCLUB_URL + '/crclub/admin/rewards/' + id, {
+      method: 'DELETE',
+      headers: { Authorization: 'Bearer ' + CONFIG.CF_AUTH }
+    }).then(r => r.json());
+    if (r.ok) crclubLoadRewards();
+    else alert('Error: ' + (r.error || 'No se pudo eliminar'));
+  } catch(e) { alert('Error de red'); }
 }
 
 // ── CLOUDFLARE SYNC ──

@@ -7,91 +7,235 @@
 <script src="https://accounts.google.com/gsi/client" async></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  :root{--bg:#0d0d0d;--card:#141414;--border:#222;--gold:#c9a84c;--gold-light:#e8c96e;--white:#f0f0f0;--gray:#888;--gray2:#555}
-  body{background:var(--bg);color:var(--white);font-family:'Helvetica Neue',Arial,sans-serif;min-height:100vh}
-  #login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;position:relative;overflow:hidden;}
-  #login-bg-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 20%;z-index:0;display:none;}
-  #login-screen::before{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.72) 100%);z-index:1;}
-  #login-screen>*:not(#login-bg-img){position:relative;z-index:2;}
-  .logo-cr{width:70px;height:70px;border:2px solid var(--gold);transform:rotate(-5deg);display:flex;align-items:center;justify-content:center;margin-bottom:24px;}
-  .logo-cr span{font-size:26px;font-weight:900;color:var(--white);letter-spacing:-1px;transform:rotate(5deg);display:block;}
-  .login-card{background:rgba(10,10,10,0.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(201,168,76,0.25);border-radius:16px;padding:36px 32px;width:100%;max-width:380px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.6);}
-  .login-title{font-size:24px;font-weight:800;margin-bottom:4px;letter-spacing:2px;color:var(--white);}
-  .login-sub{font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:28px;letter-spacing:.5px;}
-  .google-btn-wrap{display:flex;justify-content:center;}
-  #app-bg-img{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 20%;z-index:0;display:none;}
-  #app-bg-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1;display:none;}
-  #app-screen{display:none;max-width:480px;margin:0 auto;padding:16px;position:relative;z-index:2;}
-  .app-header{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border);margin-bottom:20px;}
-  .app-logo{display:flex;align-items:center;gap:10px;}
-  .app-logo-cr{width:32px;height:32px;border:1.5px solid var(--gold);transform:rotate(-5deg);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-  .app-logo-cr span{font-size:12px;font-weight:900;color:var(--white);transform:rotate(5deg);display:block;}
-  .app-title{font-size:14px;font-weight:700;letter-spacing:1px;color:var(--gold);}
-  .user-name{font-size:12px;color:var(--gray);}
-  .logout-btn{background:none;border:none;color:var(--gray);cursor:pointer;font-size:12px;padding:4px 8px;}
-  .balance-card{background:linear-gradient(135deg,#1a1500,#0d0d0d);border:1px solid var(--gold);border-radius:12px;padding:24px;margin-bottom:20px;text-align:center;}
-  .balance-label{font-size:11px;letter-spacing:2px;color:var(--gray);margin-bottom:8px;}
-  .balance-pts{font-size:42px;font-weight:900;color:var(--gold-light);line-height:1;}
-  .balance-unit{font-size:16px;color:var(--gold);margin-left:4px;}
-  .balance-credit{font-size:16px;color:var(--white);margin-top:6px;}
-  .referral-code{margin-top:14px;background:rgba(184,150,46,0.1);border-radius:6px;padding:8px 12px;display:inline-block;}
-  .referral-code span{font-size:11px;color:var(--gray);display:block;margin-bottom:2px;}
-  .referral-code strong{font-size:16px;color:var(--gold-light);letter-spacing:2px;}
-  .tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto;}
-  .tab-btn{background:none;border:none;border-bottom:2px solid transparent;color:var(--gray);padding:10px 14px;cursor:pointer;font-family:inherit;font-size:13px;white-space:nowrap;margin-bottom:-1px;}
-  .tab-btn.active{color:var(--gold);border-bottom-color:var(--gold);}
-  .tx-row{border-bottom:1px solid var(--border);padding:12px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
-  .tx-desc{font-size:13px;color:var(--white);}
-  .tx-date{font-size:11px;color:var(--gray);margin-top:2px;}
-  .tx-pts{font-size:13px;font-weight:bold;text-align:right;}
-  .tx-credit{font-size:12px;color:var(--gray);text-align:right;margin-top:2px;}
-  .tx-earn .tx-pts{color:#7fff6e;}
-  .tx-redeem .tx-pts{color:#ff8e8e;}
-  .tx-purchase .tx-pts{color:#4a9eff;}
-  .form-group{margin-bottom:14px;}
-  .form-label{font-size:12px;color:var(--gray);display:block;margin-bottom:5px;}
-  .form-input{width:100%;background:var(--card);border:1px solid var(--border);color:var(--white);padding:10px 12px;border-radius:6px;font-family:inherit;font-size:14px;}
-  .form-input:focus{outline:none;border-color:var(--gold);}
-  .credit-preview{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;margin:12px 0;font-size:13px;}
-  .credit-preview .row{display:flex;justify-content:space-between;margin-bottom:4px;}
-  .credit-preview .total{font-size:15px;font-weight:bold;border-top:1px solid var(--border);padding-top:8px;margin-top:8px;}
-  .pack-cards{display:flex;flex-direction:column;gap:10px;}
-  .pack-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;display:flex;justify-content:space-between;align-items:center;}
-  .pack-card.featured{border-color:var(--gold);background:#1a1500;}
-  .pack-pts{font-size:24px;font-weight:900;color:var(--gold);}
-  .pack-price{font-size:18px;font-weight:bold;color:var(--white);}
-  .pack-desc{font-size:11px;color:var(--gray);margin-top:2px;}
-  .pack-btn{background:var(--gold);color:#000;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:bold;font-size:13px;}
-  .btn-primary{width:100%;background:var(--gold);color:#000;border:none;padding:12px;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer;margin-top:4px;}
-  .btn-primary:disabled{opacity:0.5;cursor:not-allowed;}
-  .msg{padding:12px;border-radius:8px;font-size:13px;margin-top:12px;text-align:center;}
-  .msg.ok{background:rgba(127,255,110,0.1);color:#7fff6e;border:1px solid #7fff6e44;}
-  .msg.err{background:rgba(255,100,100,0.1);color:#ff8e8e;border:1px solid #ff8e8e44;}
-  .loading{color:var(--gray);font-size:13px;padding:20px;text-align:center;}
-  .sub-tabs{display:flex;gap:8px;margin-bottom:18px;}
-  .sub-tab-btn{flex:1;background:var(--card);border:1px solid var(--border);color:var(--gray);padding:9px 0;border-radius:6px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;}
-  .sub-tab-btn.active{background:rgba(201,168,76,0.12);border-color:var(--gold);color:var(--gold);}
-  .code-display{background:var(--card);border:2px solid var(--gold);border-radius:12px;padding:20px;text-align:center;margin:14px 0;}
-  .code-chars{font-size:34px;font-weight:900;letter-spacing:6px;color:var(--gold-light);font-family:monospace;}
-  .code-timer{font-size:12px;color:var(--gray);margin-top:6px;}
-  .code-timer.urgent{color:#ff8e8e;}
-  #qr-box{display:flex;justify-content:center;margin:10px 0;}
-  #qr-box canvas,#qr-box img{border-radius:8px;}
-  .sender-card{background:var(--card);border:1px solid var(--gold);border-radius:10px;padding:16px;margin:12px 0;display:flex;align-items:center;gap:12px;}
-  .sender-avatar{width:40px;height:40px;border-radius:50%;background:rgba(201,168,76,0.2);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--gold);flex-shrink:0;}
-  .sender-name{font-size:14px;font-weight:700;color:var(--white);}
-  .sender-pts{font-size:13px;color:var(--gold);margin-top:2px;}
-  .sender-msg{font-size:12px;color:var(--gray);margin-top:2px;font-style:italic;}
-  .btn-wa{width:100%;background:#25D366;color:#fff;border:none;padding:11px;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px;}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d;--card:#141414;--border:#1e1e1e;
+  --gold:#c9a84c;--gold-light:#e8c96e;
+  --violet:#9b6fff;--violet-light:#b08fff;
+  --white:#f0f0f0;--gray:#888;--gray2:#555
+}
+body{background:var(--bg);color:var(--white);font-family:'Helvetica Neue',Arial,sans-serif;min-height:100vh}
+
+/* ── LOGIN ── */
+#login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;position:relative;overflow:hidden}
+#login-bg-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 20%;z-index:0;display:none}
+#login-screen::before{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.55),rgba(0,0,0,0.75));z-index:1}
+#login-screen>*:not(#login-bg-img){position:relative;z-index:2}
+.login-logo-box{width:72px;height:72px;border:2px solid var(--gold);transform:rotate(-5deg);display:flex;align-items:center;justify-content:center;margin-bottom:24px}
+.login-logo-box span{font-size:26px;font-weight:900;transform:rotate(5deg);display:block}
+.login-card{background:rgba(10,10,10,0.85);backdrop-filter:blur(14px);border:1px solid rgba(201,168,76,0.25);border-radius:16px;padding:36px 32px;width:100%;max-width:380px;text-align:center}
+.login-title{font-size:24px;font-weight:800;letter-spacing:2px;margin-bottom:4px}
+.login-sub{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:28px;letter-spacing:.5px}
+.google-btn-wrap{display:flex;justify-content:center}
+
+/* ── LAYOUT DESKTOP ── */
+#app-screen{display:none}
+.app-layout{display:flex;height:100vh;overflow:hidden}
+
+/* Sidebar */
+.sidebar{width:215px;flex-shrink:0;background:#0a0a0a;border-right:1px solid #161616;display:flex;flex-direction:column}
+.sb-logo{padding:18px 16px;border-bottom:1px solid #161616;display:flex;align-items:center;gap:10px}
+.sb-logo-box{width:42px;height:42px;border:1.5px solid var(--gold);transform:rotate(-5deg);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-logo-box span{font-size:14px;font-weight:900;transform:rotate(5deg);display:block}
+.sb-brand strong{display:block;font-size:10px;font-weight:800;letter-spacing:2px;color:var(--gold)}
+.sb-brand small{font-size:8px;color:#444;letter-spacing:1px;text-transform:uppercase}
+.sb-nav{flex:1;padding:10px 0}
+.sb-item{display:flex;align-items:center;gap:10px;padding:11px 16px;color:var(--gray2);font-size:13px;cursor:pointer;border-left:3px solid transparent;transition:all .15s}
+.sb-item:hover{color:var(--white);background:#111}
+.sb-item.active{color:var(--gold);background:rgba(201,168,76,0.07);border-left-color:var(--gold)}
+.sb-icon{width:18px;text-align:center;font-size:14px}
+.sb-footer{border-top:1px solid #161616;padding:6px 0}
+
+/* Main area */
+.app-main{flex:1;overflow-y:auto;padding:28px 32px}
+
+/* Right panel */
+.app-right{width:285px;flex-shrink:0;background:#0a0a0a;border-left:1px solid #161616;position:relative;overflow:hidden;display:flex;flex-direction:column}
+.rp-bg{position:absolute;inset:0;z-index:0}
+.rp-bg img{width:100%;height:100%;object-fit:cover;object-position:center top;display:none}
+.rp-bg-gradient{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.05) 0%,rgba(10,10,10,0.6) 50%,#0a0a0a 78%)}
+.rp-content{position:relative;z-index:1;display:flex;flex-direction:column;height:100%;padding:16px}
+.rp-top{display:flex;align-items:center;justify-content:flex-end;gap:8px}
+.rp-user-name{text-align:right}
+.rp-user-name strong{display:block;font-size:14px}
+.rp-user-name small{font-size:10px;color:var(--gold);letter-spacing:1px;text-transform:uppercase}
+.rp-avatar{width:42px;height:42px;border-radius:50%;border:2px solid var(--gold);background:#2a2a1a;object-fit:cover;display:none}
+.rp-avatar-fallback{width:42px;height:42px;border-radius:50%;border:2px solid var(--gold);background:rgba(201,168,76,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.rp-bottom{margin-top:auto}
+.rp-prize-label{font-size:9px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-bottom:8px}
+.rp-prize-card{background:rgba(20,20,20,0.92);border:1px solid rgba(201,168,76,0.25);border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px;margin-bottom:14px;backdrop-filter:blur(6px)}
+.rp-prize-thumb{width:50px;height:50px;border-radius:8px;background:#1a1500;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;position:relative;overflow:hidden}
+.rp-prize-thumb img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.rp-prize-lock{position:absolute;bottom:-4px;right:-4px;width:18px;height:18px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:10px}
+.rp-prize-info strong{display:block;font-size:13px;margin-bottom:1px}
+.rp-prize-info small{display:block;font-size:10px;color:var(--gray);margin-bottom:4px}
+.rp-prize-cost{font-size:11px;font-weight:700;color:var(--gold)}
+.rp-prize-cost.star{color:var(--violet)}
+.rp-prize-none{font-size:12px;color:var(--gray);text-align:center;padding:16px 0;font-style:italic}
+.rp-quote{font-size:10px;color:var(--gray2);font-style:italic;line-height:1.6;text-align:center}
+.rp-quote strong{display:block;font-size:11px;color:var(--gold);margin-top:5px;font-style:normal;font-family:Georgia,serif}
+
+/* ── SECCIÓN MI CLUB ── */
+.welcome{margin-bottom:22px}
+.welcome-pre{font-size:11px;color:var(--gray);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px}
+.welcome-title{font-size:32px;font-weight:900;letter-spacing:3px;text-transform:uppercase;line-height:1}
+.welcome-script{font-size:20px;color:var(--gold);font-style:italic;margin-top:5px;font-family:Georgia,serif}
+
+.balance-card{background:linear-gradient(135deg,#1a1500,#141414);border:1px solid rgba(201,168,76,0.35);border-radius:13px;padding:20px 24px;display:flex;align-items:center;gap:22px;margin-bottom:22px}
+.bal-left{flex:1}
+.bal-label{font-size:9px;letter-spacing:2px;color:var(--gray);text-transform:uppercase;margin-bottom:8px}
+.bal-currencies{display:flex;align-items:baseline;gap:18px}
+.bal-cr{display:flex;align-items:baseline;gap:5px}
+.bal-cr-num{font-size:38px;font-weight:900;color:var(--gold-light);line-height:1}
+.bal-cr-unit{font-size:13px;font-weight:700;color:var(--gold)}
+.bal-divider{width:1px;height:30px;background:#2a2a2a;flex-shrink:0}
+.bal-star{display:flex;align-items:baseline;gap:5px}
+.bal-star-num{font-size:28px;font-weight:900;color:var(--violet-light);line-height:1}
+.bal-star-unit{font-size:12px;font-weight:700;color:var(--violet)}
+.bal-note{font-size:10px;color:var(--gray2);margin-top:7px}
+.bal-center{flex:1.4}
+.bal-level-msg{font-size:13px;font-weight:700;margin-bottom:4px}
+.bal-level-sub{font-size:11px;color:var(--gray);margin-bottom:10px}
+.progress-bar{background:#1e1e1e;border-radius:20px;height:7px;overflow:hidden;margin-bottom:5px}
+.progress-fill{height:100%;background:linear-gradient(to right,var(--gold),var(--gold-light));border-radius:20px;transition:width .5s ease}
+.progress-label{font-size:10px;color:var(--gray2)}
+.level-badge{width:62px;height:62px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#8a6a2a);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 22px rgba(201,168,76,0.28)}
+.level-badge small{font-size:8px;color:rgba(0,0,0,0.6);letter-spacing:1px;text-transform:uppercase}
+.level-badge strong{font-size:24px;font-weight:900;color:#000;line-height:1}
+
+.sec-label{font-size:9px;letter-spacing:2px;color:var(--gray2);text-transform:uppercase;margin-bottom:10px}
+.earn-grid{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.earn-card{flex:1;min-width:90px;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:11px 8px;text-align:center}
+.earn-icon{font-size:19px;margin-bottom:6px}
+.earn-name{font-size:10px;color:var(--gray);margin-bottom:5px;line-height:1.3}
+.earn-pts{font-size:11px;font-weight:700}
+.earn-pts.cr{color:var(--gold)}
+.earn-pts.star{color:var(--violet)}
+
+.act-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #181818}
+.act-row:last-child{border:none}
+.act-left{display:flex;align-items:center;gap:9px}
+.act-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.act-dot.cr{background:rgba(201,168,76,0.1)}
+.act-dot.star{background:rgba(155,111,255,0.1)}
+.act-desc{font-size:12px}
+.act-sub{font-size:10px;color:var(--gray2)}
+.act-pts.cr{font-size:12px;font-weight:700;color:#7fff6e}
+.act-pts.star{font-size:12px;font-weight:700;color:var(--violet)}
+.act-date{font-size:10px;color:#444;text-align:right;margin-top:2px}
+.act-empty{font-size:12px;color:var(--gray2);padding:20px 0;text-align:center;font-style:italic}
+
+/* ── SECCIÓN CANJEAR ── */
+.currency-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:18px}
+.ctab{background:none;border:none;border-bottom:2px solid transparent;font-family:inherit;font-size:13px;padding:9px 16px;cursor:pointer;color:var(--gray2);margin-bottom:-1px}
+.ctab.active-cr{color:var(--gold);border-bottom-color:var(--gold)}
+.ctab.active-star{color:var(--violet);border-bottom-color:var(--violet)}
+.rewards-grid{display:flex;gap:12px;flex-wrap:wrap}
+.rw-card{width:150px;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.rw-card.can{border-color:rgba(201,168,76,0.45)}
+.rw-card.can-star{border-color:rgba(155,111,255,0.45)}
+.rw-img{height:82px;display:flex;align-items:center;justify-content:center;font-size:30px;position:relative;overflow:hidden}
+.rw-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.rw-img-icon{position:relative;z-index:1}
+.rw-img.cr-bg{background:linear-gradient(135deg,#1a1500,#0d0d0d)}
+.rw-img.star-bg{background:linear-gradient(135deg,#0e0e1a,#0d0d0d)}
+.rw-lock{position:absolute;inset:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;font-size:20px;z-index:2}
+.rw-body{padding:10px 10px 12px}
+.rw-name{font-size:12px;font-weight:700;margin-bottom:2px}
+.rw-desc{font-size:10px;color:var(--gray);margin-bottom:7px;line-height:1.3}
+.rw-cost{font-size:12px;font-weight:700}
+.rw-cost.cr{color:var(--gold)}
+.rw-cost.cr.ok{color:#7fff6e}
+.rw-cost.star{color:var(--violet)}
+.rw-cost.star.ok{color:#7fff6e}
+.rw-btn{width:100%;border:none;border-radius:6px;padding:7px;font-size:11px;font-weight:700;cursor:pointer;margin-top:7px}
+.rw-btn.cr{background:var(--gold);color:#000}
+.rw-btn.star{background:#7b52d6;color:#fff}
+.rw-btn.locked{background:var(--card);color:#444;cursor:default;border:1px solid var(--border);font-size:10px}
+.rw-empty{font-size:13px;color:var(--gray);padding:30px 0;text-align:center}
+
+/* ── SECCIÓN HISTORIAL ── */
+.tx-row{border-bottom:1px solid var(--border);padding:12px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.tx-desc{font-size:13px}
+.tx-date{font-size:11px;color:var(--gray);margin-top:2px}
+.tx-pts{font-size:13px;font-weight:bold;text-align:right}
+.tx-credit{font-size:12px;color:var(--gray);text-align:right;margin-top:2px}
+.tx-earn .tx-pts{color:#7fff6e}
+.tx-redeem .tx-pts{color:#ff8e8e}
+.tx-star .tx-pts{color:var(--violet)}
+
+/* ── SECCIÓN CANJE (form) ── */
+.form-group{margin-bottom:14px}
+.form-label{font-size:12px;color:var(--gray);display:block;margin-bottom:5px}
+.form-input{width:100%;background:var(--card);border:1px solid var(--border);color:var(--white);padding:10px 12px;border-radius:6px;font-family:inherit;font-size:14px}
+.form-input:focus{outline:none;border-color:var(--gold)}
+.credit-preview{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;margin:12px 0;font-size:13px}
+.credit-preview .row{display:flex;justify-content:space-between;margin-bottom:4px}
+.credit-preview .total{font-size:15px;font-weight:bold;border-top:1px solid var(--border);padding-top:8px;margin-top:8px}
+.btn-primary{width:100%;background:var(--gold);color:#000;border:none;padding:12px;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer;margin-top:4px}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.msg{padding:12px;border-radius:8px;font-size:13px;margin-top:12px;text-align:center}
+.msg.ok{background:rgba(127,255,110,.1);color:#7fff6e;border:1px solid #7fff6e44}
+.msg.err{background:rgba(255,100,100,.1);color:#ff8e8e;border:1px solid #ff8e8e44}
+
+/* ── SECCIÓN COMPRAR CR ── */
+.pack-cards{display:flex;flex-direction:column;gap:10px}
+.pack-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;display:flex;justify-content:space-between;align-items:center}
+.pack-card.featured{border-color:var(--gold);background:#1a1500}
+.pack-pts{font-size:24px;font-weight:900;color:var(--gold)}
+.pack-price{font-size:18px;font-weight:bold}
+.pack-desc{font-size:11px;color:var(--gray);margin-top:2px}
+.pack-btn{background:var(--gold);color:#000;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:bold;font-size:13px}
+
+/* ── SECCIÓN TRANSFERIR ── */
+.sub-tabs{display:flex;gap:8px;margin-bottom:18px}
+.sub-tab-btn{flex:1;background:var(--card);border:1px solid var(--border);color:var(--gray);padding:9px 0;border-radius:6px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600}
+.sub-tab-btn.active{background:rgba(201,168,76,.12);border-color:var(--gold);color:var(--gold)}
+.code-display{background:var(--card);border:2px solid var(--gold);border-radius:12px;padding:20px;text-align:center;margin:14px 0}
+.code-chars{font-size:34px;font-weight:900;letter-spacing:6px;color:var(--gold-light);font-family:monospace}
+.code-timer{font-size:12px;color:var(--gray);margin-top:6px}
+.code-timer.urgent{color:#ff8e8e}
+#qr-box{display:flex;justify-content:center;margin:10px 0}
+#qr-box canvas,#qr-box img{border-radius:8px}
+.sender-card{background:var(--card);border:1px solid var(--gold);border-radius:10px;padding:16px;margin:12px 0;display:flex;align-items:center;gap:12px}
+.sender-avatar{width:40px;height:40px;border-radius:50%;background:rgba(201,168,76,.2);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--gold);flex-shrink:0}
+.sender-name{font-size:14px;font-weight:700}
+.sender-pts{font-size:13px;color:var(--gold);margin-top:2px}
+.sender-msg{font-size:12px;color:var(--gray);margin-top:2px;font-style:italic}
+.btn-wa{width:100%;background:#25D366;color:#fff;border:none;padding:11px;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px}
+
+/* ── MOBILE (< 768px) ── */
+@media(max-width:767px){
+  .app-layout{flex-direction:column;height:auto;min-height:100vh}
+  .sidebar{width:100%;height:auto;border-right:none;border-bottom:1px solid #161616;flex-direction:row;align-items:center;padding:0}
+  .sb-logo{border-bottom:none;border-right:1px solid #161616;padding:12px 14px;flex-shrink:0}
+  .sb-brand{display:none}
+  .sb-nav{flex:1;display:flex;flex-direction:row;padding:0;overflow-x:auto}
+  .sb-item{padding:12px 14px;border-left:none;border-bottom:3px solid transparent;font-size:11px;white-space:nowrap;flex-direction:column;gap:3px;text-align:center}
+  .sb-item.active{background:none;border-bottom-color:var(--gold)}
+  .sb-icon{width:auto;font-size:16px}
+  .sb-footer{display:none}
+  .app-main{padding:16px}
+  .app-right{display:none}
+  .balance-card{flex-direction:column;gap:14px}
+  .bal-center{width:100%}
+  .welcome-title{font-size:24px}
+  .earn-grid{gap:6px}
+  .earn-card{min-width:70px}
+  .rewards-grid .rw-card{width:calc(50% - 6px)}
+}
+
+.loading{color:var(--gray);font-size:13px;padding:20px;text-align:center}
 </style>
 </head>
 <body>
 
+<img id="login-bg-img" src="" alt="" style="display:none;position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-1">
+
+<!-- ── LOGIN ── -->
 <div id="login-screen">
-  <img id="login-bg-img" src="" alt="">
-  <img id="login-logo" src="" alt="CR" style="display:none;width:90px;height:90px;object-fit:contain;border-radius:50%;margin-bottom:24px;filter:invert(1);">
-  <div class="logo-cr" id="login-logo-fallback"><span>CR</span></div>
+  <img id="login-logo" src="" alt="CR" style="display:none;width:90px;height:90px;object-fit:contain;border-radius:50%;margin-bottom:24px;filter:invert(1)">
+  <div class="login-logo-box" id="login-logo-fallback"><span>CR</span></div>
   <div class="login-card">
     <div class="login-title">CR CLUB</div>
     <div class="login-sub">Tu programa de beneficios exclusivos</div>
@@ -99,141 +243,212 @@
       <div id="g_id_onload"
         data-client_id="219844741457-sun7sdnpuit836mief6p9p52dj7ckidq.apps.googleusercontent.com"
         data-callback="onGoogleLogin"
-        data-auto_prompt="false">
-      </div>
+        data-auto_prompt="false"></div>
       <div class="g_id_signin"
-        data-type="standard"
-        data-size="large"
-        data-theme="filled_black"
-        data-text="signin_with"
-        data-shape="rectangular"
-        data-logo_alignment="left">
-      </div>
+        data-type="standard" data-size="large" data-theme="filled_black"
+        data-text="signin_with" data-shape="rectangular" data-logo_alignment="left"></div>
     </div>
   </div>
 </div>
 
-<img id="app-bg-img" src="" alt="">
-<div id="app-bg-overlay"></div>
+<!-- ── APP ── -->
 <div id="app-screen">
-  <div class="app-header">
-    <div class="app-logo">
-      <img id="header-logo" src="" alt="CR" style="display:none;width:32px;height:32px;object-fit:contain;border-radius:50%;filter:invert(1);">
-      <div class="app-logo-cr" id="header-logo-fallback"><span>CR</span></div>
-      <div class="app-title">CR CLUB</div>
-    </div>
-    <div style="text-align:right">
-      <div class="user-name" id="app-username"></div>
-      <button class="logout-btn" onclick="crclubLogout()">Salir</button>
-    </div>
-  </div>
+  <div class="app-layout">
 
-  <div class="balance-card">
-    <div class="balance-label">TU SALDO</div>
-    <div>
-      <span class="balance-pts" id="app-pts">—</span>
-      <span class="balance-unit">CR</span>
-    </div>
-    <div class="balance-credit" id="app-credit">—</div>
-    <div class="referral-code">
-      <span>Tu código de referido</span>
-      <strong id="app-referral">—</strong>
-    </div>
-  </div>
-
-  <div class="tabs">
-    <button class="tab-btn active" onclick="appTab('history')">Historial</button>
-    <button class="tab-btn" onclick="appTab('redeem')">Canjear</button>
-    <button class="tab-btn" onclick="appTab('buy')">Comprar CR</button>
-    <button class="tab-btn" onclick="appTab('transfer')">Transferir</button>
-  </div>
-
-  <div id="panel-history">
-    <div id="history-list" class="loading">Cargando...</div>
-  </div>
-
-  <div id="panel-redeem" style="display:none">
-    <div class="form-group">
-      <label class="form-label">Servicio a contratar</label>
-      <input class="form-input" id="redeem-desc" type="text" placeholder="ej: Previa en Suite, Drone, Peluquería...">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Precio del servicio ($)</label>
-      <input class="form-input" id="redeem-price" type="number" placeholder="ej: 100000" oninput="redeemPreview()">
-    </div>
-    <div class="form-group">
-      <label class="form-label">CR a usar (máx: <span id="redeem-max">0</span>)</label>
-      <input class="form-input" id="redeem-pts" type="number" placeholder="0" oninput="redeemPreview()">
-    </div>
-    <div class="credit-preview" id="redeem-preview" style="display:none">
-      <div class="row"><span style="color:var(--gray)">Precio del servicio</span><span id="prev-price">—</span></div>
-      <div class="row"><span style="color:var(--gold)">Crédito a usar</span><span id="prev-credit" style="color:var(--gold)">—</span></div>
-      <div class="row total"><span>Pagás</span><span id="prev-total" style="color:var(--gold-light);font-size:18px">—</span></div>
-    </div>
-    <button class="btn-primary" id="redeem-btn" onclick="submitRedeem()">Confirmar canje</button>
-    <div id="redeem-msg"></div>
-  </div>
-
-  <div id="panel-buy" style="display:none"></div>
-
-  <div id="panel-transfer" style="display:none">
-    <div class="sub-tabs">
-      <button class="sub-tab-btn active" id="st-send" onclick="transferSection('send')">Enviar CR</button>
-      <button class="sub-tab-btn" id="st-receive" onclick="transferSection('receive')">Recibir CR</button>
-    </div>
-
-    <!-- ENVIAR -->
-    <div id="section-send">
-      <div class="form-group">
-        <label class="form-label">CR a enviar (máx: <span id="transfer-max">20</span>)</label>
-        <input class="form-input" id="transfer-pts" type="number" min="1" placeholder="ej: 5">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Mensaje (opcional)</label>
-        <input class="form-input" id="transfer-msg" type="text" maxlength="80" placeholder="ej: Para tu boda ✨">
-      </div>
-      <button class="btn-primary" id="transfer-gen-btn" onclick="generateTransferCode()">Generar código</button>
-      <div id="transfer-gen-msg"></div>
-
-      <div id="transfer-code-box" style="display:none">
-        <div class="code-display">
-          <div style="font-size:11px;letter-spacing:2px;color:var(--gray);margin-bottom:6px;">TU CÓDIGO</div>
-          <div class="code-chars" id="transfer-code-chars">——————</div>
-          <div class="code-timer" id="transfer-countdown">15:00</div>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sb-logo">
+        <img id="header-logo" src="" alt="CR" style="display:none;width:36px;height:36px;object-fit:contain;border-radius:50%;filter:invert(1)">
+        <div class="sb-logo-box" id="header-logo-fallback"><span>CR</span></div>
+        <div class="sb-brand">
+          <strong>CRISTIAN ROMERO</strong>
+          <small>Producciones</small>
         </div>
-        <div id="qr-box"></div>
-        <button class="btn-wa" onclick="shareTransferWA()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-          Compartir por WhatsApp
-        </button>
       </div>
-    </div>
-
-    <!-- RECIBIR -->
-    <div id="section-receive" style="display:none">
-      <div class="form-group">
-        <label class="form-label">Código recibido</label>
-        <input class="form-input" id="receive-code" type="text" maxlength="6" placeholder="ej: 4X9K2M" style="text-transform:uppercase;letter-spacing:4px;font-size:18px;text-align:center;">
+      <nav class="sb-nav">
+        <div class="sb-item active" onclick="appSection('club')" id="sb-club">
+          <span class="sb-icon">⭐</span> Mi Club
+        </div>
+        <div class="sb-item" onclick="appSection('canjear')" id="sb-canjear">
+          <span class="sb-icon">🎁</span> Canjear premios
+        </div>
+        <div class="sb-item" onclick="appSection('historial')" id="sb-historial">
+          <span class="sb-icon">🕐</span> Historial
+        </div>
+        <div class="sb-item" onclick="appSection('comprar')" id="sb-comprar">
+          <span class="sb-icon">💎</span> Comprar CR
+        </div>
+        <div class="sb-item" onclick="appSection('transferir')" id="sb-transferir">
+          <span class="sb-icon">↔</span> Transferir
+        </div>
+      </nav>
+      <div class="sb-footer">
+        <div class="sb-item" onclick="crclubLogout()">
+          <span class="sb-icon">→</span> Cerrar sesión
+        </div>
       </div>
-      <button class="btn-primary" id="receive-preview-btn" onclick="previewTransfer()">Verificar código</button>
-      <div id="receive-msg"></div>
+    </aside>
 
-      <div id="receive-preview-box" style="display:none">
-        <div class="sender-card">
-          <div class="sender-avatar" id="receive-avatar">?</div>
-          <div>
-            <div class="sender-name" id="receive-sender-name">—</div>
-            <div class="sender-pts" id="receive-sender-pts">—</div>
-            <div class="sender-msg" id="receive-sender-msg"></div>
+    <!-- MAIN -->
+    <main class="app-main">
+
+      <!-- MI CLUB -->
+      <div id="section-club">
+        <div class="welcome">
+          <div class="welcome-pre">Bienvenido a tu</div>
+          <div class="welcome-title">CLUB DE PUNTOS</div>
+          <div class="welcome-script">Cada historia suma</div>
+        </div>
+        <div class="balance-card">
+          <div class="bal-left">
+            <div class="bal-label">Tu saldo</div>
+            <div class="bal-currencies">
+              <div class="bal-cr">
+                <span class="bal-cr-num" id="bal-cr-num">—</span>
+                <span class="bal-cr-unit">💎 CR</span>
+              </div>
+              <div class="bal-divider"></div>
+              <div class="bal-star">
+                <span class="bal-star-num" id="bal-star-num">—</span>
+                <span class="bal-star-unit">⭐ Est.</span>
+              </div>
+            </div>
+            <div class="bal-note">💎 por contratos · ⭐ por engagement</div>
+          </div>
+          <div class="bal-center">
+            <div class="bal-level-msg">¡Vas por buen camino!</div>
+            <div class="bal-level-sub">Seguí sumando y desbloqueá experiencias increíbles.</div>
+            <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+            <div class="progress-label" id="progress-label">— / — 💎 para el próximo nivel</div>
+          </div>
+          <div class="level-badge">
+            <small>NIVEL</small>
+            <strong id="level-num">1</strong>
           </div>
         </div>
-        <button class="btn-primary" id="receive-confirm-btn" onclick="claimTransfer()">Confirmar recepción</button>
-      </div>
-    </div>
-  </div>
 
-  <div style="text-align:center;padding:24px 0 8px;font-size:11px;color:var(--gray2);">V1.10</div>
+        <div class="sec-label">Cómo sumás</div>
+        <div class="earn-grid">
+          <div class="earn-card"><div class="earn-icon">📷</div><div class="earn-name">Sesión realizada</div><div class="earn-pts cr">+500 💎</div></div>
+          <div class="earn-card"><div class="earn-icon">👥</div><div class="earn-name">Referido firma</div><div class="earn-pts cr">+300 💎</div></div>
+          <div class="earn-card"><div class="earn-icon">📸</div><div class="earn-name">Seguís en IG</div><div class="earn-pts star">+1 ⭐</div></div>
+          <div class="earn-card"><div class="earn-icon">💬</div><div class="earn-name">Dejás reseña</div><div class="earn-pts star">+2 ⭐</div></div>
+          <div class="earn-card"><div class="earn-icon">🎂</div><div class="earn-name">Cumpleaños</div><div class="earn-pts star">+1 ⭐</div></div>
+        </div>
+
+        <div class="sec-label">Tu actividad reciente</div>
+        <div id="act-list"><div class="loading">Cargando...</div></div>
+      </div>
+
+      <!-- CANJEAR -->
+      <div id="section-canjear" style="display:none">
+        <div class="welcome-pre" style="font-size:11px;letter-spacing:2px;color:var(--gray);text-transform:uppercase;margin-bottom:16px">Canjear premios</div>
+        <div class="currency-tabs">
+          <button class="ctab active-cr" onclick="rewardTab('cr')" id="rtab-cr">💎 Recompensas CR</button>
+          <button class="ctab" onclick="rewardTab('star')" id="rtab-star">⭐ Recompensas Estrellas</button>
+        </div>
+        <div id="rewards-cr"><div class="loading">Cargando...</div></div>
+        <div id="rewards-star" style="display:none"><div class="loading">Cargando...</div></div>
+      </div>
+
+      <!-- HISTORIAL -->
+      <div id="section-historial" style="display:none">
+        <div class="welcome-pre" style="font-size:11px;letter-spacing:2px;color:var(--gray);text-transform:uppercase;margin-bottom:16px">Historial de movimientos</div>
+        <div id="history-list" class="loading">Cargando...</div>
+      </div>
+
+      <!-- COMPRAR CR -->
+      <div id="section-comprar" style="display:none">
+        <div class="welcome-pre" style="font-size:11px;letter-spacing:2px;color:var(--gray);text-transform:uppercase;margin-bottom:16px">Comprar CR</div>
+        <div id="panel-buy"></div>
+      </div>
+
+      <!-- TRANSFERIR -->
+      <div id="section-transferir" style="display:none">
+        <div class="welcome-pre" style="font-size:11px;letter-spacing:2px;color:var(--gray);text-transform:uppercase;margin-bottom:16px">Transferir CR</div>
+        <div class="sub-tabs">
+          <button class="sub-tab-btn active" id="st-send" onclick="transferSection('send')">Enviar CR</button>
+          <button class="sub-tab-btn" id="st-receive" onclick="transferSection('receive')">Recibir CR</button>
+        </div>
+        <div id="section-send">
+          <div class="form-group">
+            <label class="form-label">CR a enviar (máx: <span id="transfer-max">20</span>)</label>
+            <input class="form-input" id="transfer-pts" type="number" min="1" placeholder="ej: 5">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mensaje (opcional)</label>
+            <input class="form-input" id="transfer-msg" type="text" maxlength="80" placeholder="ej: Para tu boda ✨">
+          </div>
+          <button class="btn-primary" id="transfer-gen-btn" onclick="generateTransferCode()">Generar código</button>
+          <div id="transfer-gen-msg"></div>
+          <div id="transfer-code-box" style="display:none">
+            <div class="code-display">
+              <div style="font-size:11px;letter-spacing:2px;color:var(--gray);margin-bottom:6px">TU CÓDIGO</div>
+              <div class="code-chars" id="transfer-code-chars">——————</div>
+              <div class="code-timer" id="transfer-countdown">15:00</div>
+            </div>
+            <div id="qr-box"></div>
+            <button class="btn-wa" onclick="shareTransferWA()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              Compartir por WhatsApp
+            </button>
+          </div>
+        </div>
+        <div id="section-receive" style="display:none">
+          <div class="form-group">
+            <label class="form-label">Código recibido</label>
+            <input class="form-input" id="receive-code" type="text" maxlength="6" placeholder="ej: 4X9K2M" style="text-transform:uppercase;letter-spacing:4px;font-size:18px;text-align:center">
+          </div>
+          <button class="btn-primary" id="receive-preview-btn" onclick="previewTransfer()">Verificar código</button>
+          <div id="receive-msg"></div>
+          <div id="receive-preview-box" style="display:none">
+            <div class="sender-card">
+              <div class="sender-avatar" id="receive-avatar">?</div>
+              <div>
+                <div class="sender-name" id="receive-sender-name">—</div>
+                <div class="sender-pts" id="receive-sender-pts">—</div>
+                <div class="sender-msg" id="receive-sender-msg"></div>
+              </div>
+            </div>
+            <button class="btn-primary" id="receive-confirm-btn" onclick="claimTransfer()">Confirmar recepción</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- PANEL DERECHO -->
+    <aside class="app-right">
+      <div class="rp-bg">
+        <img id="rp-photo" src="" alt="">
+        <div class="rp-bg-gradient"></div>
+      </div>
+      <div class="rp-content">
+        <div class="rp-top">
+          <div class="rp-user-name">
+            <strong id="rp-username">—</strong>
+            <small>Cliente</small>
+          </div>
+          <img id="rp-avatar" class="rp-avatar" src="" alt="">
+          <div class="rp-avatar-fallback" id="rp-avatar-fallback">👤</div>
+        </div>
+        <div class="rp-bottom">
+          <div class="rp-prize-label">Próximo premio</div>
+          <div id="rp-prize">
+            <div class="loading">Cargando...</div>
+          </div>
+          <div class="rp-quote">
+            "Gracias por ser parte de este camino.<br>Tu confianza inspira todo lo que hacemos."
+            <strong>— Cristian Romero</strong>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
 </div>
+
+<div style="display:none" id="app-version">V1.11</div>
 
 <script>
 const CONFIG = {
@@ -248,6 +463,12 @@ const CONFIG = {
     { pts: 5,  label: 'Pack Cierre',    featured: false },
     { pts: 10, label: 'Pack Regalo ⭐', featured: true  },
     { pts: 20, label: 'Pack Premium',   featured: false }
+  ],
+  LEVELS: [
+    { level: 1, min: 0,    max: 999  },
+    { level: 2, min: 1000, max: 4999 },
+    { level: 3, min: 5000, max: 9999 },
+    { level: 4, min: 10000, max: Infinity }
   ]
 };
 let _token = localStorage.getItem(CONFIG.TOKEN_KEY);
@@ -325,27 +546,64 @@ async function initApp() {
 function showApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'block';
-  document.body.classList.add('app-active');
-  if (document.body.dataset.bgApp) {
-    const i = document.getElementById('app-bg-img');
-    i.src = document.body.dataset.bgApp; i.style.display = 'block';
-    document.getElementById('app-bg-overlay').style.display = 'block';
+
+  const bgApp = document.body.dataset.bgApp;
+  if (bgApp) {
+    const rp = document.getElementById('rp-photo');
+    rp.src = bgApp; rp.style.display = 'block';
   }
-  document.getElementById('app-username').textContent = _client.name;
-  document.getElementById('app-pts').textContent = _client.pts_total || 0;
-  document.getElementById('app-credit').textContent = '$' + (_client.credit_available || 0).toLocaleString(CONFIG.LOCALE) + ' de crédito';
-  document.getElementById('app-referral').textContent = _client.referral_code || '—';
-  document.getElementById('redeem-max').textContent = Math.floor((_client.credit_available || 0) / ((_config && _config.pts_value) || CONFIG.PTS_VALUE_FALLBACK));
+
+  const name = _client.name || '';
+  document.getElementById('rp-username').textContent = 'Hola, ' + name.split(' ')[0];
+
+  const pic = _client.picture || '';
+  if (pic) {
+    const av = document.getElementById('rp-avatar');
+    av.src = pic; av.style.display = 'block';
+    document.getElementById('rp-avatar-fallback').style.display = 'none';
+  }
+
+  renderBalance();
   renderBuyPacks();
   loadHistory();
+  loadRewards();
 
-  // Auto-fill código desde deep link ?code=XXXXXX
   const _urlCode = new URLSearchParams(window.location.search).get('code');
   if (_urlCode) {
-    appTab('transfer');
+    appSection('transferir');
     transferSection('receive');
     document.getElementById('receive-code').value = _urlCode.toUpperCase().trim();
   }
+}
+
+function renderBalance() {
+  const pts = _client.pts_total || 0;
+  const stars = _client.stars_available || 0;
+  document.getElementById('bal-cr-num').textContent = pts.toLocaleString(CONFIG.LOCALE);
+  document.getElementById('bal-star-num').textContent = stars;
+
+  const lvl = CONFIG.LEVELS.find(l => pts >= l.min && pts <= l.max) || CONFIG.LEVELS[0];
+  const next = CONFIG.LEVELS.find(l => l.min > pts);
+  document.getElementById('level-num').textContent = lvl.level;
+  if (next) {
+    const pct = Math.min(100, Math.round(((pts - lvl.min) / (next.min - lvl.min)) * 100));
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-label').textContent =
+      pts.toLocaleString(CONFIG.LOCALE) + ' / ' + next.min.toLocaleString(CONFIG.LOCALE) + ' 💎 para el próximo nivel';
+  } else {
+    document.getElementById('progress-fill').style.width = '100%';
+    document.getElementById('progress-label').textContent = '¡Nivel máximo alcanzado!';
+  }
+}
+
+function appSection(name) {
+  ['club','canjear','historial','comprar','transferir'].forEach(s => {
+    document.getElementById('section-' + s).style.display = s === name ? '' : 'none';
+    const sb = document.getElementById('sb-' + s);
+    if (sb) sb.classList.toggle('active', s === name);
+  });
+  if (name === 'canjear') renderRewards();
+  if (name === 'historial') loadHistory();
 }
 
 function renderBuyPacks() {
@@ -374,74 +632,180 @@ function renderBuyPacks() {
 
 async function loadHistory() {
   const el = document.getElementById('history-list');
-  el.innerHTML = '<div class="loading">Cargando...</div>';
-  const d = await fetch(CONFIG.WORKER_URL +'/crclub/history', { headers: { Authorization: 'Bearer ' + _token } }).then(r => r.json());
-  if (!d.transactions || !d.transactions.length) {
-    el.innerHTML = '<div class="loading">Sin movimientos aún</div>'; return;
+  const actEl = document.getElementById('act-list');
+  if (el) el.innerHTML = '<div class="loading">Cargando...</div>';
+  try {
+    const d = await fetch(CONFIG.WORKER_URL + '/crclub/history', {
+      headers: { Authorization: 'Bearer ' + _token }
+    }).then(r => r.json());
+
+    const txs = d.transactions || [];
+
+    if (actEl) {
+      if (!txs.length) {
+        actEl.innerHTML = '<div class="act-empty">Sin movimientos aún</div>';
+      } else {
+        actEl.innerHTML = txs.slice(0, 5).map(t => {
+          const isStar = t.currency === 'star' || t.type === 'earn_star' || t.type === 'adjust_star' || t.type === 'redeem_star';
+          const cur = isStar ? 'star' : 'cr';
+          const icon = isStar ? '⭐' : '💎';
+          const sign = t.pts > 0 ? '+' : '';
+          const unit = isStar ? '⭐' : '💎';
+          return `<div class="act-row">
+            <div class="act-left">
+              <div class="act-dot ${cur}">${icon}</div>
+              <div>
+                <div class="act-desc">${t.description || t.type}</div>
+                <div class="act-sub">${t.created_at.slice(0,10)}</div>
+              </div>
+            </div>
+            <div style="text-align:right">
+              <div class="act-pts ${cur}">${sign}${Math.abs(t.pts)} ${unit}</div>
+            </div>
+          </div>`;
+        }).join('');
+      }
+    }
+
+    if (el) {
+      if (!txs.length) {
+        el.innerHTML = '<div class="loading">Sin movimientos aún</div>';
+      } else {
+        el.innerHTML = txs.map(t => {
+          const isStar = t.currency === 'star' || t.type === 'earn_star' || t.type === 'adjust_star' || t.type === 'redeem_star';
+          const isEarn = t.pts > 0;
+          const cls = isStar ? 'tx-star' : isEarn ? 'tx-earn' : 'tx-redeem';
+          const sign = t.pts > 0 ? '+' : '';
+          const unit = isStar ? '⭐' : '💎';
+          const creditLine = !isStar && t.pts_value ? `<div class="tx-credit">${sign}$${Math.abs(t.credit || 0).toLocaleString(CONFIG.LOCALE)}</div>` : '';
+          return `<div class="tx-row ${cls}">
+            <div><div class="tx-desc">${t.description || t.type}</div><div class="tx-date">${t.created_at.slice(0,10)}</div></div>
+            <div><div class="tx-pts">${sign}${Math.abs(t.pts)} ${unit}</div>${creditLine}</div>
+          </div>`;
+        }).join('');
+      }
+    }
+  } catch(e) {
+    if (el) el.innerHTML = '<div class="loading">Error cargando historial</div>';
   }
-  el.innerHTML = d.transactions.map(t => {
-    const isEarn   = t.type === 'earn' || t.type === 'purchase' || t.type === 'referral' || t.type === 'transfer_in';
-    const isRedeem = t.type === 'redeem' || t.type === 'transfer_out';
-    const cls = isEarn ? 'tx-earn' : isRedeem ? 'tx-redeem' : 'tx-purchase';
-    const sign = t.credit >= 0 ? '+' : '';
-    return `<div class="tx-row ${cls}">
-      <div><div class="tx-desc">${t.description || t.type}</div><div class="tx-date">${t.created_at.slice(0,10)} · 1 CR = $${t.pts_value.toLocaleString(CONFIG.LOCALE)}</div></div>
-      <div><div class="tx-pts">${sign}${t.pts} CR</div><div class="tx-credit">${sign}$${Math.abs(t.credit).toLocaleString(CONFIG.LOCALE)}</div></div>
-    </div>`;
-  }).join('');
 }
 
-function appTab(name) {
-  ['history','redeem','buy','transfer'].forEach(t => {
-    document.getElementById('panel-' + t).style.display = t === name ? '' : 'none';
+let _rewards = [];
+
+async function loadRewards() {
+  try {
+    const d = await fetch(CONFIG.WORKER_URL + '/crclub/rewards').then(r => r.json());
+    _rewards = d.rewards || [];
+    renderRewards();
+    renderNextPrize();
+  } catch(e) { console.error('rewards:', e); }
+}
+
+function rewardTab(cur) {
+  document.getElementById('rtab-cr').className = cur === 'cr' ? 'ctab active-cr' : 'ctab';
+  document.getElementById('rtab-star').className = cur === 'star' ? 'ctab active-star' : 'ctab';
+  document.getElementById('rewards-cr').style.display = cur === 'cr' ? '' : 'none';
+  document.getElementById('rewards-star').style.display = cur === 'star' ? '' : 'none';
+}
+
+function renderRewards() {
+  const crPts = _client ? (_client.pts_total || 0) : 0;
+  const starPts = _client ? (_client.stars_available || 0) : 0;
+
+  ['cr', 'star'].forEach(cur => {
+    const el = document.getElementById('rewards-' + cur);
+    const list = _rewards.filter(r => r.currency === cur);
+    const balance = cur === 'cr' ? crPts : starPts;
+    const unit = cur === 'cr' ? '💎' : '⭐';
+    const canCls = cur === 'cr' ? 'can' : 'can-star';
+
+    if (!list.length) {
+      el.innerHTML = '<div class="rw-empty">Sin recompensas disponibles aún</div>';
+      return;
+    }
+
+    el.innerHTML = '<div class="rewards-grid">' + list.map(r => {
+      const canRedeem = balance >= r.cost;
+      const imgHtml = r.image_url
+        ? `<img src="${r.image_url}" alt="${r.name}"><div class="rw-img-icon" style="display:none">📷</div>`
+        : `<div class="rw-img-icon">📷</div>`;
+      const lockHtml = canRedeem ? '' : '<div class="rw-lock">🔒</div>';
+      const costCls = `rw-cost ${cur}${canRedeem ? ' ok' : ''}`;
+      const costText = canRedeem ? `${unit} ${r.cost} ✓` : `${unit} ${r.cost}`;
+      const btnHtml = canRedeem
+        ? `<button class="rw-btn ${cur}" onclick="redeemReward(${r.id},'${cur}')">Canjear</button>`
+        : `<button class="rw-btn locked">Faltan ${r.cost - balance} ${unit}</button>`;
+
+      return `<div class="rw-card${canRedeem ? ' ' + canCls : ''}">
+        <div class="rw-img ${cur}-bg">${imgHtml}${lockHtml}</div>
+        <div class="rw-body">
+          <div class="rw-name">${r.name}</div>
+          <div class="rw-desc">${r.description || ''}</div>
+          <div class="${costCls}">${costText}</div>
+          ${btnHtml}
+        </div>
+      </div>`;
+    }).join('') + '</div>';
   });
-  document.querySelectorAll('.tab-btn').forEach((b, i) => {
-    b.classList.toggle('active', ['history','redeem','buy','transfer'][i] === name);
-  });
 }
 
-function redeemPreview() {
-  const price = parseInt(document.getElementById('redeem-price').value) || 0;
-  const pts = parseInt(document.getElementById('redeem-pts').value) || 0;
-  const ptsValue = (_config && _config.pts_value) || CONFIG.PTS_VALUE_FALLBACK;
-  const creditToUse = Math.min(pts * ptsValue, _client ? (_client.credit_available || 0) : 0, price);
-  const toPay = Math.max(0, price - creditToUse);
-  const preview = document.getElementById('redeem-preview');
-  if (price > 0 && pts > 0) {
-    preview.style.display = '';
-    document.getElementById('prev-price').textContent = '$' + price.toLocaleString(CONFIG.LOCALE);
-    document.getElementById('prev-credit').textContent = '-$' + creditToUse.toLocaleString(CONFIG.LOCALE);
-    document.getElementById('prev-total').textContent = '$' + toPay.toLocaleString(CONFIG.LOCALE);
-  } else { preview.style.display = 'none'; }
+async function redeemReward(rewardId, currency) {
+  const r = _rewards.find(x => x.id === rewardId);
+  if (!r) return;
+  const balance = currency === 'cr' ? (_client.pts_total || 0) : (_client.stars_available || 0);
+  if (balance < r.cost) return;
+  if (!confirm(`¿Canjear "${r.name}" por ${r.cost} ${currency === 'cr' ? '💎 CR' : '⭐ Estrellas'}?`)) return;
+  try {
+    const res = await fetch(CONFIG.WORKER_URL + '/crclub/redeem', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _token },
+      body: JSON.stringify({ reward_id: rewardId })
+    }).then(r => r.json());
+    if (res.error) { alert('Error: ' + res.error); return; }
+    if (currency === 'cr') _client.pts_total = (_client.pts_total || 0) - r.cost;
+    else _client.stars_available = (_client.stars_available || 0) - r.cost;
+    renderBalance();
+    renderRewards();
+    renderNextPrize();
+    alert('¡Canjeado! Cristian se pondrá en contacto contigo.');
+  } catch(e) { alert('Error de red'); }
 }
 
-async function submitRedeem() {
-  const desc = document.getElementById('redeem-desc').value.trim();
-  const price = parseInt(document.getElementById('redeem-price').value) || 0;
-  const pts = parseInt(document.getElementById('redeem-pts').value) || 0;
-  const ptsValue = (_config && _config.pts_value) || CONFIG.PTS_VALUE_FALLBACK;
-  const creditToUse = Math.min(pts * ptsValue, _client ? (_client.credit_available || 0) : 0, price);
-  const msg = document.getElementById('redeem-msg');
-  if (!desc || !price || !pts) { msg.innerHTML = '<div class="msg err">Completá todos los campos</div>'; return; }
-  if (creditToUse <= 0) { msg.innerHTML = '<div class="msg err">Sin crédito suficiente</div>'; return; }
-  const btn = document.getElementById('redeem-btn');
-  btn.disabled = true;
-  const r = await fetch(CONFIG.WORKER_URL +'/crclub/redeem', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + _token },
-    body: JSON.stringify({ description: desc, credit_to_use: creditToUse })
-  }).then(r => r.json());
-  btn.disabled = false;
-  if (r.ok) {
-    _client.credit_available = r.credit_available;
-    msg.innerHTML = '<div class="msg ok">¡Canje realizado! Crédito restante: $' + r.credit_available.toLocaleString(CONFIG.LOCALE) + '</div>';
-    document.getElementById('app-credit').textContent = '$' + r.credit_available.toLocaleString(CONFIG.LOCALE) + ' de crédito';
-    document.getElementById('redeem-desc').value = '';
-    document.getElementById('redeem-price').value = '';
-    document.getElementById('redeem-pts').value = '';
-    document.getElementById('redeem-preview').style.display = 'none';
-  } else { msg.innerHTML = '<div class="msg err">' + (r.error || 'Error al canjear') + '</div>'; }
+function renderNextPrize() {
+  const el = document.getElementById('rp-prize');
+  if (!el || !_rewards.length) {
+    if (el) el.innerHTML = '<div class="rp-prize-none">Sin recompensas aún</div>';
+    return;
+  }
+  const crPts = _client ? (_client.pts_total || 0) : 0;
+  const starPts = _client ? (_client.stars_available || 0) : 0;
+
+  let next = _rewards.filter(r => r.currency === 'cr' && crPts < r.cost).sort((a, b) => a.cost - b.cost)[0];
+  if (!next) next = _rewards.filter(r => r.currency === 'star' && starPts < r.cost).sort((a, b) => a.cost - b.cost)[0];
+
+  if (!next) {
+    el.innerHTML = '<div class="rp-prize-none">¡Podés canjear todas tus recompensas!</div>';
+    return;
+  }
+
+  const unit = next.currency === 'cr' ? '💎' : '⭐';
+  const imgHtml = next.image_url
+    ? `<img src="${next.image_url}" alt="${next.name}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`
+    : `<span style="font-size:22px">📷</span>`;
+
+  el.innerHTML = `<div class="rp-prize-card">
+    <div class="rp-prize-thumb">
+      ${imgHtml}
+      <div class="rp-prize-lock">🔒</div>
+    </div>
+    <div class="rp-prize-info">
+      <strong>${next.name}</strong>
+      <small>${next.description || ''}</small>
+      <div class="rp-prize-cost${next.currency === 'star' ? ' star' : ''}">${unit} ${next.cost}</div>
+    </div>
+  </div>`;
 }
+
 
 async function submitBuy(pts) {
   const msg = document.getElementById('buy-msg');
@@ -596,8 +960,7 @@ async function claimTransfer() {
 
   _client.credit_available = r.credit_available;
   _client.pts_total = r.pts_total;
-  document.getElementById('app-pts').textContent = r.pts_total;
-  document.getElementById('app-credit').textContent = '$' + r.credit_available.toLocaleString(CONFIG.LOCALE) + ' de crédito';
+  renderBalance();
 
   document.getElementById('receive-preview-box').style.display = 'none';
   document.getElementById('receive-code').value = '';
@@ -606,7 +969,7 @@ async function claimTransfer() {
   loadHistory();
 }
 
-// V1.10
+// V1.11
 
 initApp();
 </script>
