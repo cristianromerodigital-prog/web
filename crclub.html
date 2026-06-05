@@ -450,7 +450,7 @@ body{background:radial-gradient(ellipse at 20% 50%,#0f0d18 0%,#0a0a0d 55%,#0d0b0
   </div>
 </div>
 
-<div style="display:none" id="app-version">V1.11</div>
+<div style="display:none" id="app-version">V1.12</div>
 
 <script>
 const CONFIG = {
@@ -532,16 +532,24 @@ async function onGoogleLogin(res) {
   }
 }
 
+let _ejsConfig = null;
+
 async function initApp() {
   if (!_token) return;
   try {
-    const [me, cfg] = await Promise.all([
+    const [me, cfg, settings] = await Promise.all([
       fetch(CONFIG.WORKER_URL +'/crclub/me', { headers: { Authorization: 'Bearer ' + _token } }).then(r => r.json()),
-      fetch(CONFIG.WORKER_URL +'/crclub/config').then(r => r.json())
+      fetch(CONFIG.WORKER_URL +'/crclub/config').then(r => r.json()),
+      fetch(CONFIG.CF_SETTINGS_URL).then(r => r.json()).catch(() => ({}))
     ]);
     if (me.error) { localStorage.removeItem(CONFIG.TOKEN_KEY); return; }
     _client = me;
     _config = cfg;
+    _ejsConfig = {
+      serviceId: settings.emailjsServiceId || 'service_35rtklk',
+      templateId: settings.emailjsContactTemplate || '',
+      publicKey:  settings.emailjsKey || 'odUJtdh1Z0U27ZkaN'
+    };
     showApp();
   } catch(e) { console.error(e); }
 }
@@ -780,6 +788,31 @@ function renderRewards() {
   });
 }
 
+function notifyCanjeEmail(rewardName, rewardCost, rewardCurrency) {
+  try {
+    if (!_ejsConfig || !_ejsConfig.templateId) return;
+    const curLabel = rewardCurrency === 'cr' ? '💎 CR' : '⭐ Estrellas';
+    fetch('https://api.emailjs.com/api/v1.0/email/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        service_id:  _ejsConfig.serviceId,
+        template_id: _ejsConfig.templateId,
+        user_id:     _ejsConfig.publicKey,
+        template_params: {
+          name:       _client.name || _client.google_email || '—',
+          email:      _client.google_email || '—',
+          phone:      _client.whatsapp || '—',
+          service:    'CR Club — Canje',
+          event_date: new Date().toLocaleDateString('es-AR'),
+          message:    `Canje solicitado: ${rewardName} (${rewardCost} ${curLabel})`,
+          time:       new Date().toLocaleString('es-AR')
+        }
+      })
+    }).catch(() => {});
+  } catch(e) {}
+}
+
 async function redeemReward(rewardId, currency) {
   const r = _rewards.find(x => x.id === rewardId);
   if (!r) return;
@@ -798,6 +831,7 @@ async function redeemReward(rewardId, currency) {
     renderBalance();
     renderRewards();
     renderNextPrize();
+    notifyCanjeEmail(r.name, r.cost, currency);
     alert('¡Canjeado! Cristian se pondrá en contacto contigo.');
   } catch(e) { alert('Error de red'); }
 }
@@ -1002,7 +1036,7 @@ async function claimTransfer() {
   loadHistory();
 }
 
-// V1.11
+// V1.12
 
 initApp();
 </script>
