@@ -1019,11 +1019,6 @@ tr:hover td{background:rgba(255,255,255,0.02);}
             </table>
           </div>
 
-          <div style="margin-top:24px;">
-            <div style="font-size:11px;color:var(--gray2);letter-spacing:1px;margin-bottom:12px;">CÓMO SUMÁS — TASAS DE ACUMULACIÓN</div>
-            <div id="crclub-earn-rates-list"></div>
-            <button onclick="crclubSaveEarnRates()" style="background:var(--gold);color:#000;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:bold;font-size:13px;margin-top:12px;">Guardar tasas</button>
-          </div>
         </div>
 
         <!-- Clients -->
@@ -1123,6 +1118,12 @@ tr:hover td{background:rgba(255,255,255,0.02);}
               <button onclick="document.getElementById('crclub-reward-form').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--gray2);padding:8px 12px;border-radius:6px;font-size:12px;cursor:pointer;align-self:flex-end">Cancelar</button>
             </div>
             <div id="crclub-reward-msg" style="margin-top:8px;font-size:12px"></div>
+          </div>
+
+          <div style="margin-top:28px;border-top:1px solid var(--border);padding-top:20px;">
+            <div style="font-size:11px;color:var(--gray2);letter-spacing:1px;margin-bottom:12px;">CÓMO SUMÁS — TASAS DE ACUMULACIÓN</div>
+            <div id="crclub-earn-rates-list"></div>
+            <button onclick="crclubSaveEarnRates()" style="background:var(--gold);color:#000;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:bold;font-size:13px;margin-top:12px;">Guardar tasas</button>
           </div>
         </div>
 
@@ -2458,7 +2459,7 @@ function crclubTab(name) {
   if (name === 'config') crclubLoadConfig();
   if (name === 'clients') crclubLoadClients();
   if (name === 'purchases') crclubLoadPurchases();
-  if (name === 'rewards') crclubLoadRewards();
+  if (name === 'rewards') { crclubLoadRewards(); crclubApi('/crclub/config').then(cfg => crclubRenderEarnRates(cfg.earn_rates)); }
 }
 
 async function crclubLoadDashboard() {
