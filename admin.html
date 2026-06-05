@@ -370,7 +370,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.01</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.10</div>
     </div>
   </aside>
 
@@ -959,6 +959,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           <button class="crclub-tab" onclick="crclubTab('config')" id="crclub-tab-config" style="background:none;border:none;color:var(--gray2);padding:8px 16px;cursor:pointer;font-family:inherit;font-size:13px;border-bottom:2px solid transparent;margin-bottom:-1px;">Configuración</button>
           <button class="crclub-tab" onclick="crclubTab('clients')" id="crclub-tab-clients" style="background:none;border:none;color:var(--gray2);padding:8px 16px;cursor:pointer;font-family:inherit;font-size:13px;border-bottom:2px solid transparent;margin-bottom:-1px;">Clientes</button>
           <button class="crclub-tab" onclick="crclubTab('purchases')" id="crclub-tab-purchases" style="background:none;border:none;color:var(--gray2);padding:8px 16px;cursor:pointer;font-family:inherit;font-size:13px;border-bottom:2px solid transparent;margin-bottom:-1px;">Solicitudes <span id="crclub-badge" style="display:none;background:var(--gold);color:#000;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:bold;margin-left:4px;">0</span></button>
+          <button class="crclub-tab" onclick="crclubTab('rewards')" id="crclub-tab-rewards" style="background:none;border:none;color:var(--gray2);padding:8px 16px;cursor:pointer;font-family:inherit;font-size:13px;border-bottom:2px solid transparent;margin-bottom:-1px;">Recompensas</button>
         </div>
 
         <!-- Dashboard -->
@@ -1042,6 +1043,70 @@ tr:hover td{background:rgba(255,255,255,0.02);}
             </thead>
             <tbody id="crclub-purchases-tbody"></tbody>
           </table>
+        </div>
+
+        <!-- Recompensas -->
+        <div id="crclub-panel-rewards" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <span style="font-size:12px;color:var(--gray2)" id="crclub-rewards-count">— recompensas</span>
+            <button onclick="crclubShowRewardForm(null)" style="background:var(--gold);color:#000;border:none;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">+ Nueva recompensa</button>
+          </div>
+
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead>
+              <tr>
+                <th style="text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);font-size:9px;letter-spacing:1px;color:var(--gray2);text-transform:uppercase">Nombre</th>
+                <th style="text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);font-size:9px;letter-spacing:1px;color:var(--gray2);text-transform:uppercase">Descripción</th>
+                <th style="text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);font-size:9px;letter-spacing:1px;color:var(--gray2);text-transform:uppercase">Moneda</th>
+                <th style="text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);font-size:9px;letter-spacing:1px;color:var(--gray2);text-transform:uppercase">Costo</th>
+                <th style="text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);font-size:9px;letter-spacing:1px;color:var(--gray2);text-transform:uppercase">Estado</th>
+                <th style="padding:6px 10px;border-bottom:1px solid var(--border)"></th>
+              </tr>
+            </thead>
+            <tbody id="crclub-rewards-tbody">
+              <tr><td colspan="6" style="padding:20px;text-align:center;color:var(--gray2);font-size:12px">Cargando...</td></tr>
+            </tbody>
+          </table>
+
+          <div id="crclub-reward-form" style="display:none;margin-top:14px;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:16px">
+            <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:12px" id="crclub-reward-form-title">Nueva recompensa</div>
+            <input type="hidden" id="crclub-reward-id">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div style="display:flex;flex-direction:column;gap:3px">
+                <label style="font-size:9px;color:var(--gray2);letter-spacing:1px;text-transform:uppercase">Nombre *</label>
+                <input id="crclub-reward-name" type="text" placeholder="Sesión Express" style="background:var(--card);border:1px solid var(--border);color:var(--white);padding:7px 10px;border-radius:6px;font-size:12px;font-family:inherit;width:160px">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:3px">
+                <label style="font-size:9px;color:var(--gray2);letter-spacing:1px;text-transform:uppercase">Descripción</label>
+                <input id="crclub-reward-desc" type="text" placeholder="Descripción corta" style="background:var(--card);border:1px solid var(--border);color:var(--white);padding:7px 10px;border-radius:6px;font-size:12px;font-family:inherit;width:200px">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:3px">
+                <label style="font-size:9px;color:var(--gray2);letter-spacing:1px;text-transform:uppercase">Moneda *</label>
+                <select id="crclub-reward-currency" style="background:var(--card);border:1px solid var(--border);color:var(--white);padding:7px 10px;border-radius:6px;font-size:12px;font-family:inherit;width:130px">
+                  <option value="cr">💎 CR (Puntos)</option>
+                  <option value="star">⭐ Estrellas</option>
+                </select>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:3px">
+                <label style="font-size:9px;color:var(--gray2);letter-spacing:1px;text-transform:uppercase">Costo *</label>
+                <input id="crclub-reward-cost" type="number" min="1" placeholder="500" style="background:var(--card);border:1px solid var(--border);color:var(--white);padding:7px 10px;border-radius:6px;font-size:12px;font-family:inherit;width:90px">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:3px">
+                <label style="font-size:9px;color:var(--gray2);letter-spacing:1px;text-transform:uppercase">Imagen URL</label>
+                <input id="crclub-reward-img" type="text" placeholder="https://..." style="background:var(--card);border:1px solid var(--border);color:var(--white);padding:7px 10px;border-radius:6px;font-size:12px;font-family:inherit;width:200px">
+              </div>
+              <div style="display:flex;flex-direction:column;gap:3px">
+                <label style="font-size:9px;color:var(--gray2);letter-spacing:1px;text-transform:uppercase">Estado</label>
+                <select id="crclub-reward-active" style="background:var(--card);border:1px solid var(--border);color:var(--white);padding:7px 10px;border-radius:6px;font-size:12px;font-family:inherit;width:100px">
+                  <option value="1">Activa</option>
+                  <option value="0">Inactiva</option>
+                </select>
+              </div>
+              <button onclick="crclubSaveReward()" style="background:var(--gold);color:#000;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;align-self:flex-end">Guardar</button>
+              <button onclick="document.getElementById('crclub-reward-form').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--gray2);padding:8px 12px;border-radius:6px;font-size:12px;cursor:pointer;align-self:flex-end">Cancelar</button>
+            </div>
+            <div id="crclub-reward-msg" style="margin-top:8px;font-size:12px"></div>
+          </div>
         </div>
 
         <!-- Modal ajuste manual -->
@@ -1182,6 +1247,35 @@ tr:hover td{background:rgba(255,255,255,0.02);}
             <button class="btn-sm btn-danger" onclick="clearLogo()">Quitar</button>
           </div>
           <p style="font-size:11px;color:var(--gray);margin-top:12px;letter-spacing:1px">Se sincroniza via Cloudflare a todos los dispositivos.</p>
+        </div>
+        <div class="settings-section">
+          <div class="settings-section-title">CR Club — Fondos</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:8px">
+            <div>
+              <p style="font-size:11px;color:var(--gold);letter-spacing:1px;margin-bottom:8px">PANTALLA DE LOGIN</p>
+              <div id="crclub-bg-login-preview" style="width:100%;height:110px;background:#111;border-radius:6px;margin-bottom:8px;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:11px;color:var(--gray2)">Sin imagen</span>
+              </div>
+              <div style="display:flex;gap:6px">
+                <input id="crclub-bg-login-url" class="form-input" placeholder="URL o ID de Drive..." style="flex:1;font-size:11px;" oninput="crclubPreviewBg(this.value,'login')">
+                <button class="btn-sm" onclick="pickCrclubBgDrive('login')">Drive</button>
+                <button class="btn-add" onclick="crclubSaveBg('login')">Guardar</button>
+                <button class="btn-sm btn-danger" onclick="crclubClearBg('login')">✕</button>
+              </div>
+            </div>
+            <div>
+              <p style="font-size:11px;color:var(--gold);letter-spacing:1px;margin-bottom:8px">DENTRO DEL CLUB</p>
+              <div id="crclub-bg-app-preview" style="width:100%;height:110px;background:#111;border-radius:6px;margin-bottom:8px;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:11px;color:var(--gray2)">Sin imagen</span>
+              </div>
+              <div style="display:flex;gap:6px">
+                <input id="crclub-bg-app-url" class="form-input" placeholder="URL o ID de Drive..." style="flex:1;font-size:11px;" oninput="crclubPreviewBg(this.value,'app')">
+                <button class="btn-sm" onclick="pickCrclubBgDrive('app')">Drive</button>
+                <button class="btn-add" onclick="crclubSaveBg('app')">Guardar</button>
+                <button class="btn-sm btn-danger" onclick="crclubClearBg('app')">✕</button>
+              </div>
+            </div>
+          </div>
         </div>
         <button class="btn-add" onclick="saveSettings()">Guardar configuración</button>
 
@@ -2328,7 +2422,7 @@ async function crclubApi(path, method = 'GET', body = null) {
 }
 
 function crclubTab(name) {
-  ['dashboard','config','clients','purchases'].forEach(t => {
+  ['dashboard','config','clients','purchases','rewards'].forEach(t => {
     document.getElementById('crclub-panel-' + t).style.display = t === name ? '' : 'none';
     const btn = document.getElementById('crclub-tab-' + t);
     if (btn) {
@@ -2340,6 +2434,7 @@ function crclubTab(name) {
   if (name === 'config') crclubLoadConfig();
   if (name === 'clients') crclubLoadClients();
   if (name === 'purchases') crclubLoadPurchases();
+  if (name === 'rewards') crclubLoadRewards();
 }
 
 async function crclubLoadDashboard() {
@@ -2356,6 +2451,7 @@ async function crclubLoadConfig() {
   const cfg = await crclubApi('/crclub/config');
   document.getElementById('crclub-pts-value').value = cfg.pts_value;
   crclubRenderPackTable(cfg);
+  // bgUrl se carga en loadSettings(), no acá
 }
 
 function crclubRenderPackTable(cfg) {
@@ -2390,6 +2486,37 @@ async function crclubSaveConfig() {
   const r = await crclubApi('/crclub/admin/config', 'PUT', { pts_value });
   if (r.ok) { alert('Configuración guardada'); crclubLoadConfig(); }
   else alert('Error: ' + (r.error || 'desconocido'));
+}
+
+function crclubPreviewBg(val, slot) {
+  const url = val && val.trim().startsWith('http') ? val.trim() : (val && val.trim() ? `https://lh3.googleusercontent.com/d/${val.trim()}` : '');
+  const id = slot === 'app' ? 'crclub-bg-app-preview' : 'crclub-bg-login-preview';
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (url) {
+    el.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;display:block" onerror="this.parentElement.innerHTML='<span style=\\'font-size:11px;color:var(--gray2)\\'>Error al cargar imagen</span>'">`;
+  } else {
+    el.innerHTML = '<span style="font-size:11px;color:var(--gray2)">Sin imagen</span>';
+  }
+}
+
+async function crclubSaveBg(slot) {
+  const inputId = slot === 'app' ? 'crclub-bg-app-url' : 'crclub-bg-login-url';
+  const raw = document.getElementById(inputId).value.trim();
+  if (!raw) return toast('Ingresá una URL o ID de Drive', 'error');
+  const url = raw.startsWith('http') ? raw : `https://lh3.googleusercontent.com/d/${raw}`;
+  const key = slot === 'app' ? 'bgUrlApp' : 'bgUrlLogin';
+  const r = await crclubApi('/crclub/admin/config', 'PUT', { [key]: url });
+  if (r.ok) toast('Fondo guardado ✓');
+  else toast('Error: ' + (r.error || 'desconocido'), 'error');
+}
+
+async function crclubClearBg(slot) {
+  const inputId = slot === 'app' ? 'crclub-bg-app-url' : 'crclub-bg-login-url';
+  const key = slot === 'app' ? 'bgUrlApp' : 'bgUrlLogin';
+  const r = await crclubApi('/crclub/admin/config', 'PUT', { [key]: '' });
+  if (r.ok) { document.getElementById(inputId).value = ''; crclubPreviewBg('', slot); toast('Fondo quitado'); }
+  else toast('Error', 'error');
 }
 
 async function crclubLoadClients() {
@@ -2442,7 +2569,7 @@ async function crclubLoadPurchases() {
   tbody.innerHTML = d.purchases.map(p => `
     <tr style="border-bottom:1px solid var(--border)">
       <td style="padding:8px 0;color:var(--gray2);font-size:12px">${p.created_at.slice(0,10)}</td>
-      <td style="padding:8px 8px;color:var(--white)">${p.client_name}<br><span style="font-size:11px;color:var(--gray2)">${p.client_whatsapp||''}</span></td>
+      <td style="padding:8px 8px;color:var(--white)">${p.client_name}<br><span style="font-size:11px;color:var(--gray2)">${p.client_email||''}</span>${p.client_whatsapp ? `<br><span style="font-size:11px;color:var(--gray2)">${p.client_whatsapp}</span>` : ''}</td>
       <td style="padding:8px 4px;text-align:right;color:var(--gold)">${p.pts} CR</td>
       <td style="padding:8px 4px;text-align:right;color:var(--white)">$${p.amount.toLocaleString('es-AR')}</td>
       <td style="padding:8px 0;text-align:right">
@@ -2458,6 +2585,117 @@ async function crclubConfirmPurchase(id) {
   const r = await crclubApi(`/crclub/admin/purchases/${id}/confirm`, 'POST');
   if (r.ok) crclubLoadPurchases();
   else alert('Error: ' + (r.error || 'desconocido'));
+}
+
+async function crclubLoadRewards() {
+  const tbody = document.getElementById('crclub-rewards-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" style="padding:20px;text-align:center;color:var(--gray2);font-size:12px">Cargando...</td></tr>';
+  try {
+    const d = await fetch(CONFIG.CRCLUB_URL + '/crclub/admin/rewards', {
+      headers: { Authorization: 'Bearer ' + CONFIG.CF_AUTH }
+    }).then(r => r.json());
+    const rewards = d.rewards || [];
+    document.getElementById('crclub-rewards-count').textContent = rewards.length + ' recompensa' + (rewards.length !== 1 ? 's' : '');
+    if (!rewards.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="padding:20px;text-align:center;color:var(--gray2);font-size:12px">Sin recompensas. Creá la primera.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rewards.map(r => {
+      const curBadge = r.currency === 'cr'
+        ? `<span style="background:rgba(201,168,76,0.1);color:#c9a84c;border:1px solid rgba(201,168,76,0.2);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700">💎 CR</span>`
+        : `<span style="background:rgba(155,111,255,0.1);color:#9b6fff;border:1px solid rgba(155,111,255,0.2);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700">⭐ Estrellas</span>`;
+      const estado = r.active
+        ? `<span style="background:rgba(127,255,110,0.08);color:#7fff6e;border:1px solid #7fff6e22;border-radius:4px;padding:2px 7px;font-size:10px">Activa</span>`
+        : `<span style="background:rgba(100,100,100,0.08);color:#555;border:1px solid #33333322;border-radius:4px;padding:2px 7px;font-size:10px">Inactiva</span>`;
+      return `<tr>
+        <td style="padding:9px 10px;border-bottom:1px solid var(--border)"><strong>${r.name}</strong></td>
+        <td style="padding:9px 10px;border-bottom:1px solid var(--border);color:var(--gray2);font-size:11px">${r.description || '—'}</td>
+        <td style="padding:9px 10px;border-bottom:1px solid var(--border)">${curBadge}</td>
+        <td style="padding:9px 10px;border-bottom:1px solid var(--border);font-weight:700;color:${r.currency === 'cr' ? '#c9a84c' : '#9b6fff'}">${r.cost}</td>
+        <td style="padding:9px 10px;border-bottom:1px solid var(--border)">${estado}</td>
+        <td style="padding:9px 10px;border-bottom:1px solid var(--border)">
+          <button onclick='crclubShowRewardForm(${JSON.stringify(r)})' style="background:var(--card);color:#c9a84c;border:1px solid var(--border);padding:4px 9px;border-radius:5px;font-size:11px;cursor:pointer">Editar</button>
+          <button onclick="crclubDeleteReward(${r.id},'${r.name}')" style="background:var(--card);color:#ff8e8e;border:1px solid var(--border);padding:4px 9px;border-radius:5px;font-size:11px;cursor:pointer;margin-left:3px">✕</button>
+        </td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="6" style="padding:20px;text-align:center;color:#ff8e8e;font-size:12px">Error cargando recompensas</td></tr>';
+  }
+}
+
+function crclubShowRewardForm(reward) {
+  document.getElementById('crclub-reward-form').style.display = '';
+  document.getElementById('crclub-reward-msg').textContent = '';
+  if (reward) {
+    document.getElementById('crclub-reward-form-title').textContent = 'Editar recompensa';
+    document.getElementById('crclub-reward-id').value = reward.id;
+    document.getElementById('crclub-reward-name').value = reward.name;
+    document.getElementById('crclub-reward-desc').value = reward.description || '';
+    document.getElementById('crclub-reward-currency').value = reward.currency;
+    document.getElementById('crclub-reward-cost').value = reward.cost;
+    document.getElementById('crclub-reward-img').value = reward.image_url || '';
+    document.getElementById('crclub-reward-active').value = reward.active ? '1' : '0';
+  } else {
+    document.getElementById('crclub-reward-form-title').textContent = 'Nueva recompensa';
+    document.getElementById('crclub-reward-id').value = '';
+    document.getElementById('crclub-reward-name').value = '';
+    document.getElementById('crclub-reward-desc').value = '';
+    document.getElementById('crclub-reward-currency').value = 'cr';
+    document.getElementById('crclub-reward-cost').value = '';
+    document.getElementById('crclub-reward-img').value = '';
+    document.getElementById('crclub-reward-active').value = '1';
+  }
+  document.getElementById('crclub-reward-name').focus();
+}
+
+async function crclubSaveReward() {
+  const id = document.getElementById('crclub-reward-id').value;
+  const name = document.getElementById('crclub-reward-name').value.trim();
+  const cost = parseInt(document.getElementById('crclub-reward-cost').value);
+  const msgEl = document.getElementById('crclub-reward-msg');
+  if (!name) { msgEl.textContent = 'El nombre es obligatorio'; msgEl.style.color = '#ff8e8e'; return; }
+  if (!cost || cost <= 0) { msgEl.textContent = 'El costo debe ser mayor a 0'; msgEl.style.color = '#ff8e8e'; return; }
+
+  const payload = {
+    name,
+    description: document.getElementById('crclub-reward-desc').value.trim(),
+    currency: document.getElementById('crclub-reward-currency').value,
+    cost,
+    image_url: document.getElementById('crclub-reward-img').value.trim(),
+    active: document.getElementById('crclub-reward-active').value === '1'
+  };
+
+  try {
+    const url = id
+      ? CONFIG.CRCLUB_URL + '/crclub/admin/rewards/' + id
+      : CONFIG.CRCLUB_URL + '/crclub/admin/rewards';
+    const r = await fetch(url, {
+      method: id ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + CONFIG.CF_AUTH },
+      body: JSON.stringify(payload)
+    }).then(r => r.json());
+    if (r.ok) {
+      document.getElementById('crclub-reward-form').style.display = 'none';
+      crclubLoadRewards();
+    } else {
+      msgEl.textContent = r.error || 'Error al guardar'; msgEl.style.color = '#ff8e8e';
+    }
+  } catch(e) {
+    msgEl.textContent = 'Error de red'; msgEl.style.color = '#ff8e8e';
+  }
+}
+
+async function crclubDeleteReward(id, name) {
+  if (!confirm('¿Eliminar la recompensa "' + name + '"?')) return;
+  try {
+    const r = await fetch(CONFIG.CRCLUB_URL + '/crclub/admin/rewards/' + id, {
+      method: 'DELETE',
+      headers: { Authorization: 'Bearer ' + CONFIG.CF_AUTH }
+    }).then(r => r.json());
+    if (r.ok) crclubLoadRewards();
+    else alert('Error: ' + (r.error || 'No se pudo eliminar'));
+  } catch(e) { alert('Error de red'); }
 }
 
 // ── CLOUDFLARE SYNC ──
@@ -2643,10 +2881,14 @@ async function init() {
     const cloud = await fetchFromCloud('crd_messages');
     S.set('crd_messages', cloud || []);
   }
-  // Settings: siempre sincronizar del cloud (contiene logoUrl y otros datos críticos)
+  // Settings: sincronizar del cloud pero preservar logoUrl/logoFilter local si el cloud no los tiene
   const cloudSettings = await fetchFromCloud('crd_settings');
-  if (cloudSettings) S.set('crd_settings', cloudSettings);
-  else if (!S.get('crd_settings')) S.set('crd_settings', {availability:'Tomando fechas para 2025 y 2026',waSuffix: CONFIG.WA_DEFAULT,countdownDate:new Date(Date.now()+30*24*60*60*1000).toISOString(),countdownMsg:'Solo 2 fechas libres este mes',priceSilver:'',priceGold:'',pricePlatinum:''});
+  if (cloudSettings) {
+    const local = S.get('crd_settings') || {};
+    if (!cloudSettings.logoUrl && local.logoUrl) cloudSettings.logoUrl = local.logoUrl;
+    if (!cloudSettings.logoFilter && local.logoFilter) cloudSettings.logoFilter = local.logoFilter;
+    localStorage.setItem('crd_settings', JSON.stringify(cloudSettings));
+  } else if (!S.get('crd_settings')) S.set('crd_settings', {availability:'Tomando fechas para 2025 y 2026',waSuffix: CONFIG.WA_DEFAULT,countdownDate:new Date(Date.now()+30*24*60*60*1000).toISOString(),countdownMsg:'Solo 2 fechas libres este mes',priceSilver:'',priceGold:'',pricePlatinum:''});
   // Invitaciones: siempre sincronizar del cloud (fuente de verdad)
   const cloudInvites = await fetchFromCloud('crd_invites');
   if (cloudInvites !== null) S.set('crd_invites', cloudInvites);
@@ -3331,6 +3573,15 @@ function loadSettings() {
   document.getElementById('set-emailjs-template').value = s.emailjsContactTemplate || '';
   loadLogoPreview();
   loadLogoLightPreview();
+  // Cargar fondos CR Club desde KV
+  fetch(CONFIG.CRCLUB_URL + '/crclub/config', { headers: { 'Authorization': 'Bearer ' + CONFIG.CF_AUTH } })
+    .then(r => r.json()).then(cfg => {
+      if (!cfg) return;
+      const loginUrl = cfg.bgUrlLogin || cfg.bgUrl || '';
+      const appUrl = cfg.bgUrlApp || '';
+      if (loginUrl) { document.getElementById('crclub-bg-login-url').value = loginUrl; crclubPreviewBg(loginUrl, 'login'); }
+      if (appUrl)   { document.getElementById('crclub-bg-app-url').value = appUrl;     crclubPreviewBg(appUrl, 'app'); }
+    }).catch(() => {});
 }
 
 function saveSettings() {
@@ -3579,9 +3830,11 @@ function applySidebarLogo(src) {
 
 function saveLogo() {
   if(!pendingLogoData) { toast('Seleccioná un logo primero','error'); return; }
-  S.set('crd_site_logo', pendingLogoData);
-  applySidebarLogo(pendingLogoData);
+  const _logoSrc = pendingLogoData;
+  S.set('crd_site_logo', _logoSrc);
+  applySidebarLogo(_logoSrc);
   pendingLogoData = null;
+  syncLogoToCrclub(_logoSrc);
   toast('Logo guardado ✓ — se aplica al abrir el sitio');
   loadLogoPreview();
 }
@@ -3636,6 +3889,15 @@ function pickLogoDrive() {
     toast('URL lista — guardá con "Guardar logo"');
   });
 }
+function pickCrclubBgDrive(slot) {
+  openDriveBrowser(selectedUrl => {
+    const m = selectedUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    const url = m ? 'https://lh3.googleusercontent.com/d/'+m[1] : selectedUrl;
+    const inputId = slot === 'app' ? 'crclub-bg-app-url' : 'crclub-bg-login-url';
+    document.getElementById(inputId).value = url;
+    crclubPreviewBg(url, slot);
+  });
+}
 function previewLogoFromUrl(url) {
   if(!url) return;
   const raw = url.trim();
@@ -3688,14 +3950,25 @@ function saveLogoConfig() {
   setts.logoUrl = logoSrc;
   setts.logoFilter = filter;
   S.set('crd_settings', setts);
+  syncLogoToCrclub(logoSrc);
   applySidebarLogo(logoSrc);
   if(urlInp) urlInp.value = '';
   loadLogoPreview();
   toast('Logo guardado ✓');
 }
+
+function syncLogoToCrclub(src) {
+  if(!src) return;
+  fetch(CONFIG.CRCLUB_URL + '/crclub/admin/config', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + CONFIG.CF_AUTH },
+    body: JSON.stringify({ logoUrl: src })
+  }).then(r => { if(!r.ok) console.warn('crclub logo sync status:', r.status); })
+    .catch(e => console.warn('crclub logo sync failed:', e));
+}
 function loadLogoPreview() {
-  const logo = S.get('crd_site_logo');
-  const filter = S.get('crd_site_logo_filter') || '';
+  const logo = S.get('crd_site_logo') || (S.get('crd_settings') || {}).logoUrl || '';
+  const filter = S.get('crd_site_logo_filter') || (S.get('crd_settings') || {}).logoFilter || '';
   const img = document.getElementById('logo-preview-img');
   const empty = document.getElementById('logo-preview-empty');
   if(!img) return;
