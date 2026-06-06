@@ -646,7 +646,7 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 #lightbox-caption { font-size:12px; letter-spacing:2px; color:rgba(255,255,255,0.45); text-transform:uppercase; }
 
 #back-top {
-  position:fixed; bottom:96px; right:24px; z-index:999;
+  position:fixed; bottom:170px; right:32px; z-index:999;
   width:44px; height:44px; background:#fff; border:1px solid rgba(0,0,0,0.15);
   color:#111; border-radius:50%; display:none; align-items:center; justify-content:center;
   cursor:pointer; transition:all 0.25s ease; box-shadow:0 2px 16px rgba(0,0,0,0.12);
@@ -1134,7 +1134,7 @@ body::before {
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.01</span></span>
+    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.02</span></span>
     <div class="footer-bottom-links">
       <a href="#">Privacidad</a>
       <a href="#">Términos</a>
@@ -1170,7 +1170,7 @@ const CONFIG = {
 // ── EMAILJS INIT ──
 (function(){
   if(typeof emailjs !== 'undefined') {
-    const ejsCfg = S.get('crd_settings') || {};
+    const ejsCfg = JSON.parse(localStorage.getItem('crd_settings') || '{}');
     emailjs.init({ publicKey: ejsCfg.emailjsKey || CONFIG.EMAILJS_KEY });
   }
 })();
