@@ -154,11 +154,14 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 .fixture-filters select, .fixture-filters label { font-family:'DM Sans',sans-serif; font-size:13px; padding:8px 12px; border:1px solid var(--black4); border-radius:var(--radius); background:var(--paper); color:var(--ink); }
 .match-day { margin-bottom:28px; }
 .match-date { font-size:18px; font-weight:400; color:var(--ink2); margin-bottom:8px; text-transform:capitalize; }
-.match-row { display:flex; gap:16px; align-items:center; padding:10px 14px; border:1px solid var(--black4); border-radius:var(--radius); margin-bottom:6px; font-size:14px; }
+.match-row { position:relative; display:flex; gap:16px; align-items:center; padding:10px 14px; border:1px solid var(--black4); border-radius:var(--radius); margin-bottom:6px; font-size:14px; cursor:help; }
 .match-row--arg { border-color:var(--gold); background:rgba(201,168,76,0.06); }
 .match-time { font-weight:500; min-width:48px; }
 .match-teams { flex:1; }
 .match-venue, .match-group { color:var(--ink3); font-size:12px; }
+.match-tooltip { position:absolute; left:0; right:0; bottom:calc(100% + 6px); background:var(--ink); color:#fff; padding:10px 12px; border-radius:var(--radius); font-size:12px; line-height:1.6; z-index:20; opacity:0; visibility:hidden; transform:translateY(4px); transition:opacity 0.15s, transform 0.15s, visibility 0.15s; pointer-events:none; }
+.match-tooltip strong { display:block; color:var(--gold2); font-weight:500; margin-bottom:2px; }
+.match-row:hover .match-tooltip, .match-row.show-tooltip .match-tooltip { opacity:1; visibility:visible; transform:translateY(0); }
 .standings-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px; margin-top:32px; }
 .standings-group h4 { font-size:18px; margin-bottom:8px; }
 .standings-table { width:100%; border-collapse:collapse; font-size:12px; }
@@ -286,7 +289,7 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.02</span></span>
+    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.03</span></span>
     <div class="footer-bottom-links">
       <a href="#">Privacidad</a>
       <a href="#">Términos</a>
@@ -409,110 +412,110 @@ const GROUPS = [
 ];
 
 const MATCHES = [
-  { id: 1, stage: 'group', group: 'A', date: '2026-06-11', time: '16:00', home: 'México', away: 'Sudáfrica', homeTag: null, awayTag: null, venue: 'Estadio Azteca', city: 'Ciudad de México' },
-  { id: 2, stage: 'group', group: 'A', date: '2026-06-11', time: '23:00', home: 'Corea del Sur', away: 'Chequia', homeTag: null, awayTag: null, venue: 'Estadio Akron', city: 'Zapopan' },
-  { id: 3, stage: 'group', group: 'B', date: '2026-06-12', time: '16:00', home: 'Canadá', away: 'Bosnia y Herzegovina', homeTag: null, awayTag: null, venue: 'BMO Field', city: 'Toronto' },
-  { id: 4, stage: 'group', group: 'D', date: '2026-06-12', time: '22:00', home: 'Estados Unidos', away: 'Paraguay', homeTag: null, awayTag: null, venue: 'SoFi Stadium', city: 'Inglewood' },
-  { id: 5, stage: 'group', group: 'C', date: '2026-06-13', time: '22:00', home: 'Haití', away: 'Escocia', homeTag: null, awayTag: null, venue: 'Gillette Stadium', city: 'Foxborough' },
-  { id: 6, stage: 'group', group: 'D', date: '2026-06-14', time: '01:00', home: 'Australia', away: 'Turquía', homeTag: null, awayTag: null, venue: 'BC Place', city: 'Vancouver' },
-  { id: 7, stage: 'group', group: 'C', date: '2026-06-13', time: '19:00', home: 'Brasil', away: 'Marruecos', homeTag: null, awayTag: null, venue: 'MetLife Stadium', city: 'East Rutherford' },
-  { id: 8, stage: 'group', group: 'B', date: '2026-06-13', time: '16:00', home: 'Catar', away: 'Suiza', homeTag: null, awayTag: null, venue: 'Levi\'s Stadium', city: 'Santa Clara' },
-  { id: 9, stage: 'group', group: 'E', date: '2026-06-14', time: '20:00', home: 'Costa de Marfil', away: 'Ecuador', homeTag: null, awayTag: null, venue: 'Lincoln Financial Field', city: 'Philadelphia' },
-  { id: 10, stage: 'group', group: 'E', date: '2026-06-14', time: '14:00', home: 'Alemania', away: 'Curazao', homeTag: null, awayTag: null, venue: 'NRG Stadium', city: 'Houston' },
-  { id: 11, stage: 'group', group: 'F', date: '2026-06-14', time: '17:00', home: 'Países Bajos', away: 'Japón', homeTag: null, awayTag: null, venue: 'AT&T Stadium', city: 'Arlington' },
-  { id: 12, stage: 'group', group: 'F', date: '2026-06-14', time: '23:00', home: 'Suecia', away: 'Túnez', homeTag: null, awayTag: null, venue: 'Estadio BBVA', city: 'Guadalupe' },
-  { id: 13, stage: 'group', group: 'H', date: '2026-06-15', time: '19:00', home: 'Arabia Saudita', away: 'Uruguay', homeTag: null, awayTag: null, venue: 'Hard Rock Stadium', city: 'Miami Gardens' },
-  { id: 14, stage: 'group', group: 'H', date: '2026-06-15', time: '13:00', home: 'España', away: 'Cabo Verde', homeTag: null, awayTag: null, venue: 'Mercedes-Benz Stadium', city: 'Atlanta' },
-  { id: 15, stage: 'group', group: 'G', date: '2026-06-15', time: '22:00', home: 'Irán', away: 'Nueva Zelanda', homeTag: null, awayTag: null, venue: 'SoFi Stadium', city: 'Inglewood' },
-  { id: 16, stage: 'group', group: 'G', date: '2026-06-15', time: '16:00', home: 'Bélgica', away: 'Egipto', homeTag: null, awayTag: null, venue: 'Lumen Field', city: 'Seattle' },
-  { id: 17, stage: 'group', group: 'I', date: '2026-06-16', time: '16:00', home: 'Francia', away: 'Senegal', homeTag: null, awayTag: null, venue: 'MetLife Stadium', city: 'East Rutherford' },
-  { id: 18, stage: 'group', group: 'I', date: '2026-06-16', time: '19:00', home: 'Irak', away: 'Noruega', homeTag: null, awayTag: null, venue: 'Gillette Stadium', city: 'Foxborough' },
-  { id: 19, stage: 'group', group: 'J', date: '2026-06-16', time: '22:00', home: 'Argentina', away: 'Argelia', homeTag: null, awayTag: null, venue: 'Arrowhead Stadium', city: 'Kansas City' },
-  { id: 20, stage: 'group', group: 'J', date: '2026-06-17', time: '01:00', home: 'Austria', away: 'Jordania', homeTag: null, awayTag: null, venue: 'Levi\'s Stadium', city: 'Santa Clara' },
-  { id: 21, stage: 'group', group: 'L', date: '2026-06-17', time: '20:00', home: 'Ghana', away: 'Panamá', homeTag: null, awayTag: null, venue: 'BMO Field', city: 'Toronto' },
-  { id: 22, stage: 'group', group: 'L', date: '2026-06-17', time: '17:00', home: 'Inglaterra', away: 'Croacia', homeTag: null, awayTag: null, venue: 'AT&T Stadium', city: 'Arlington' },
-  { id: 23, stage: 'group', group: 'K', date: '2026-06-17', time: '14:00', home: 'Portugal', away: 'RD del Congo', homeTag: null, awayTag: null, venue: 'NRG Stadium', city: 'Houston' },
-  { id: 24, stage: 'group', group: 'K', date: '2026-06-17', time: '23:00', home: 'Uzbekistán', away: 'Colombia', homeTag: null, awayTag: null, venue: 'Estadio Azteca', city: 'Ciudad de México' },
-  { id: 25, stage: 'group', group: 'A', date: '2026-06-18', time: '13:00', home: 'Chequia', away: 'Sudáfrica', homeTag: null, awayTag: null, venue: 'Mercedes-Benz Stadium', city: 'Atlanta' },
-  { id: 26, stage: 'group', group: 'B', date: '2026-06-18', time: '16:00', home: 'Suiza', away: 'Bosnia y Herzegovina', homeTag: null, awayTag: null, venue: 'SoFi Stadium', city: 'Inglewood' },
-  { id: 27, stage: 'group', group: 'B', date: '2026-06-18', time: '19:00', home: 'Canadá', away: 'Catar', homeTag: null, awayTag: null, venue: 'BC Place', city: 'Vancouver' },
-  { id: 28, stage: 'group', group: 'A', date: '2026-06-18', time: '22:00', home: 'México', away: 'Corea del Sur', homeTag: null, awayTag: null, venue: 'Estadio Akron', city: 'Zapopan' },
-  { id: 29, stage: 'group', group: 'C', date: '2026-06-19', time: '21:30', home: 'Brasil', away: 'Haití', homeTag: null, awayTag: null, venue: 'Lincoln Financial Field', city: 'Philadelphia' },
-  { id: 30, stage: 'group', group: 'C', date: '2026-06-19', time: '19:00', home: 'Escocia', away: 'Marruecos', homeTag: null, awayTag: null, venue: 'Gillette Stadium', city: 'Foxborough' },
-  { id: 31, stage: 'group', group: 'D', date: '2026-06-20', time: '00:00', home: 'Turquía', away: 'Paraguay', homeTag: null, awayTag: null, venue: 'Levi\'s Stadium', city: 'Santa Clara' },
-  { id: 32, stage: 'group', group: 'D', date: '2026-06-19', time: '16:00', home: 'Estados Unidos', away: 'Australia', homeTag: null, awayTag: null, venue: 'Lumen Field', city: 'Seattle' },
-  { id: 33, stage: 'group', group: 'E', date: '2026-06-20', time: '17:00', home: 'Alemania', away: 'Costa de Marfil', homeTag: null, awayTag: null, venue: 'BMO Field', city: 'Toronto' },
-  { id: 34, stage: 'group', group: 'E', date: '2026-06-20', time: '21:00', home: 'Ecuador', away: 'Curazao', homeTag: null, awayTag: null, venue: 'Arrowhead Stadium', city: 'Kansas City' },
-  { id: 35, stage: 'group', group: 'F', date: '2026-06-20', time: '14:00', home: 'Países Bajos', away: 'Suecia', homeTag: null, awayTag: null, venue: 'NRG Stadium', city: 'Houston' },
-  { id: 36, stage: 'group', group: 'F', date: '2026-06-21', time: '01:00', home: 'Túnez', away: 'Japón', homeTag: null, awayTag: null, venue: 'Estadio BBVA', city: 'Guadalupe' },
-  { id: 37, stage: 'group', group: 'H', date: '2026-06-21', time: '19:00', home: 'Uruguay', away: 'Cabo Verde', homeTag: null, awayTag: null, venue: 'Hard Rock Stadium', city: 'Miami Gardens' },
-  { id: 38, stage: 'group', group: 'H', date: '2026-06-21', time: '13:00', home: 'España', away: 'Arabia Saudita', homeTag: null, awayTag: null, venue: 'Mercedes-Benz Stadium', city: 'Atlanta' },
-  { id: 39, stage: 'group', group: 'G', date: '2026-06-21', time: '16:00', home: 'Bélgica', away: 'Irán', homeTag: null, awayTag: null, venue: 'SoFi Stadium', city: 'Inglewood' },
-  { id: 40, stage: 'group', group: 'G', date: '2026-06-21', time: '22:00', home: 'Nueva Zelanda', away: 'Egipto', homeTag: null, awayTag: null, venue: 'BC Place', city: 'Vancouver' },
-  { id: 41, stage: 'group', group: 'I', date: '2026-06-22', time: '21:00', home: 'Noruega', away: 'Senegal', homeTag: null, awayTag: null, venue: 'MetLife Stadium', city: 'East Rutherford' },
-  { id: 42, stage: 'group', group: 'I', date: '2026-06-22', time: '18:00', home: 'Francia', away: 'Irak', homeTag: null, awayTag: null, venue: 'Lincoln Financial Field', city: 'Philadelphia' },
-  { id: 43, stage: 'group', group: 'J', date: '2026-06-22', time: '14:00', home: 'Argentina', away: 'Austria', homeTag: null, awayTag: null, venue: 'AT&T Stadium', city: 'Arlington' },
-  { id: 44, stage: 'group', group: 'J', date: '2026-06-23', time: '00:00', home: 'Jordania', away: 'Argelia', homeTag: null, awayTag: null, venue: 'Levi\'s Stadium', city: 'Santa Clara' },
-  { id: 45, stage: 'group', group: 'L', date: '2026-06-23', time: '17:00', home: 'Inglaterra', away: 'Ghana', homeTag: null, awayTag: null, venue: 'Gillette Stadium', city: 'Foxborough' },
-  { id: 46, stage: 'group', group: 'L', date: '2026-06-23', time: '20:00', home: 'Panamá', away: 'Croacia', homeTag: null, awayTag: null, venue: 'BMO Field', city: 'Toronto' },
-  { id: 47, stage: 'group', group: 'K', date: '2026-06-23', time: '14:00', home: 'Portugal', away: 'Uzbekistán', homeTag: null, awayTag: null, venue: 'NRG Stadium', city: 'Houston' },
-  { id: 48, stage: 'group', group: 'K', date: '2026-06-23', time: '23:00', home: 'Colombia', away: 'RD del Congo', homeTag: null, awayTag: null, venue: 'Estadio Akron', city: 'Zapopan' },
-  { id: 49, stage: 'group', group: 'C', date: '2026-06-24', time: '19:00', home: 'Escocia', away: 'Brasil', homeTag: null, awayTag: null, venue: 'Hard Rock Stadium', city: 'Miami Gardens' },
-  { id: 50, stage: 'group', group: 'C', date: '2026-06-24', time: '19:00', home: 'Marruecos', away: 'Haití', homeTag: null, awayTag: null, venue: 'Mercedes-Benz Stadium', city: 'Atlanta' },
-  { id: 51, stage: 'group', group: 'B', date: '2026-06-24', time: '16:00', home: 'Suiza', away: 'Canadá', homeTag: null, awayTag: null, venue: 'BC Place', city: 'Vancouver' },
-  { id: 52, stage: 'group', group: 'B', date: '2026-06-24', time: '16:00', home: 'Bosnia y Herzegovina', away: 'Catar', homeTag: null, awayTag: null, venue: 'Lumen Field', city: 'Seattle' },
-  { id: 53, stage: 'group', group: 'A', date: '2026-06-24', time: '22:00', home: 'Chequia', away: 'México', homeTag: null, awayTag: null, venue: 'Estadio Azteca', city: 'Ciudad de México' },
-  { id: 54, stage: 'group', group: 'A', date: '2026-06-24', time: '22:00', home: 'Sudáfrica', away: 'Corea del Sur', homeTag: null, awayTag: null, venue: 'Estadio BBVA', city: 'Guadalupe' },
-  { id: 55, stage: 'group', group: 'E', date: '2026-06-25', time: '17:00', home: 'Curazao', away: 'Costa de Marfil', homeTag: null, awayTag: null, venue: 'Lincoln Financial Field', city: 'Philadelphia' },
-  { id: 56, stage: 'group', group: 'E', date: '2026-06-25', time: '17:00', home: 'Ecuador', away: 'Alemania', homeTag: null, awayTag: null, venue: 'MetLife Stadium', city: 'East Rutherford' },
-  { id: 57, stage: 'group', group: 'F', date: '2026-06-25', time: '20:00', home: 'Japón', away: 'Suecia', homeTag: null, awayTag: null, venue: 'AT&T Stadium', city: 'Arlington' },
-  { id: 58, stage: 'group', group: 'F', date: '2026-06-25', time: '20:00', home: 'Túnez', away: 'Países Bajos', homeTag: null, awayTag: null, venue: 'Arrowhead Stadium', city: 'Kansas City' },
-  { id: 59, stage: 'group', group: 'D', date: '2026-06-25', time: '23:00', home: 'Turquía', away: 'Estados Unidos', homeTag: null, awayTag: null, venue: 'SoFi Stadium', city: 'Inglewood' },
-  { id: 60, stage: 'group', group: 'D', date: '2026-06-25', time: '23:00', home: 'Paraguay', away: 'Australia', homeTag: null, awayTag: null, venue: 'Levi\'s Stadium', city: 'Santa Clara' },
-  { id: 61, stage: 'group', group: 'I', date: '2026-06-26', time: '16:00', home: 'Noruega', away: 'Francia', homeTag: null, awayTag: null, venue: 'Gillette Stadium', city: 'Foxborough' },
-  { id: 62, stage: 'group', group: 'I', date: '2026-06-26', time: '16:00', home: 'Senegal', away: 'Irak', homeTag: null, awayTag: null, venue: 'BMO Field', city: 'Toronto' },
-  { id: 63, stage: 'group', group: 'G', date: '2026-06-27', time: '00:00', home: 'Egipto', away: 'Irán', homeTag: null, awayTag: null, venue: 'Lumen Field', city: 'Seattle' },
-  { id: 64, stage: 'group', group: 'G', date: '2026-06-27', time: '00:00', home: 'Nueva Zelanda', away: 'Bélgica', homeTag: null, awayTag: null, venue: 'BC Place', city: 'Vancouver' },
-  { id: 65, stage: 'group', group: 'H', date: '2026-06-26', time: '21:00', home: 'Cabo Verde', away: 'Arabia Saudita', homeTag: null, awayTag: null, venue: 'NRG Stadium', city: 'Houston' },
-  { id: 66, stage: 'group', group: 'H', date: '2026-06-26', time: '21:00', home: 'Uruguay', away: 'España', homeTag: null, awayTag: null, venue: 'Estadio Akron', city: 'Zapopan' },
-  { id: 67, stage: 'group', group: 'L', date: '2026-06-27', time: '18:00', home: 'Panamá', away: 'Inglaterra', homeTag: null, awayTag: null, venue: 'MetLife Stadium', city: 'East Rutherford' },
-  { id: 68, stage: 'group', group: 'L', date: '2026-06-27', time: '18:00', home: 'Croacia', away: 'Ghana', homeTag: null, awayTag: null, venue: 'Lincoln Financial Field', city: 'Philadelphia' },
-  { id: 69, stage: 'group', group: 'J', date: '2026-06-27', time: '23:00', home: 'Argelia', away: 'Austria', homeTag: null, awayTag: null, venue: 'Arrowhead Stadium', city: 'Kansas City' },
-  { id: 70, stage: 'group', group: 'J', date: '2026-06-27', time: '23:00', home: 'Jordania', away: 'Argentina', homeTag: null, awayTag: null, venue: 'AT&T Stadium', city: 'Arlington' },
-  { id: 71, stage: 'group', group: 'K', date: '2026-06-27', time: '20:30', home: 'Colombia', away: 'Portugal', homeTag: null, awayTag: null, venue: 'Hard Rock Stadium', city: 'Miami Gardens' },
-  { id: 72, stage: 'group', group: 'K', date: '2026-06-27', time: '20:30', home: 'RD del Congo', away: 'Uzbekistán', homeTag: null, awayTag: null, venue: 'Mercedes-Benz Stadium', city: 'Atlanta' },
-  { id: 73, stage: 'r32', group: null, date: '2026-06-28', time: '16:00', home: null, away: null, homeTag: '2A', awayTag: '2B', venue: 'SoFi Stadium', city: 'Inglewood' },
-  { id: 74, stage: 'r32', group: null, date: '2026-06-29', time: '17:30', home: null, away: null, homeTag: '1E', awayTag: '3ABCDF', venue: 'Gillette Stadium', city: 'Foxborough' },
-  { id: 75, stage: 'r32', group: null, date: '2026-06-29', time: '22:00', home: null, away: null, homeTag: '1F', awayTag: '2C', venue: 'Estadio BBVA', city: 'Guadalupe' },
-  { id: 76, stage: 'r32', group: null, date: '2026-06-29', time: '14:00', home: null, away: null, homeTag: '1C', awayTag: '2F', venue: 'NRG Stadium', city: 'Houston' },
-  { id: 77, stage: 'r32', group: null, date: '2026-06-30', time: '18:00', home: null, away: null, homeTag: '1I', awayTag: '3CDFGH', venue: 'MetLife Stadium', city: 'East Rutherford' },
-  { id: 78, stage: 'r32', group: null, date: '2026-06-30', time: '14:00', home: null, away: null, homeTag: '2E', awayTag: '2I', venue: 'AT&T Stadium', city: 'Arlington' },
-  { id: 79, stage: 'r32', group: null, date: '2026-06-30', time: '22:00', home: null, away: null, homeTag: '1A', awayTag: '3CEFHI', venue: 'Estadio Azteca', city: 'Ciudad de México' },
-  { id: 80, stage: 'r32', group: null, date: '2026-07-01', time: '13:00', home: null, away: null, homeTag: '1L', awayTag: '3EHIJK', venue: 'Mercedes-Benz Stadium', city: 'Atlanta' },
-  { id: 81, stage: 'r32', group: null, date: '2026-07-01', time: '21:00', home: null, away: null, homeTag: '1D', awayTag: '3BEFIJ', venue: 'Levi\'s Stadium', city: 'Santa Clara' },
-  { id: 82, stage: 'r32', group: null, date: '2026-07-01', time: '17:00', home: null, away: null, homeTag: '1G', awayTag: '3AEHIJ', venue: 'Lumen Field', city: 'Seattle' },
-  { id: 83, stage: 'r32', group: null, date: '2026-07-02', time: '20:00', home: null, away: null, homeTag: '2K', awayTag: '2L', venue: 'BMO Field', city: 'Toronto' },
-  { id: 84, stage: 'r32', group: null, date: '2026-07-02', time: '16:00', home: null, away: null, homeTag: '1H', awayTag: '2J', venue: 'SoFi Stadium', city: 'Inglewood' },
-  { id: 85, stage: 'r32', group: null, date: '2026-07-03', time: '00:00', home: null, away: null, homeTag: '1B', awayTag: '3EFGIJ', venue: 'BC Place', city: 'Vancouver' },
-  { id: 86, stage: 'r32', group: null, date: '2026-07-03', time: '19:00', home: null, away: null, homeTag: '1J', awayTag: '2H', venue: 'Hard Rock Stadium', city: 'Miami Gardens' },
-  { id: 87, stage: 'r32', group: null, date: '2026-07-03', time: '22:30', home: null, away: null, homeTag: '1K', awayTag: '3DEIJL', venue: 'Arrowhead Stadium', city: 'Kansas City' },
-  { id: 88, stage: 'r32', group: null, date: '2026-07-03', time: '15:00', home: null, away: null, homeTag: '2D', awayTag: '2G', venue: 'AT&T Stadium', city: 'Arlington' },
-  { id: 89, stage: 'r16', group: null, date: '2026-07-04', time: '18:00', home: null, away: null, homeTag: 'W74', awayTag: 'W77', venue: 'Lincoln Financial Field', city: 'Philadelphia' },
-  { id: 90, stage: 'r16', group: null, date: '2026-07-04', time: '14:00', home: null, away: null, homeTag: 'W73', awayTag: 'W75', venue: 'NRG Stadium', city: 'Houston' },
-  { id: 91, stage: 'r16', group: null, date: '2026-07-05', time: '17:00', home: null, away: null, homeTag: 'W76', awayTag: 'W78', venue: 'MetLife Stadium', city: 'East Rutherford' },
-  { id: 92, stage: 'r16', group: null, date: '2026-07-05', time: '21:00', home: null, away: null, homeTag: 'W79', awayTag: 'W80', venue: 'Estadio Azteca', city: 'Ciudad de México' },
-  { id: 93, stage: 'r16', group: null, date: '2026-07-06', time: '16:00', home: null, away: null, homeTag: 'W83', awayTag: 'W84', venue: 'AT&T Stadium', city: 'Arlington' },
-  { id: 94, stage: 'r16', group: null, date: '2026-07-06', time: '21:00', home: null, away: null, homeTag: 'W81', awayTag: 'W82', venue: 'Lumen Field', city: 'Seattle' },
-  { id: 95, stage: 'r16', group: null, date: '2026-07-07', time: '13:00', home: null, away: null, homeTag: 'W86', awayTag: 'W88', venue: 'Mercedes-Benz Stadium', city: 'Atlanta' },
-  { id: 96, stage: 'r16', group: null, date: '2026-07-07', time: '17:00', home: null, away: null, homeTag: 'W85', awayTag: 'W87', venue: 'BC Place', city: 'Vancouver' },
-  { id: 97, stage: 'qf', group: null, date: '2026-07-09', time: '17:00', home: null, away: null, homeTag: 'W89', awayTag: 'W90', venue: 'Gillette Stadium', city: 'Foxborough' },
-  { id: 98, stage: 'qf', group: null, date: '2026-07-10', time: '16:00', home: null, away: null, homeTag: 'W93', awayTag: 'W94', venue: 'SoFi Stadium', city: 'Inglewood' },
-  { id: 99, stage: 'qf', group: null, date: '2026-07-11', time: '18:00', home: null, away: null, homeTag: 'W91', awayTag: 'W92', venue: 'Hard Rock Stadium', city: 'Miami Gardens' },
-  { id: 100, stage: 'qf', group: null, date: '2026-07-11', time: '22:00', home: null, away: null, homeTag: 'W95', awayTag: 'W96', venue: 'Arrowhead Stadium', city: 'Kansas City' },
-  { id: 101, stage: 'sf', group: null, date: '2026-07-14', time: '16:00', home: null, away: null, homeTag: 'W97', awayTag: 'W98', venue: 'AT&T Stadium', city: 'Arlington' },
-  { id: 102, stage: 'sf', group: null, date: '2026-07-15', time: '16:00', home: null, away: null, homeTag: 'W99', awayTag: 'W100', venue: 'Mercedes-Benz Stadium', city: 'Atlanta' },
-  { id: 103, stage: '3rd', group: null, date: '2026-07-18', time: '18:00', home: null, away: null, homeTag: 'L101', awayTag: 'L102', venue: 'Hard Rock Stadium', city: 'Miami Gardens' },
-  { id: 104, stage: 'final', group: null, date: '2026-07-19', time: '16:00', home: null, away: null, homeTag: 'W101', awayTag: 'W102', venue: 'MetLife Stadium', city: 'East Rutherford' },
+  { id: 1, stage: 'group', group: 'A', date: '2026-06-11', time: '16:00', home: 'México', away: 'Sudáfrica', homeTag: null, awayTag: null, venue: 'Estadio Azteca', city: 'Ciudad de México', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video), TV Pública, Telefe, TyC Sports y Disney+ Premium' },
+  { id: 2, stage: 'group', group: 'A', date: '2026-06-11', time: '23:00', home: 'Corea del Sur', away: 'Chequia', homeTag: null, awayTag: null, venue: 'Estadio Akron', city: 'Zapopan', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 3, stage: 'group', group: 'B', date: '2026-06-12', time: '16:00', home: 'Canadá', away: 'Bosnia y Herzegovina', homeTag: null, awayTag: null, venue: 'BMO Field', city: 'Toronto', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 4, stage: 'group', group: 'D', date: '2026-06-12', time: '22:00', home: 'Estados Unidos', away: 'Paraguay', homeTag: null, awayTag: null, venue: 'SoFi Stadium', city: 'Inglewood', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 5, stage: 'group', group: 'C', date: '2026-06-13', time: '22:00', home: 'Haití', away: 'Escocia', homeTag: null, awayTag: null, venue: 'Gillette Stadium', city: 'Foxborough', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 6, stage: 'group', group: 'D', date: '2026-06-14', time: '01:00', home: 'Australia', away: 'Turquía', homeTag: null, awayTag: null, venue: 'BC Place', city: 'Vancouver', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 7, stage: 'group', group: 'C', date: '2026-06-13', time: '19:00', home: 'Brasil', away: 'Marruecos', homeTag: null, awayTag: null, venue: 'MetLife Stadium', city: 'East Rutherford', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 8, stage: 'group', group: 'B', date: '2026-06-13', time: '16:00', home: 'Catar', away: 'Suiza', homeTag: null, awayTag: null, venue: 'Levi\'s Stadium', city: 'Santa Clara', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 9, stage: 'group', group: 'E', date: '2026-06-14', time: '20:00', home: 'Costa de Marfil', away: 'Ecuador', homeTag: null, awayTag: null, venue: 'Lincoln Financial Field', city: 'Philadelphia', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 10, stage: 'group', group: 'E', date: '2026-06-14', time: '14:00', home: 'Alemania', away: 'Curazao', homeTag: null, awayTag: null, venue: 'NRG Stadium', city: 'Houston', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 11, stage: 'group', group: 'F', date: '2026-06-14', time: '17:00', home: 'Países Bajos', away: 'Japón', homeTag: null, awayTag: null, venue: 'AT&T Stadium', city: 'Arlington', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 12, stage: 'group', group: 'F', date: '2026-06-14', time: '23:00', home: 'Suecia', away: 'Túnez', homeTag: null, awayTag: null, venue: 'Estadio BBVA', city: 'Guadalupe', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 13, stage: 'group', group: 'H', date: '2026-06-15', time: '19:00', home: 'Arabia Saudita', away: 'Uruguay', homeTag: null, awayTag: null, venue: 'Hard Rock Stadium', city: 'Miami Gardens', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 14, stage: 'group', group: 'H', date: '2026-06-15', time: '13:00', home: 'España', away: 'Cabo Verde', homeTag: null, awayTag: null, venue: 'Mercedes-Benz Stadium', city: 'Atlanta', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 15, stage: 'group', group: 'G', date: '2026-06-15', time: '22:00', home: 'Irán', away: 'Nueva Zelanda', homeTag: null, awayTag: null, venue: 'SoFi Stadium', city: 'Inglewood', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 16, stage: 'group', group: 'G', date: '2026-06-15', time: '16:00', home: 'Bélgica', away: 'Egipto', homeTag: null, awayTag: null, venue: 'Lumen Field', city: 'Seattle', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 17, stage: 'group', group: 'I', date: '2026-06-16', time: '16:00', home: 'Francia', away: 'Senegal', homeTag: null, awayTag: null, venue: 'MetLife Stadium', city: 'East Rutherford', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 18, stage: 'group', group: 'I', date: '2026-06-16', time: '19:00', home: 'Irak', away: 'Noruega', homeTag: null, awayTag: null, venue: 'Gillette Stadium', city: 'Foxborough', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 19, stage: 'group', group: 'J', date: '2026-06-16', time: '22:00', home: 'Argentina', away: 'Argelia', homeTag: null, awayTag: null, venue: 'Arrowhead Stadium', city: 'Kansas City', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video), TV Pública, Telefe, TyC Sports y Disney+ Premium' },
+  { id: 20, stage: 'group', group: 'J', date: '2026-06-17', time: '01:00', home: 'Austria', away: 'Jordania', homeTag: null, awayTag: null, venue: 'Levi\'s Stadium', city: 'Santa Clara', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 21, stage: 'group', group: 'L', date: '2026-06-17', time: '20:00', home: 'Ghana', away: 'Panamá', homeTag: null, awayTag: null, venue: 'BMO Field', city: 'Toronto', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 22, stage: 'group', group: 'L', date: '2026-06-17', time: '17:00', home: 'Inglaterra', away: 'Croacia', homeTag: null, awayTag: null, venue: 'AT&T Stadium', city: 'Arlington', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 23, stage: 'group', group: 'K', date: '2026-06-17', time: '14:00', home: 'Portugal', away: 'RD del Congo', homeTag: null, awayTag: null, venue: 'NRG Stadium', city: 'Houston', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 24, stage: 'group', group: 'K', date: '2026-06-17', time: '23:00', home: 'Uzbekistán', away: 'Colombia', homeTag: null, awayTag: null, venue: 'Estadio Azteca', city: 'Ciudad de México', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 25, stage: 'group', group: 'A', date: '2026-06-18', time: '13:00', home: 'Chequia', away: 'Sudáfrica', homeTag: null, awayTag: null, venue: 'Mercedes-Benz Stadium', city: 'Atlanta', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 26, stage: 'group', group: 'B', date: '2026-06-18', time: '16:00', home: 'Suiza', away: 'Bosnia y Herzegovina', homeTag: null, awayTag: null, venue: 'SoFi Stadium', city: 'Inglewood', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 27, stage: 'group', group: 'B', date: '2026-06-18', time: '19:00', home: 'Canadá', away: 'Catar', homeTag: null, awayTag: null, venue: 'BC Place', city: 'Vancouver', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 28, stage: 'group', group: 'A', date: '2026-06-18', time: '22:00', home: 'México', away: 'Corea del Sur', homeTag: null, awayTag: null, venue: 'Estadio Akron', city: 'Zapopan', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 29, stage: 'group', group: 'C', date: '2026-06-19', time: '21:30', home: 'Brasil', away: 'Haití', homeTag: null, awayTag: null, venue: 'Lincoln Financial Field', city: 'Philadelphia', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 30, stage: 'group', group: 'C', date: '2026-06-19', time: '19:00', home: 'Escocia', away: 'Marruecos', homeTag: null, awayTag: null, venue: 'Gillette Stadium', city: 'Foxborough', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 31, stage: 'group', group: 'D', date: '2026-06-20', time: '00:00', home: 'Turquía', away: 'Paraguay', homeTag: null, awayTag: null, venue: 'Levi\'s Stadium', city: 'Santa Clara', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 32, stage: 'group', group: 'D', date: '2026-06-19', time: '16:00', home: 'Estados Unidos', away: 'Australia', homeTag: null, awayTag: null, venue: 'Lumen Field', city: 'Seattle', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 33, stage: 'group', group: 'E', date: '2026-06-20', time: '17:00', home: 'Alemania', away: 'Costa de Marfil', homeTag: null, awayTag: null, venue: 'BMO Field', city: 'Toronto', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 34, stage: 'group', group: 'E', date: '2026-06-20', time: '21:00', home: 'Ecuador', away: 'Curazao', homeTag: null, awayTag: null, venue: 'Arrowhead Stadium', city: 'Kansas City', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 35, stage: 'group', group: 'F', date: '2026-06-20', time: '14:00', home: 'Países Bajos', away: 'Suecia', homeTag: null, awayTag: null, venue: 'NRG Stadium', city: 'Houston', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 36, stage: 'group', group: 'F', date: '2026-06-21', time: '01:00', home: 'Túnez', away: 'Japón', homeTag: null, awayTag: null, venue: 'Estadio BBVA', city: 'Guadalupe', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 37, stage: 'group', group: 'H', date: '2026-06-21', time: '19:00', home: 'Uruguay', away: 'Cabo Verde', homeTag: null, awayTag: null, venue: 'Hard Rock Stadium', city: 'Miami Gardens', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 38, stage: 'group', group: 'H', date: '2026-06-21', time: '13:00', home: 'España', away: 'Arabia Saudita', homeTag: null, awayTag: null, venue: 'Mercedes-Benz Stadium', city: 'Atlanta', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 39, stage: 'group', group: 'G', date: '2026-06-21', time: '16:00', home: 'Bélgica', away: 'Irán', homeTag: null, awayTag: null, venue: 'SoFi Stadium', city: 'Inglewood', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 40, stage: 'group', group: 'G', date: '2026-06-21', time: '22:00', home: 'Nueva Zelanda', away: 'Egipto', homeTag: null, awayTag: null, venue: 'BC Place', city: 'Vancouver', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 41, stage: 'group', group: 'I', date: '2026-06-22', time: '21:00', home: 'Noruega', away: 'Senegal', homeTag: null, awayTag: null, venue: 'MetLife Stadium', city: 'East Rutherford', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 42, stage: 'group', group: 'I', date: '2026-06-22', time: '18:00', home: 'Francia', away: 'Irak', homeTag: null, awayTag: null, venue: 'Lincoln Financial Field', city: 'Philadelphia', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 43, stage: 'group', group: 'J', date: '2026-06-22', time: '14:00', home: 'Argentina', away: 'Austria', homeTag: null, awayTag: null, venue: 'AT&T Stadium', city: 'Arlington', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video), TV Pública, Telefe, TyC Sports y Disney+ Premium' },
+  { id: 44, stage: 'group', group: 'J', date: '2026-06-23', time: '00:00', home: 'Jordania', away: 'Argelia', homeTag: null, awayTag: null, venue: 'Levi\'s Stadium', city: 'Santa Clara', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 45, stage: 'group', group: 'L', date: '2026-06-23', time: '17:00', home: 'Inglaterra', away: 'Ghana', homeTag: null, awayTag: null, venue: 'Gillette Stadium', city: 'Foxborough', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 46, stage: 'group', group: 'L', date: '2026-06-23', time: '20:00', home: 'Panamá', away: 'Croacia', homeTag: null, awayTag: null, venue: 'BMO Field', city: 'Toronto', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 47, stage: 'group', group: 'K', date: '2026-06-23', time: '14:00', home: 'Portugal', away: 'Uzbekistán', homeTag: null, awayTag: null, venue: 'NRG Stadium', city: 'Houston', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 48, stage: 'group', group: 'K', date: '2026-06-23', time: '23:00', home: 'Colombia', away: 'RD del Congo', homeTag: null, awayTag: null, venue: 'Estadio Akron', city: 'Zapopan', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 49, stage: 'group', group: 'C', date: '2026-06-24', time: '19:00', home: 'Escocia', away: 'Brasil', homeTag: null, awayTag: null, venue: 'Hard Rock Stadium', city: 'Miami Gardens', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 50, stage: 'group', group: 'C', date: '2026-06-24', time: '19:00', home: 'Marruecos', away: 'Haití', homeTag: null, awayTag: null, venue: 'Mercedes-Benz Stadium', city: 'Atlanta', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 51, stage: 'group', group: 'B', date: '2026-06-24', time: '16:00', home: 'Suiza', away: 'Canadá', homeTag: null, awayTag: null, venue: 'BC Place', city: 'Vancouver', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 52, stage: 'group', group: 'B', date: '2026-06-24', time: '16:00', home: 'Bosnia y Herzegovina', away: 'Catar', homeTag: null, awayTag: null, venue: 'Lumen Field', city: 'Seattle', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 53, stage: 'group', group: 'A', date: '2026-06-24', time: '22:00', home: 'Chequia', away: 'México', homeTag: null, awayTag: null, venue: 'Estadio Azteca', city: 'Ciudad de México', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 54, stage: 'group', group: 'A', date: '2026-06-24', time: '22:00', home: 'Sudáfrica', away: 'Corea del Sur', homeTag: null, awayTag: null, venue: 'Estadio BBVA', city: 'Guadalupe', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 55, stage: 'group', group: 'E', date: '2026-06-25', time: '17:00', home: 'Curazao', away: 'Costa de Marfil', homeTag: null, awayTag: null, venue: 'Lincoln Financial Field', city: 'Philadelphia', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 56, stage: 'group', group: 'E', date: '2026-06-25', time: '17:00', home: 'Ecuador', away: 'Alemania', homeTag: null, awayTag: null, venue: 'MetLife Stadium', city: 'East Rutherford', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 57, stage: 'group', group: 'F', date: '2026-06-25', time: '20:00', home: 'Japón', away: 'Suecia', homeTag: null, awayTag: null, venue: 'AT&T Stadium', city: 'Arlington', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 58, stage: 'group', group: 'F', date: '2026-06-25', time: '20:00', home: 'Túnez', away: 'Países Bajos', homeTag: null, awayTag: null, venue: 'Arrowhead Stadium', city: 'Kansas City', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 59, stage: 'group', group: 'D', date: '2026-06-25', time: '23:00', home: 'Turquía', away: 'Estados Unidos', homeTag: null, awayTag: null, venue: 'SoFi Stadium', city: 'Inglewood', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 60, stage: 'group', group: 'D', date: '2026-06-25', time: '23:00', home: 'Paraguay', away: 'Australia', homeTag: null, awayTag: null, venue: 'Levi\'s Stadium', city: 'Santa Clara', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 61, stage: 'group', group: 'I', date: '2026-06-26', time: '16:00', home: 'Noruega', away: 'Francia', homeTag: null, awayTag: null, venue: 'Gillette Stadium', city: 'Foxborough', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 62, stage: 'group', group: 'I', date: '2026-06-26', time: '16:00', home: 'Senegal', away: 'Irak', homeTag: null, awayTag: null, venue: 'BMO Field', city: 'Toronto', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 63, stage: 'group', group: 'G', date: '2026-06-27', time: '00:00', home: 'Egipto', away: 'Irán', homeTag: null, awayTag: null, venue: 'Lumen Field', city: 'Seattle', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 64, stage: 'group', group: 'G', date: '2026-06-27', time: '00:00', home: 'Nueva Zelanda', away: 'Bélgica', homeTag: null, awayTag: null, venue: 'BC Place', city: 'Vancouver', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 65, stage: 'group', group: 'H', date: '2026-06-26', time: '21:00', home: 'Cabo Verde', away: 'Arabia Saudita', homeTag: null, awayTag: null, venue: 'NRG Stadium', city: 'Houston', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 66, stage: 'group', group: 'H', date: '2026-06-26', time: '21:00', home: 'Uruguay', away: 'España', homeTag: null, awayTag: null, venue: 'Estadio Akron', city: 'Zapopan', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 67, stage: 'group', group: 'L', date: '2026-06-27', time: '18:00', home: 'Panamá', away: 'Inglaterra', homeTag: null, awayTag: null, venue: 'MetLife Stadium', city: 'East Rutherford', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 68, stage: 'group', group: 'L', date: '2026-06-27', time: '18:00', home: 'Croacia', away: 'Ghana', homeTag: null, awayTag: null, venue: 'Lincoln Financial Field', city: 'Philadelphia', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 69, stage: 'group', group: 'J', date: '2026-06-27', time: '23:00', home: 'Argelia', away: 'Austria', homeTag: null, awayTag: null, venue: 'Arrowhead Stadium', city: 'Kansas City', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 70, stage: 'group', group: 'J', date: '2026-06-27', time: '23:00', home: 'Jordania', away: 'Argentina', homeTag: null, awayTag: null, venue: 'AT&T Stadium', city: 'Arlington', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video), TV Pública, Telefe, TyC Sports y Disney+ Premium' },
+  { id: 71, stage: 'group', group: 'K', date: '2026-06-27', time: '20:30', home: 'Colombia', away: 'Portugal', homeTag: null, awayTag: null, venue: 'Hard Rock Stadium', city: 'Miami Gardens', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 72, stage: 'group', group: 'K', date: '2026-06-27', time: '20:30', home: 'RD del Congo', away: 'Uzbekistán', homeTag: null, awayTag: null, venue: 'Mercedes-Benz Stadium', city: 'Atlanta', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 73, stage: 'r32', group: null, date: '2026-06-28', time: '16:00', home: null, away: null, homeTag: '2A', awayTag: '2B', venue: 'SoFi Stadium', city: 'Inglewood', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 74, stage: 'r32', group: null, date: '2026-06-29', time: '17:30', home: null, away: null, homeTag: '1E', awayTag: '3ABCDF', venue: 'Gillette Stadium', city: 'Foxborough', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 75, stage: 'r32', group: null, date: '2026-06-29', time: '22:00', home: null, away: null, homeTag: '1F', awayTag: '2C', venue: 'Estadio BBVA', city: 'Guadalupe', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 76, stage: 'r32', group: null, date: '2026-06-29', time: '14:00', home: null, away: null, homeTag: '1C', awayTag: '2F', venue: 'NRG Stadium', city: 'Houston', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 77, stage: 'r32', group: null, date: '2026-06-30', time: '18:00', home: null, away: null, homeTag: '1I', awayTag: '3CDFGH', venue: 'MetLife Stadium', city: 'East Rutherford', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 78, stage: 'r32', group: null, date: '2026-06-30', time: '14:00', home: null, away: null, homeTag: '2E', awayTag: '2I', venue: 'AT&T Stadium', city: 'Arlington', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 79, stage: 'r32', group: null, date: '2026-06-30', time: '22:00', home: null, away: null, homeTag: '1A', awayTag: '3CEFHI', venue: 'Estadio Azteca', city: 'Ciudad de México', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 80, stage: 'r32', group: null, date: '2026-07-01', time: '13:00', home: null, away: null, homeTag: '1L', awayTag: '3EHIJK', venue: 'Mercedes-Benz Stadium', city: 'Atlanta', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 81, stage: 'r32', group: null, date: '2026-07-01', time: '21:00', home: null, away: null, homeTag: '1D', awayTag: '3BEFIJ', venue: 'Levi\'s Stadium', city: 'Santa Clara', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 82, stage: 'r32', group: null, date: '2026-07-01', time: '17:00', home: null, away: null, homeTag: '1G', awayTag: '3AEHIJ', venue: 'Lumen Field', city: 'Seattle', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 83, stage: 'r32', group: null, date: '2026-07-02', time: '20:00', home: null, away: null, homeTag: '2K', awayTag: '2L', venue: 'BMO Field', city: 'Toronto', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 84, stage: 'r32', group: null, date: '2026-07-02', time: '16:00', home: null, away: null, homeTag: '1H', awayTag: '2J', venue: 'SoFi Stadium', city: 'Inglewood', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 85, stage: 'r32', group: null, date: '2026-07-03', time: '00:00', home: null, away: null, homeTag: '1B', awayTag: '3EFGIJ', venue: 'BC Place', city: 'Vancouver', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 86, stage: 'r32', group: null, date: '2026-07-03', time: '19:00', home: null, away: null, homeTag: '1J', awayTag: '2H', venue: 'Hard Rock Stadium', city: 'Miami Gardens', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 87, stage: 'r32', group: null, date: '2026-07-03', time: '22:30', home: null, away: null, homeTag: '1K', awayTag: '3DEIJL', venue: 'Arrowhead Stadium', city: 'Kansas City', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 88, stage: 'r32', group: null, date: '2026-07-03', time: '15:00', home: null, away: null, homeTag: '2D', awayTag: '2G', venue: 'AT&T Stadium', city: 'Arlington', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 89, stage: 'r16', group: null, date: '2026-07-04', time: '18:00', home: null, away: null, homeTag: 'W74', awayTag: 'W77', venue: 'Lincoln Financial Field', city: 'Philadelphia', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 90, stage: 'r16', group: null, date: '2026-07-04', time: '14:00', home: null, away: null, homeTag: 'W73', awayTag: 'W75', venue: 'NRG Stadium', city: 'Houston', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 91, stage: 'r16', group: null, date: '2026-07-05', time: '17:00', home: null, away: null, homeTag: 'W76', awayTag: 'W78', venue: 'MetLife Stadium', city: 'East Rutherford', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 92, stage: 'r16', group: null, date: '2026-07-05', time: '21:00', home: null, away: null, homeTag: 'W79', awayTag: 'W80', venue: 'Estadio Azteca', city: 'Ciudad de México', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 93, stage: 'r16', group: null, date: '2026-07-06', time: '16:00', home: null, away: null, homeTag: 'W83', awayTag: 'W84', venue: 'AT&T Stadium', city: 'Arlington', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 94, stage: 'r16', group: null, date: '2026-07-06', time: '21:00', home: null, away: null, homeTag: 'W81', awayTag: 'W82', venue: 'Lumen Field', city: 'Seattle', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 95, stage: 'r16', group: null, date: '2026-07-07', time: '13:00', home: null, away: null, homeTag: 'W86', awayTag: 'W88', venue: 'Mercedes-Benz Stadium', city: 'Atlanta', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 96, stage: 'r16', group: null, date: '2026-07-07', time: '17:00', home: null, away: null, homeTag: 'W85', awayTag: 'W87', venue: 'BC Place', city: 'Vancouver', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 97, stage: 'qf', group: null, date: '2026-07-09', time: '17:00', home: null, away: null, homeTag: 'W89', awayTag: 'W90', venue: 'Gillette Stadium', city: 'Foxborough', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 98, stage: 'qf', group: null, date: '2026-07-10', time: '16:00', home: null, away: null, homeTag: 'W93', awayTag: 'W94', venue: 'SoFi Stadium', city: 'Inglewood', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 99, stage: 'qf', group: null, date: '2026-07-11', time: '18:00', home: null, away: null, homeTag: 'W91', awayTag: 'W92', venue: 'Hard Rock Stadium', city: 'Miami Gardens', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 100, stage: 'qf', group: null, date: '2026-07-11', time: '22:00', home: null, away: null, homeTag: 'W95', awayTag: 'W96', venue: 'Arrowhead Stadium', city: 'Kansas City', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 101, stage: 'sf', group: null, date: '2026-07-14', time: '16:00', home: null, away: null, homeTag: 'W97', awayTag: 'W98', venue: 'AT&T Stadium', city: 'Arlington', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video), TV Pública, Telefe, TyC Sports y Disney+ Premium' },
+  { id: 102, stage: 'sf', group: null, date: '2026-07-15', time: '16:00', home: null, away: null, homeTag: 'W99', awayTag: 'W100', venue: 'Mercedes-Benz Stadium', city: 'Atlanta', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video), TV Pública, Telefe, TyC Sports y Disney+ Premium' },
+  { id: 103, stage: '3rd', group: null, date: '2026-07-18', time: '18:00', home: null, away: null, homeTag: 'L101', awayTag: 'L102', venue: 'Hard Rock Stadium', city: 'Miami Gardens', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)' },
+  { id: 104, stage: 'final', group: null, date: '2026-07-19', time: '16:00', home: null, away: null, homeTag: 'W101', awayTag: 'W102', venue: 'MetLife Stadium', city: 'East Rutherford', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video), TV Pública, Telefe, TyC Sports y Disney+ Premium' },
 ];
 
 function isArgentinaMatch(m) {
@@ -551,6 +554,10 @@ function renderMatches(matches) {
         <span class="match-teams">${matchLabel(m)}</span>
         <span class="match-venue">${m.venue}</span>
         ${m.group ? `<span class="match-group">Grupo ${m.group}</span>` : ''}
+        <div class="match-tooltip">
+          <strong>${formatDate(m.date)} · ${m.time} hs (ART)</strong>
+          ${m.channels}
+        </div>
       </div>`).join('');
     return `<div class="match-day"><h3 class="match-date">${formatDate(date)}</h3>${rows}</div>`;
   }).join('');
@@ -598,6 +605,14 @@ populateFilters();
 renderMatches(MATCHES);
 ['filter-date', 'filter-group', 'filter-team', 'filter-arg'].forEach(id => {
   document.getElementById(id).addEventListener('change', applyFilters);
+});
+
+document.getElementById('fixture-list').addEventListener('click', e => {
+  const row = e.target.closest('.match-row');
+  if (!row) return;
+  const wasOpen = row.classList.contains('show-tooltip');
+  document.querySelectorAll('.match-row.show-tooltip').forEach(r => r.classList.remove('show-tooltip'));
+  if (!wasOpen) row.classList.add('show-tooltip');
 });
 
 function getNextArgentinaMatch(matches, now = new Date()) {
