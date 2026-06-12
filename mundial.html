@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fixture Mundial 2026 (horario Argentina) | Cristian Romero Producciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black:   #ffffff;
+  --black2:  #f8f8f8;
+  --black3:  #f0f0f0;
+  --black4:  #e8e8e8;
+  --cyan:    #111111;
+  --cyan2:   #333333;
+  --violet:  #111111;
+  --violet2: #333333;
+  --gold:    #c9a84c;
+  --gold2:   #e8c96a;
+  --white:   #111111;
+  --gray:    #888888;
+  --gray2:   #555555;
+  --red:     #cc3333;
+  --green:   #25d366;
+  --radius:  2px;
+  --trans:   0.3s ease;
+  --ink:     #111111;
+  --ink2:    #444444;
+  --ink3:    #888888;
+  --paper:   #ffffff;
+  --paper2:  #f8f8f8;
+  --paper3:  #f0f0f0;
+  --border:  #e0e0e0;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans', sans-serif; background:var(--paper); color:var(--ink); }
+h1,h2,h3,h4 { font-family:'Cormorant Garamond', serif; font-weight:300; }
+
+/* ── NAV ── */
+nav {
+  background: #ffffff;
+  border-top: 0;
+  border-bottom: 1px solid var(--border);
+  padding: 0 48px; display: flex; justify-content: space-between; align-items: center;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 199;
+  transition: box-shadow 0.3s;
+}
+nav.scrolled { box-shadow: 0 4px 40px rgba(0,0,0,0.5); }
+.logo {
+  font-family: 'Cormorant Garamond', serif; font-size: 21px;
+  font-weight: 300; letter-spacing: 4px; text-transform: uppercase;
+  color: var(--white); padding: 18px 0;
+}
+.logo span { color: var(--gold); }
+.nav-links { display: flex; list-style: none; }
+.nav-links a {
+  display: block; padding: 20px 16px; color: var(--gray2);
+  font-size: 10.5px; letter-spacing: 2px; text-transform: uppercase;
+  font-weight: 500; transition: color var(--trans), border-bottom var(--trans);
+  border-bottom: 2px solid transparent;
+}
+.nav-links a:hover, .nav-links a.active { color: var(--gold); border-bottom-color: var(--gold); }
+.nav-cta {
+  background: var(--ink); color: #ffffff !important; cursor:pointer; font-family:inherit;
+  padding: 10px 24px !important; border-bottom: none !important;
+  font-weight: 600 !important; transition: background var(--trans) !important;
+  margin-left: 8px;
+}
+.nav-cta:hover { background: #333 !important; }
+.hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 20px 0; }
+.hamburger span { width: 24px; height: 1.5px; background: var(--white); transition: var(--trans); }
+
+/* ── MOBILE NAV ── */
+.mobile-nav {
+  display: none; position: fixed; inset: 0; background: var(--black2);
+  z-index: 198; flex-direction: column; align-items: center; justify-content: center; gap: 32px;
+}
+.mobile-nav.open { display: flex; }
+.mobile-nav a { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--white); letter-spacing: 3px; }
+.mobile-nav a:hover { color: var(--gold); }
+.mobile-close { position: absolute; top: 80px; right: 40px; font-size: 28px; color: var(--gray); cursor: pointer; }
+
+#navbar .logo img,
+#navbar-logo-img {
+  height: 52px !important;
+  width: auto !important;
+  max-width: 260px;
+  object-fit: contain;
+  display: block;
+}
+
+/* ── FOOTER ── */
+footer { background:var(--paper2); border-top:1px solid var(--border); padding:80px 80px 40px; }
+.footer-grid { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:60px; margin-bottom:60px; }
+.footer-logo { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:300; letter-spacing:4px; text-transform:uppercase; margin-bottom:18px; display:block; }
+.footer-logo span { color:var(--gold); }
+.footer-desc { font-size:13px; line-height:1.8; color:var(--ink2); max-width:320px; text-align:center; }
+.footer-col-title { font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--ink); margin-bottom:22px; font-weight:600; }
+.footer-links { list-style:none; display:flex; flex-direction:column; gap:11px; }
+.footer-links a { color:var(--ink2); font-size:13px; transition:color var(--trans); }
+.footer-links a:hover { color:var(--ink); }
+.footer-bottom { border-top:1px solid var(--border); padding-top:28px; display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--ink3); flex-wrap:wrap; gap:16px; }
+.footer-bottom a { color:var(--ink3); transition:color var(--trans); }
+.footer-bottom a:hover { color:var(--ink); }
+.footer-bottom-links { display:flex; gap:24px; }
+
+#footer-logo-img { height: 40px !important; width: auto !important; max-width: 260px; object-fit: contain; display: block; }
+
+@media(max-width:768px) {
+  nav { padding:0 20px; top:0; }
+  .nav-links { display:none; }
+  .hamburger { display:flex; }
+  .footer-grid { grid-template-columns:1fr; }
+  footer { padding:60px 24px 40px; }
+  .footer-bottom { flex-direction:column; text-align:center; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a class="logo" href="index.html" style="display:flex;align-items:center;gap:14px;padding:12px 0;text-decoration:none"><img id="navbar-logo-img" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Cristian Romero Producciones" style="height:46px"><span style="font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:300;letter-spacing:4px;text-transform:uppercase;color:var(--ink)">Cristian Romero <span style="color:var(--gold)">Producciones</span></span></a>
+  <ul class="nav-links">
+    <li><a href="index.html#sobre-mi">Sobre Mí</a></li>
+    <li><a href="index.html#portfolio">Portfolio</a></li>
+    <li><a href="index.html#servicios">Servicios</a></li>
+    <li><a href="index.html#precios">Precios</a></li>
+    <li><a href="index.html#blog">Blog</a></li>
+    <li><a href="index.html#contacto">Contacto</a></li>
+    <li><a href="mundial.html" class="active">Mundial 2026</a></li>
+    <li><button class="nav-cta" onclick="openWA('consultar_nav')">Consultar</button></li>
+  </ul>
+  <div class="hamburger" id="hamburger">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- MOBILE NAV -->
+<div class="mobile-nav" id="mobile-nav">
+  <span class="mobile-close" id="mobile-close">✕</span>
+  <a href="index.html#sobre-mi" class="mobile-link">Sobre Mí</a>
+  <a href="index.html#portfolio" class="mobile-link">Portfolio</a>
+  <a href="index.html#servicios" class="mobile-link">Servicios</a>
+  <a href="index.html#precios" class="mobile-link">Precios</a>
+  <a href="index.html#blog" class="mobile-link">Blog</a>
+  <a href="index.html#contacto" class="mobile-link">Contacto</a>
+  <a href="mundial.html" class="mobile-link active">Mundial 2026</a>
+</div>
+
+<section id="hero-mundial"></section>
+<section id="fixture-mundial"></section>
+<section id="standings-mundial"></section>
+<section id="cta-mundial"></section>
+
+<footer>
+  <div class="footer-grid">
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center">
+      <span class="footer-logo" style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:16px;text-align:center"><img id="footer-logo-img" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Cristian Romero Producciones" style="height:40px"><span style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:300;letter-spacing:3px;text-transform:uppercase;color:var(--ink)">Cristian Romero <span style="color:var(--gold)">Producciones</span></span></span>
+      <p class="footer-desc" id="footer-desc-text">Fotografía cinematográfica de quinceañeras y casamientos en Buenos Aires. Capturo tus historias para que duren toda la vida.</p>
+    </div>
+    <div>
+      <p class="footer-col-title">Navegación</p>
+      <ul class="footer-links">
+        <li><a href="index.html#sobre-mi">Sobre Mí</a></li>
+        <li><a href="index.html#portfolio">Portfolio</a></li>
+        <li><a href="index.html#servicios">Servicios</a></li>
+        <li><a href="index.html#precios">Precios</a></li>
+        <li><a href="index.html#blog">Blog</a></li>
+        <li><a href="index.html#contacto">Contacto</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="footer-col-title">Servicios</p>
+      <ul class="footer-links">
+        <li><a href="index.html#servicios">Eventos de XV</a></li>
+        <li><a href="index.html#servicios">Casamientos</a></li>
+        <li><a href="index.html#servicios">Book de XV</a></li>
+        <li><a href="index.html#servicios">Book Pre-Boda</a></li>
+        <li><a href="index.html#servicios">Formación</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="footer-col-title">Legal</p>
+      <ul class="footer-links">
+        <li><a href="#" id="legal-link-privacy" onclick="openLegalModal('privacy');return false">Política de Privacidad</a></li>
+        <li><a href="#" id="legal-link-terms" onclick="openLegalModal('terms');return false">Términos y Condiciones</a></li>
+        <li><a href="admin.html" style="color:rgba(255,255,255,0.2)">Panel Admin</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.02</span></span>
+    <div class="footer-bottom-links">
+      <a href="#">Privacidad</a>
+      <a href="#">Términos</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── MOBILE NAV ──
+document.getElementById('hamburger').addEventListener('click', () => document.getElementById('mobile-nav').classList.add('open'));
+document.getElementById('mobile-close').addEventListener('click', () => document.getElementById('mobile-nav').classList.remove('open'));
+document.querySelectorAll('.mobile-link').forEach(a => a.addEventListener('click', () => document.getElementById('mobile-nav').classList.remove('open')));
+
+const CONFIG = {
+  CF_URL: 'https://web.cristian-romero-digital.workers.dev',
+  IG_DEFAULT: 'https://instagram.com/cristian.romero.digital'
+};
+
+const S = {
+  get: k => { try { return JSON.parse(localStorage.getItem(k)) } catch (e) { return null } }
+};
+
+async function loadFromCloud() {
+  try {
+    const res = await fetch(CONFIG.CF_URL + '/crd_settings?t=' + Date.now());
+    const text = await res.text();
+    if (text && text !== 'null') localStorage.setItem('crd_settings', text);
+  } catch (e) {}
+}
+
+function applyStoredLogo() {
+  try {
+    const settings = S.get('crd_settings') || {};
+    const logoUrl = settings.logoUrl || localStorage.getItem('crd_site_logo');
+    const logoFilter = settings.logoFilter || localStorage.getItem('crd_site_logo_filter') || '';
+    if (!logoUrl || String(logoUrl).indexOf('blob:') === 0) return;
+    ['navbar-logo-img', 'footer-logo-img'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.style.filter = logoFilter;
+      el.src = logoUrl;
+    });
+  } catch (e) {}
+}
+
+loadFromCloud().then(applyStoredLogo).catch(applyStoredLogo);
+</script>
+
+</body>
+</html>
