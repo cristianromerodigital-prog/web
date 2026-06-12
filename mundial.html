@@ -116,6 +116,7 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
   footer { padding:60px 24px 40px; }
   .footer-bottom { flex-direction:column; text-align:center; }
   .countdown-bar { padding:20px; gap:20px; }
+  .section-divider { margin:0 24px; }
 }
 
 /* ── COUNTDOWN ── */
@@ -133,6 +134,7 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 .countdown-unit-label { font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--ink3); margin-top:4px; display:block; }
 
 /* ── SECTION UTILS ── */
+.section-divider { height:1px; background:var(--border); margin:0 80px; }
 .section-eyebrow {
   font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--ink3);
   margin-bottom:20px; display:flex; align-items:center; gap:14px;
@@ -232,7 +234,20 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
   </div>
   <div id="standings-grid" class="standings-grid"></div>
 </section>
-<section id="cta-mundial"></section>
+<div class="section-divider"></div>
+<section id="cta-mundial" class="cta-mundial">
+  <div style="text-align:center">
+    <p class="section-eyebrow center">Cristian Romero Producciones</p>
+    <h2 class="section-title center">Fotografía de <em>bodas y eventos</em> en Buenos Aires</h2>
+    <p style="color:var(--ink3);max-width:560px;margin:12px auto 24px">
+      Si te gustó el fixture, dale un vistazo a mi portfolio y seguime en Instagram para más contenido.
+    </p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a class="nav-cta" href="index.html#servicios" style="text-decoration:none;display:inline-block">Ver portfolio</a>
+      <a class="nav-cta" id="cta-instagram" href="#" target="_blank" style="text-decoration:none;display:inline-block;background:var(--gold);color:#fff">Seguir en Instagram</a>
+    </div>
+  </div>
+</section>
 
 <footer>
   <div class="footer-grid">
@@ -327,7 +342,18 @@ function applyStoredLogo() {
   } catch (e) {}
 }
 
-loadFromCloud().then(applyStoredLogo).catch(applyStoredLogo);
+function applyInstagramLink() {
+  const s = S.get('crd_settings') || {};
+  const igLink = document.getElementById('cta-instagram');
+  if (igLink) igLink.href = s.entregaIgUrl || CONFIG.IG_DEFAULT;
+}
+
+function onSettingsLoaded() {
+  applyStoredLogo();
+  applyInstagramLink();
+}
+
+loadFromCloud().then(onSettingsLoaded).catch(onSettingsLoaded);
 
 // ── WA CTA HANDLER ──
 function openWA(msgKey) {
@@ -630,6 +656,19 @@ function renderStandings(groups) {
 }
 
 renderStandings(GROUPS);
+
+function shareFixture() {
+  const url = location.href;
+  const text = 'Mirá el fixture completo del Mundial 2026 en horario argentino';
+  if (navigator.share) {
+    navigator.share({ title: 'Fixture Mundial 2026', text, url }).catch(() => {});
+    return;
+  }
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => alert('Link copiado al portapapeles'));
+  }
+  window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
+}
 </script>
 
 </body>
