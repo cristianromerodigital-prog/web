@@ -645,10 +645,12 @@ function renderStandings(groups) {
     return `
       <div class="standings-group">
         <h4>Grupo ${g.group}</h4>
+        <div style="overflow-x:auto">
         <table class="standings-table">
           <thead><tr><th>Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
+        </div>
       </div>`;
   }).join('');
   document.getElementById('standings-grid').innerHTML = html;
