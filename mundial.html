@@ -115,7 +115,22 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
   .footer-grid { grid-template-columns:1fr; }
   footer { padding:60px 24px 40px; }
   .footer-bottom { flex-direction:column; text-align:center; }
+  .countdown-bar { padding:20px; gap:20px; }
 }
+
+/* ── COUNTDOWN ── */
+.countdown-bar {
+  background:var(--paper2); border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:20px 80px; display:flex; align-items:center; justify-content:center; gap:40px;
+  flex-wrap:wrap;
+}
+.countdown-unit { text-align:center; }
+.countdown-number {
+  font-family:'Cormorant Garamond',serif; font-size:32px; font-weight:300;
+  color:var(--ink); display:block; line-height:1;
+}
+.countdown-unit-label { font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--ink3); margin-top:4px; display:block; }
 
 /* ── SECTION UTILS ── */
 .section-eyebrow {
@@ -176,7 +191,20 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
   <a href="mundial.html" class="mobile-link active">Mundial 2026</a>
 </div>
 
-<section id="hero-mundial"></section>
+<section id="hero-mundial" class="hero-mundial">
+  <p class="section-eyebrow center">Mundial 2026</p>
+  <h1 class="section-title center">Fixture <em>en horario argentino</em></h1>
+  <p id="countdown-msg" style="text-align:center;color:var(--ink3);margin:12px 0 20px"></p>
+  <div class="countdown-bar" id="countdown-bar">
+    <div class="countdown-unit"><span class="countdown-number" id="cd-days">--</span><span class="countdown-unit-label">Días</span></div>
+    <div class="countdown-unit"><span class="countdown-number" id="cd-hours">--</span><span class="countdown-unit-label">Horas</span></div>
+    <div class="countdown-unit"><span class="countdown-number" id="cd-mins">--</span><span class="countdown-unit-label">Minutos</span></div>
+    <div class="countdown-unit"><span class="countdown-number" id="cd-secs">--</span><span class="countdown-unit-label">Segundos</span></div>
+  </div>
+  <div style="text-align:center;margin-top:20px">
+    <button class="nav-cta" id="share-btn" onclick="shareFixture()">Compartir fixture</button>
+  </div>
+</section>
 <section id="fixture-mundial" class="fixture-section">
   <div style="text-align:center">
     <p class="section-eyebrow center">Calendario completo</p>
@@ -533,6 +561,39 @@ renderMatches(MATCHES);
 ['filter-date', 'filter-group', 'filter-team', 'filter-arg'].forEach(id => {
   document.getElementById(id).addEventListener('change', applyFilters);
 });
+
+function getNextArgentinaMatch(matches, now = new Date()) {
+  return matches
+    .filter(isArgentinaMatch)
+    .map(m => ({ ...m, dt: new Date(`${m.date}T${m.time}:00-03:00`) }))
+    .filter(m => m.dt > now)
+    .sort((a, b) => a.dt - b.dt)[0] || null;
+}
+
+function startCountdown(matches) {
+  const next = getNextArgentinaMatch(matches);
+  const msgEl = document.getElementById('countdown-msg');
+  const barEl = document.getElementById('countdown-bar');
+  if (!next) {
+    msgEl.textContent = 'No hay próximos partidos de Argentina programados';
+    barEl.style.display = 'none';
+    return;
+  }
+  msgEl.textContent = `Próximo partido de Argentina: ${matchLabel(next)} — ${next.venue}`;
+  function tick() {
+    const diff = next.dt - new Date();
+    if (diff <= 0) { clearInterval(timer); startCountdown(matches); return; }
+    const s = Math.floor(diff / 1000);
+    document.getElementById('cd-days').textContent  = String(Math.floor(s / 86400)).padStart(2, '0');
+    document.getElementById('cd-hours').textContent = String(Math.floor((s % 86400) / 3600)).padStart(2, '0');
+    document.getElementById('cd-mins').textContent  = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+    document.getElementById('cd-secs').textContent  = String(s % 60).padStart(2, '0');
+  }
+  tick();
+  const timer = setInterval(tick, 1000);
+}
+
+startCountdown(MATCHES);
 </script>
 
 </body>
