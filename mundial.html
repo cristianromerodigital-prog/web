@@ -157,6 +157,11 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 .match-time { font-weight:500; min-width:48px; }
 .match-teams { flex:1; }
 .match-venue, .match-group { color:var(--ink3); font-size:12px; }
+.standings-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px; margin-top:32px; }
+.standings-group h4 { font-size:18px; margin-bottom:8px; }
+.standings-table { width:100%; border-collapse:collapse; font-size:12px; }
+.standings-table th, .standings-table td { border:1px solid var(--black4); padding:6px 8px; text-align:center; }
+.standings-table th:first-child, .standings-table td:first-child { text-align:left; }
 </style>
 </head>
 <body>
@@ -219,7 +224,14 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
   </div>
   <div id="fixture-list"></div>
 </section>
-<section id="standings-mundial"></section>
+<section id="standings-mundial" class="standings-section">
+  <div style="text-align:center">
+    <p class="section-eyebrow center">Tabla de posiciones</p>
+    <h2 class="section-title center">Grupos <em>A-L</em></h2>
+    <p id="standings-note" style="color:var(--ink3);font-size:13px;letter-spacing:1px"></p>
+  </div>
+  <div id="standings-grid" class="standings-grid"></div>
+</section>
 <section id="cta-mundial"></section>
 
 <footer>
@@ -594,6 +606,30 @@ function startCountdown(matches) {
 }
 
 startCountdown(MATCHES);
+
+function emptyStandingsRow(team) {
+  return { team, pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0, pts: 0 };
+}
+
+function renderStandings(groups) {
+  const html = groups.map(g => {
+    const rows = g.teams.map(emptyStandingsRow).map(r => `
+      <tr><td>${r.team}</td><td>${r.pj}</td><td>${r.pg}</td><td>${r.pe}</td><td>${r.pp}</td><td>${r.gf}</td><td>${r.gc}</td><td>${r.dg}</td><td>${r.pts}</td></tr>
+    `).join('');
+    return `
+      <div class="standings-group">
+        <h4>Grupo ${g.group}</h4>
+        <table class="standings-table">
+          <thead><tr><th>Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  }).join('');
+  document.getElementById('standings-grid').innerHTML = html;
+  document.getElementById('standings-note').textContent = 'Se actualiza en vivo durante el torneo';
+}
+
+renderStandings(GROUPS);
 </script>
 
 </body>
