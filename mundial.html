@@ -168,8 +168,9 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 .fixture-filters select, .fixture-filters label { font-family:'DM Sans',sans-serif; font-size:13px; padding:8px 12px; border:1px solid var(--black4); border-radius:var(--radius); background:var(--paper); color:var(--ink); }
 .fixture-scroll {
   display:flex; align-items:flex-start; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory;
-  -webkit-overflow-scrolling:touch; padding:8px 4px 24px; cursor:grab;
+  -webkit-overflow-scrolling:touch; padding:8px 4px 8px; cursor:grab;
 }
+.fixture-scroll:has(.match-day:only-child) { justify-content:center; }
 .fixture-scroll:active { cursor:grabbing; }
 .fixture-scroll::-webkit-scrollbar { height:4px; }
 .fixture-scroll::-webkit-scrollbar-track { background:var(--paper2); border-radius:2px; }
@@ -401,7 +402,7 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.09</span></span>
+    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.10</span></span>
     <div class="footer-bottom-links">
       <a href="#">Privacidad</a>
       <a href="#">Términos</a>
@@ -766,6 +767,10 @@ function applyFilters() {
     team: document.getElementById('filter-team').value,
     onlyArg: document.getElementById('filter-arg').checked
   };
+  if (!filters.date && !filters.group && !filters.team && !filters.onlyArg) {
+    renderTodayMatches();
+    return;
+  }
   renderMatches(filterMatches(MATCHES, filters));
 }
 
@@ -792,14 +797,18 @@ function showFixtureEmptyState(todayStr) {
   emptyEl.style.display = 'block';
 }
 
-const todayART = getTodayART();
-const todayMatches = MATCHES.filter(m => m.date === todayART);
-if (todayMatches.length > 0) {
-  renderMatches(todayMatches);
-} else {
-  document.getElementById('fixture-list').innerHTML = '';
-  showFixtureEmptyState(todayART);
+function renderTodayMatches() {
+  const todayART = getTodayART();
+  const todayMatches = MATCHES.filter(m => m.date === todayART);
+  if (todayMatches.length > 0) {
+    renderMatches(todayMatches);
+  } else {
+    document.getElementById('fixture-list').innerHTML = '';
+    showFixtureEmptyState(todayART);
+  }
 }
+
+renderTodayMatches();
 
 ['filter-date', 'filter-group', 'filter-team', 'filter-arg'].forEach(id => {
   document.getElementById(id).addEventListener('change', applyFilters);
