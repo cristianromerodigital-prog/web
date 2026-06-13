@@ -381,7 +381,7 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.05</span></span>
+    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.06</span></span>
     <div class="footer-bottom-links">
       <a href="#">Privacidad</a>
       <a href="#">Términos</a>
@@ -559,7 +559,7 @@ const MATCHES = [
   { id: 1, stage: 'group', group: 'A', date: '2026-06-11', time: '16:00', home: 'México', away: 'Sudáfrica', homeTag: null, awayTag: null, venue: 'Estadio Azteca', city: 'Ciudad de México', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video), TV Pública, Telefe, TyC Sports y Disney+ Premium', homeScore: 2, awayScore: 0 },
   { id: 2, stage: 'group', group: 'A', date: '2026-06-11', time: '23:00', home: 'Corea del Sur', away: 'Chequia', homeTag: null, awayTag: null, venue: 'Estadio Akron', city: 'Zapopan', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)', homeScore: 2, awayScore: 1 },
   { id: 3, stage: 'group', group: 'B', date: '2026-06-12', time: '16:00', home: 'Canadá', away: 'Bosnia y Herzegovina', homeTag: null, awayTag: null, venue: 'BMO Field', city: 'Toronto', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)', homeScore: 1, awayScore: 1 },
-  { id: 4, stage: 'group', group: 'D', date: '2026-06-12', time: '22:00', home: 'Estados Unidos', away: 'Paraguay', homeTag: null, awayTag: null, venue: 'SoFi Stadium', city: 'Inglewood', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)', homeScore: 1, awayScore: 0 },
+  { id: 4, stage: 'group', group: 'D', date: '2026-06-12', time: '22:00', home: 'Estados Unidos', away: 'Paraguay', homeTag: null, awayTag: null, venue: 'SoFi Stadium', city: 'Inglewood', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)', homeScore: 4, awayScore: 1 },
   { id: 5, stage: 'group', group: 'C', date: '2026-06-13', time: '22:00', home: 'Haití', away: 'Escocia', homeTag: null, awayTag: null, venue: 'Gillette Stadium', city: 'Foxborough', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)', homeScore: null, awayScore: null },
   { id: 6, stage: 'group', group: 'D', date: '2026-06-14', time: '01:00', home: 'Australia', away: 'Turquía', homeTag: null, awayTag: null, venue: 'BC Place', city: 'Vancouver', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)', homeScore: null, awayScore: null },
   { id: 7, stage: 'group', group: 'C', date: '2026-06-13', time: '19:00', home: 'Brasil', away: 'Marruecos', homeTag: null, awayTag: null, venue: 'MetLife Stadium', city: 'East Rutherford', channels: 'DSports y DGO (Flow 109/110, Paramount+, Prime Video)', homeScore: null, awayScore: null },
@@ -912,6 +912,31 @@ function renderGroupsCarousel() {
 }
 
 renderGroupsCarousel();
+
+function applyLiveScores(data) {
+  if (!data || !data.matches) return;
+  var changed = false;
+  MATCHES.forEach(function(m) {
+    var homeInfo = TEAM_INFO[m.home];
+    var awayInfo = TEAM_INFO[m.away];
+    if (!homeInfo || !awayInfo) return;
+    var live = data.matches[homeInfo.code + '-' + awayInfo.code];
+    if (live && (m.homeScore !== live.home || m.awayScore !== live.away)) {
+      m.homeScore = live.home;
+      m.awayScore = live.away;
+      changed = true;
+    }
+  });
+  if (changed) {
+    renderGroupsCarousel();
+    applyFilters();
+  }
+}
+
+fetch('https://crclub-worker.cristian-romero-digital.workers.dev/mundial/scores')
+  .then(function(r) { return r.json(); })
+  .then(applyLiveScores)
+  .catch(function() {});
 
 function shareFixture() {
   const url = location.href;
