@@ -143,6 +143,10 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
   color:var(--ink); display:block; line-height:1;
 }
 .countdown-unit-label { font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--ink3); margin-top:4px; display:block; }
+.countdown-vs {
+  display:block; font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:500;
+  color:var(--gold2); margin:6px 0; letter-spacing:0.5px;
+}
 @media(max-width:768px) {
   .countdown-bar { padding:12px 8px; gap:10px; flex-wrap:nowrap; }
   .countdown-number { font-size:38px; }
@@ -421,7 +425,7 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.18</span></span>
+    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.19</span></span>
     <div class="footer-bottom-links">
       <a href="#">Privacidad</a>
       <a href="#">Términos</a>
@@ -862,7 +866,9 @@ function startCountdown(matches) {
     barEl.style.display = 'none';
     return;
   }
-  msgEl.innerHTML = `Próximo partido de Argentina<br>${matchLabel(next)}<br>${next.venue}`;
+  const homeInfo = TEAM_INFO[next.home] || { flag: '' };
+  const awayInfo = TEAM_INFO[next.away] || { flag: '' };
+  msgEl.innerHTML = `Próximo partido de Argentina<br><span class="countdown-vs">${homeInfo.flag} ${matchLabel(next)} ${awayInfo.flag}</span><br>${next.venue}`;
   function tick() {
     const diff = next.dt - new Date();
     if (diff <= 0) { clearInterval(timer); startCountdown(matches); return; }
