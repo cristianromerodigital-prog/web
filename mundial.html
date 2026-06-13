@@ -210,6 +210,26 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 .section-title em { font-style:italic; color:var(--gold); }
 .section-title.center { text-align:center; }
 
+/* ── LIVE BANNER ── */
+.live-banner { margin:8px 0 0; }
+.live-match {
+  display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap;
+  padding:14px 20px; margin-bottom:10px;
+  background:var(--glass-bg);
+  backdrop-filter:blur(var(--glass-blur)) saturate(160%);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(160%);
+  border:1px solid var(--glass-border); border-radius:var(--radius);
+  font-family:'Cormorant Garamond',serif; font-size:20px; color:var(--ink);
+}
+.live-badge {
+  font-family:'DM Sans',sans-serif; font-size:11px; font-weight:700; letter-spacing:2px;
+  color:#fff; background:#d6334a; padding:4px 10px; border-radius:999px;
+  animation: liveBlink 1.5s ease-in-out infinite;
+}
+.live-score { color:var(--gold2); font-weight:600; }
+.live-empty { text-align:center; color:var(--ink3); font-size:13px; letter-spacing:1px; }
+@keyframes liveBlink { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
 /* ── FIXTURE ── */
 .fixture-filters { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin:32px 0; padding:16px; background:var(--glass-bg); backdrop-filter:blur(var(--glass-blur)) saturate(160%); -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(160%); border:1px solid var(--glass-border); border-radius:var(--radius); box-shadow:0 4px 16px rgba(0,0,0,0.25); }
 .fixture-filters select, .fixture-filters label { font-family:'DM Sans',sans-serif; font-size:13px; padding:8px 12px; border:1px solid var(--black4); border-radius:var(--radius); background:var(--paper); color:var(--ink); }
@@ -373,7 +393,7 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
   <div style="text-align:center">
     <p class="section-eyebrow center">Calendario completo</p>
     <h2 class="section-title center">Fixture <em>Mundial 2026</em></h2>
-    <p style="color:var(--ink3);font-size:13px;letter-spacing:1px">Todos los horarios en hora Argentina (ART)</p>
+    <div id="live-banner" class="live-banner"></div>
   </div>
   <div class="fixture-filters">
     <select id="filter-date"><option value="">Todas las fechas</option></select>
@@ -455,7 +475,7 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.25</span></span>
+    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.26</span></span>
     <div class="footer-bottom-links">
       <a href="#">Privacidad</a>
       <a href="#">Términos</a>
@@ -1023,20 +1043,42 @@ function renderGroupsCarousel() {
 
 renderGroupsCarousel();
 
+function renderLiveBanner() {
+  var el = document.getElementById('live-banner');
+  if (!el) return;
+  var live = MATCHES.filter(function(m) { return m.live; });
+  if (live.length === 0) {
+    el.innerHTML = '<p class="live-empty">Esperando el próximo partido</p>';
+    return;
+  }
+  el.innerHTML = live.map(function(m) {
+    var homeInfo = TEAM_INFO[m.home] || { flag: '' };
+    var awayInfo = TEAM_INFO[m.away] || { flag: '' };
+    return '<div class="live-match">' +
+      '<span class="live-badge">EN VIVO</span>' +
+      '<span>' + homeInfo.flag + ' ' + m.home + ' <span class="live-score">' + (m.homeScore ?? 0) + ' - ' + (m.awayScore ?? 0) + '</span> ' + m.away + ' ' + awayInfo.flag + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+renderLiveBanner();
+
 function applyLiveScores(data) {
-  if (!data || !data.matches) return;
+  if (!data || !data.matches) { renderLiveBanner(); return; }
   var changed = false;
   MATCHES.forEach(function(m) {
     var homeInfo = TEAM_INFO[m.home];
     var awayInfo = TEAM_INFO[m.away];
-    if (!homeInfo || !awayInfo) return;
+    if (!homeInfo || !awayInfo) { m.live = false; return; }
     var live = data.matches[homeInfo.code + '-' + awayInfo.code];
+    m.live = !!(live && live.live);
     if (live && (m.homeScore !== live.home || m.awayScore !== live.away)) {
       m.homeScore = live.home;
       m.awayScore = live.away;
       changed = true;
     }
   });
+  renderLiveBanner();
   if (changed) {
     renderGroupsCarousel();
     renderStandings(GROUPS);
@@ -1044,10 +1086,15 @@ function applyLiveScores(data) {
   }
 }
 
-fetch('https://crclub-worker.cristian-romero-digital.workers.dev/mundial/scores')
-  .then(function(r) { return r.json(); })
-  .then(applyLiveScores)
-  .catch(function() {});
+function fetchLiveScores() {
+  fetch('https://crclub-worker.cristian-romero-digital.workers.dev/mundial/scores')
+    .then(function(r) { return r.json(); })
+    .then(applyLiveScores)
+    .catch(function() {});
+}
+
+fetchLiveScores();
+setInterval(fetchLiveScores, 60000);
 
 function shareFixture() {
   const url = location.href;
