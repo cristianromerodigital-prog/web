@@ -153,9 +153,14 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
   .countdown-unit-label { font-size:10px; letter-spacing:1px; }
 }
 
+/* ── FLOAT BAR ── */
+#float-bar {
+  position:fixed; bottom:32px; left:32px; right:32px; z-index:500;
+  display:flex; justify-content:space-between; align-items:center;
+}
+
 /* ── WORLD CUP FLOAT ── */
 #wc-float {
-  position:fixed; bottom:32px; right:32px; z-index:500;
   width:48px; transition:transform var(--trans);
   filter:drop-shadow(0 4px 16px rgba(0,0,0,0.5));
   animation: wcBounce 0.5s ease 2s both;
@@ -166,7 +171,6 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 
 /* ── VISIT COUNTER FLOAT ── */
 #visit-float {
-  position:fixed; bottom:32px; left:32px; z-index:500;
   display:flex; align-items:center; gap:8px;
   padding:10px 16px; border-radius:999px;
   background:var(--glass-bg);
@@ -186,7 +190,8 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
   50% { opacity:0.6; box-shadow:0 0 0 4px rgba(232,201,106,0); }
 }
 @media(max-width:768px) {
-  #visit-float { left:12px; bottom:12px; padding:8px 12px; font-size:11px; }
+  #float-bar { left:12px; right:12px; bottom:12px; }
+  #visit-float { padding:8px 12px; font-size:11px; }
 }
 
 /* ── SECTION UTILS ── */
@@ -450,7 +455,7 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.23</span></span>
+    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.24</span></span>
     <div class="footer-bottom-links">
       <a href="#">Privacidad</a>
       <a href="#">Términos</a>
@@ -467,13 +472,14 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
   </div>
 </div>
 
-<div id="visit-float" aria-hidden="true">
-  <span class="dot"></span>
-  <span><strong id="visit-count">—</strong> visitas</span>
-</div>
-
-<div id="wc-float" aria-hidden="true">
-  <img src="worldcup-icon.png" alt="">
+<div id="float-bar" aria-hidden="true">
+  <div id="visit-float">
+    <span class="dot"></span>
+    <span><strong id="visit-count">—</strong> visitas</span>
+  </div>
+  <div id="wc-float">
+    <img src="worldcup-icon.png" alt="">
+  </div>
 </div>
 
 <script>
