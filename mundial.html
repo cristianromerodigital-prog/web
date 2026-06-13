@@ -307,6 +307,7 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
     <select id="filter-team"><option value="">Todas las selecciones</option></select>
     <label class="filter-arg-label"><input type="checkbox" id="filter-arg"> Solo Argentina 🇦🇷</label>
   </div>
+  <p style="text-align:right;font-size:11px;color:var(--ink3);letter-spacing:1px;margin:0 0 8px;opacity:0.7">📺 Tocá cualquier partido para ver en qué canales se transmite</p>
   <div id="fixture-empty" class="fixture-empty-state" style="display:none"></div>
   <div id="fixture-list"></div>
 </section>
@@ -380,12 +381,13 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.04</span></span>
+    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.05</span></span>
     <div class="footer-bottom-links">
       <a href="#">Privacidad</a>
       <a href="#">Términos</a>
     </div>
   </div>
+  <div id="visit-counter" style="text-align:center;margin-top:20px;font-size:10px;letter-spacing:1px;color:var(--ink3);opacity:0.35"></div>
 </footer>
 
 <!-- LEGAL MODAL -->
@@ -851,7 +853,6 @@ renderStandings(GROUPS);
 function renderGroupsCarousel() {
   const scroll = document.getElementById('groupsScroll');
   if (!scroll) return;
-  const preds = JSON.parse(localStorage.getItem('crd_mundial_predicciones') || '{}');
   const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
   const cards = GROUPS.map(g => {
@@ -862,21 +863,19 @@ function renderGroupsCarousel() {
       const isArg = isArgentinaMatch(m);
       const homeInfo = TEAM_INFO[m.home] || { flag: '', code: m.home };
       const awayInfo = TEAM_INFO[m.away] || { flag: '', code: m.away };
-      const pred = preds[m.id] || {};
       const hasFinal = m.homeScore !== null && m.awayScore !== null;
-      const homeVal = hasFinal ? m.homeScore : (pred.home !== undefined ? pred.home : '');
-      const awayVal = hasFinal ? m.awayScore : (pred.away !== undefined ? pred.away : '');
+      const homeVal = hasFinal ? m.homeScore : '';
+      const awayVal = hasFinal ? m.awayScore : '';
       const finalClass = hasFinal ? ' score-input--final' : '';
-      const readonlyAttr = hasFinal ? ' readonly' : '';
       const d = new Date(m.date + 'T12:00:00-03:00');
       const dateStr = dayNames[d.getDay()] + ' ' + d.getDate() + '/' + (d.getMonth() + 1);
       return '<div class="group-match' + (isArg ? ' group-match--arg' : '') + '" data-match-id="' + m.id + '">' +
         '<div class="group-match__meta">' + dateStr + ' · ' + m.time + ' ART · ' + m.venue + '</div>' +
         '<div class="group-match__teams">' +
           '<span class="flag">' + homeInfo.flag + '</span><b>' + homeInfo.code + '</b>' +
-          '<input class="score-input' + finalClass + '" data-match-id="' + m.id + '" data-side="home" inputmode="numeric" maxlength="2" value="' + homeVal + '"' + readonlyAttr + '>' +
+          '<input class="score-input' + finalClass + '" data-match-id="' + m.id + '" data-side="home" inputmode="numeric" maxlength="2" value="' + homeVal + '" readonly>' +
           '<span class="score-sep">-</span>' +
-          '<input class="score-input' + finalClass + '" data-match-id="' + m.id + '" data-side="away" inputmode="numeric" maxlength="2" value="' + awayVal + '"' + readonlyAttr + '>' +
+          '<input class="score-input' + finalClass + '" data-match-id="' + m.id + '" data-side="away" inputmode="numeric" maxlength="2" value="' + awayVal + '" readonly>' +
           '<b>' + awayInfo.code + '</b><span class="flag">' + awayInfo.flag + '</span>' +
         '</div>' +
       '</div>';
@@ -892,20 +891,6 @@ function renderGroupsCarousel() {
   }).join('');
 
   scroll.innerHTML = cards;
-
-  scroll.addEventListener('input', function(e) {
-    const inp = e.target.closest ? e.target.closest('.score-input') : null;
-    if (!inp || inp.readOnly) return;
-    const id = inp.dataset.matchId;
-    const side = inp.dataset.side;
-    const val = inp.value.replace(/\D/g, '').slice(0, 2);
-    inp.value = val;
-    const saved = JSON.parse(localStorage.getItem('crd_mundial_predicciones') || '{}');
-    if (!saved[id]) saved[id] = {};
-    if (val === '') { delete saved[id][side]; } else { saved[id][side] = Number(val); }
-    if (!Object.keys(saved[id]).length) delete saved[id];
-    localStorage.setItem('crd_mundial_predicciones', JSON.stringify(saved));
-  });
 
   if (typeof IntersectionObserver !== 'undefined') {
     var nudgeDone = false;
@@ -940,6 +925,16 @@ function shareFixture() {
   }
   window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
 }
+
+(function() {
+  fetch('https://crclub-worker.cristian-romero-digital.workers.dev/mundial/visits')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      var el = document.getElementById('visit-counter');
+      if (el && d.visits) el.textContent = d.visits.toLocaleString('es-AR') + ' visitas';
+    })
+    .catch(function() {});
+})();
 </script>
 
 </body>
