@@ -455,7 +455,7 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.24</span></span>
+    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.25</span></span>
     <div class="footer-bottom-links">
       <a href="#">Privacidad</a>
       <a href="#">Términos</a>
@@ -1066,14 +1066,23 @@ function shareFixture() {
   var url = 'https://crclub-worker.cristian-romero-digital.workers.dev/mundial/visits';
   var today = getTodayART();
   var isNewVisit = localStorage.getItem('mundial_last_visit') !== today;
+
+  function updateCount(d) {
+    var el = document.getElementById('visit-count');
+    if (el && d.visits != null) el.textContent = (d.visits + 545).toLocaleString('es-AR');
+  }
+
   var req = isNewVisit ? fetch(url, { method: 'POST' }) : fetch(url);
   req.then(function(r) { return r.json(); })
     .then(function(d) {
-      var el = document.getElementById('visit-count');
-      if (el && d.visits != null) el.textContent = (d.visits + 545).toLocaleString('es-AR');
+      updateCount(d);
       if (isNewVisit) localStorage.setItem('mundial_last_visit', today);
     })
     .catch(function() {});
+
+  setInterval(function() {
+    fetch(url).then(function(r) { return r.json(); }).then(updateCount).catch(function() {});
+  }, 30000);
 })();
 </script>
 
