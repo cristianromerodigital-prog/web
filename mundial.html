@@ -83,6 +83,12 @@ nav.scrolled { box-shadow: 0 4px 40px rgba(0,0,0,0.5); }
 .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 20px 0; }
 .hamburger span { width: 24px; height: 1.5px; background: var(--white); transition: var(--trans); }
 
+nav.glass { background: #ffffff; }
+nav.glass .logo { color: #14110d; }
+nav.glass .nav-links a { color: rgba(20,17,13,0.6); }
+nav.glass .nav-links a:hover, nav.glass .nav-links a.active { color: var(--gold); }
+nav.glass .hamburger span { background: #14110d; }
+
 /* ── MOBILE NAV ── */
 .mobile-nav {
   display: none; position: fixed; inset: 0; background: var(--black2);
@@ -123,10 +129,13 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
   nav { padding:0 20px; top:0; }
   .nav-links { display:none; }
   .hamburger { display:flex; }
-  .footer-grid { grid-template-columns:1fr; }
+  .footer-grid { grid-template-columns:repeat(2,1fr); gap:32px 20px; text-align:left; }
+  .footer-grid > div:first-child { grid-column:1 / -1; }
   footer { padding:60px 24px 40px; }
   .footer-bottom { flex-direction:column; text-align:center; }
-  .countdown-bar { padding:20px; gap:20px; }
+  .countdown-bar { padding:16px 8px; gap:6px; flex-wrap:nowrap; }
+  .countdown-number { font-size:22px; }
+  .countdown-unit-label { font-size:8px; letter-spacing:1px; }
   .section-divider { margin:0 24px; }
 }
 
@@ -163,7 +172,23 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 /* ── FIXTURE ── */
 .fixture-filters { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin:32px 0; padding:16px; background:var(--glass-bg); backdrop-filter:blur(var(--glass-blur)) saturate(160%); -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(160%); border:1px solid var(--glass-border); border-radius:var(--radius); box-shadow:0 4px 16px rgba(0,0,0,0.25); }
 .fixture-filters select, .fixture-filters label { font-family:'DM Sans',sans-serif; font-size:13px; padding:8px 12px; border:1px solid var(--black4); border-radius:var(--radius); background:var(--paper); color:var(--ink); }
-.match-day { margin-bottom:28px; }
+.fixture-scroll {
+  display:flex; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch; padding:8px 4px 24px; cursor:grab;
+}
+.fixture-scroll:active { cursor:grabbing; }
+.fixture-scroll::-webkit-scrollbar { height:4px; }
+.fixture-scroll::-webkit-scrollbar-track { background:var(--paper2); border-radius:2px; }
+.fixture-scroll::-webkit-scrollbar-thumb { background:var(--gold); border-radius:2px; }
+.match-day {
+  flex:0 0 88%; max-width:380px; scroll-snap-align:center;
+  padding:14px; background:rgba(255,255,255,0.09);
+  backdrop-filter:blur(16px) saturate(160%);
+  -webkit-backdrop-filter:blur(16px) saturate(160%);
+  border:1px solid rgba(232,201,106,0.35);
+  border-radius:var(--radius);
+  box-shadow:0 12px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.12);
+}
 .match-date { font-size:18px; font-weight:400; color:var(--ink2); margin-bottom:8px; text-transform:capitalize; }
 .match-row { position:relative; display:flex; gap:16px; align-items:center; padding:10px 14px; border:1px solid var(--glass-border); border-radius:var(--radius); margin-bottom:6px; font-size:14px; cursor:help; background:var(--glass-bg); backdrop-filter:blur(var(--glass-blur)) saturate(160%); -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(160%); box-shadow:0 4px 16px rgba(0,0,0,0.3); }
 .match-row--arg { border-color:var(--gold); background:rgba(201,168,76,0.06); }
@@ -175,6 +200,8 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 .match-row:hover .match-tooltip, .match-row.show-tooltip .match-tooltip { opacity:1; visibility:visible; transform:translateY(0); }
 .standings-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px; margin-top:32px; }
 .standings-group h4 { font-size:18px; margin-bottom:8px; }
+.standings-group--arg { border:1px solid var(--gold); border-radius:var(--radius); padding:14px; background:rgba(201,168,76,0.08); box-shadow:0 4px 16px rgba(201,168,76,0.15); }
+.standings-group--arg h4 { color:var(--gold2); }
 .standings-table { width:100%; border-collapse:collapse; font-size:12px; }
 .standings-table th, .standings-table td { border:1px solid var(--glass-border); padding:6px 8px; text-align:center; }
 .standings-table th:first-child, .standings-table td:first-child { text-align:left; }
@@ -309,7 +336,8 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
   </div>
   <p style="text-align:right;font-size:11px;color:var(--ink3);letter-spacing:1px;margin:0 0 8px;opacity:0.7">📺 Tocá cualquier partido para ver en qué canales se transmite</p>
   <div id="fixture-empty" class="fixture-empty-state" style="display:none"></div>
-  <div id="fixture-list"></div>
+  <p class="groups-hint">&#8592; Deslizá para ver más fechas &#8594;</p>
+  <div id="fixture-list" class="fixture-scroll"></div>
 </section>
 
 <section id="grupos-carousel">
@@ -376,12 +404,11 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
       <ul class="footer-links">
         <li><a href="#" id="legal-link-privacy" onclick="openLegalModal('privacy');return false">Política de Privacidad</a></li>
         <li><a href="#" id="legal-link-terms" onclick="openLegalModal('terms');return false">Términos y Condiciones</a></li>
-        <li><a href="admin.html" style="color:rgba(255,255,255,0.2)">Panel Admin</a></li>
       </ul>
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.06</span></span>
+    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.07</span></span>
     <div class="footer-bottom-links">
       <a href="#">Privacidad</a>
       <a href="#">Términos</a>
@@ -678,8 +705,11 @@ function formatDate(dateStr) {
 }
 
 function filterMatches(matches, { date, group, team, onlyArg } = {}) {
+  if (onlyArg) {
+    const today = getTodayART();
+    return matches.filter(m => isArgentinaMatch(m) && m.date >= today);
+  }
   return matches.filter(m => {
-    if (onlyArg && !isArgentinaMatch(m)) return false;
     if (date && m.date !== date) return false;
     if (group && m.group !== group) return false;
     if (team && m.home !== team && m.away !== team) return false;
@@ -769,11 +799,21 @@ function showFixtureEmptyState(todayStr) {
   emptyEl.style.display = 'block';
 }
 
+function addDaysStr(dateStr, days) {
+  const d = new Date(dateStr + 'T12:00:00-03:00');
+  d.setDate(d.getDate() + days);
+  return new Intl.DateTimeFormat('sv-SE', { timeZone: 'America/Argentina/Buenos_Aires' }).format(d);
+}
+
+function getWeekMatches(startDate) {
+  const endDate = addDaysStr(startDate, 7);
+  return MATCHES.filter(m => m.date >= startDate && m.date < endDate);
+}
+
 const todayART = getTodayART();
-const todayMatches = MATCHES.filter(m => m.date === todayART);
-if (todayMatches.length > 0) {
-  document.getElementById('filter-date').value = todayART;
-  renderMatches(todayMatches);
+const weekMatches = getWeekMatches(todayART);
+if (weekMatches.length > 0) {
+  renderMatches(weekMatches);
 } else {
   document.getElementById('fixture-list').innerHTML = '';
   showFixtureEmptyState(todayART);
@@ -824,17 +864,32 @@ function startCountdown(matches) {
 
 startCountdown(MATCHES);
 
-function emptyStandingsRow(team) {
-  return { team, pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0, pts: 0 };
+function computeStandings(g) {
+  const table = {};
+  g.teams.forEach(team => { table[team] = { team, pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0, pts: 0 }; });
+  MATCHES.filter(m => m.group === g.group && m.stage === 'group' && m.homeScore !== null && m.awayScore !== null)
+    .forEach(m => {
+      const home = table[m.home], away = table[m.away];
+      if (!home || !away) return;
+      home.pj++; away.pj++;
+      home.gf += m.homeScore; home.gc += m.awayScore;
+      away.gf += m.awayScore; away.gc += m.homeScore;
+      if (m.homeScore > m.awayScore) { home.pg++; home.pts += 3; away.pp++; }
+      else if (m.homeScore < m.awayScore) { away.pg++; away.pts += 3; home.pp++; }
+      else { home.pe++; away.pe++; home.pts++; away.pts++; }
+    });
+  return Object.values(table)
+    .map(r => ({ ...r, dg: r.gf - r.gc }))
+    .sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
 }
 
 function renderStandings(groups) {
   const html = groups.map(g => {
-    const rows = g.teams.map(emptyStandingsRow).map(r => `
+    const rows = computeStandings(g).map(r => `
       <tr><td>${r.team}</td><td>${r.pj}</td><td>${r.pg}</td><td>${r.pe}</td><td>${r.pp}</td><td>${r.gf}</td><td>${r.gc}</td><td>${r.dg}</td><td>${r.pts}</td></tr>
     `).join('');
     return `
-      <div class="standings-group">
+      <div class="standings-group${g.group === 'J' ? ' standings-group--arg' : ''}">
         <h4>Grupo ${g.group}</h4>
         <div style="overflow-x:auto">
         <table class="standings-table">
@@ -929,6 +984,7 @@ function applyLiveScores(data) {
   });
   if (changed) {
     renderGroupsCarousel();
+    renderStandings(GROUPS);
     applyFilters();
   }
 }
