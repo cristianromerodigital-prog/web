@@ -164,6 +164,31 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 #wc-float img { display:block; width:100%; height:auto; }
 @keyframes wcBounce { from{transform:scale(0)} to{transform:scale(1)} }
 
+/* ── VISIT COUNTER FLOAT ── */
+#visit-float {
+  position:fixed; bottom:32px; left:32px; z-index:500;
+  display:flex; align-items:center; gap:8px;
+  padding:10px 16px; border-radius:999px;
+  background:var(--glass-bg);
+  backdrop-filter:blur(var(--glass-blur)) saturate(160%);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(160%);
+  border:1px solid var(--glass-border);
+  font-size:12px; letter-spacing:0.5px; color:var(--ink3);
+  animation: wcBounce 0.5s ease 2.2s both;
+}
+#visit-float .dot {
+  width:8px; height:8px; border-radius:50%; background:var(--gold2); flex-shrink:0;
+  animation: pulseDot 2s ease-in-out infinite;
+}
+#visit-float strong { color:var(--ink); font-weight:600; }
+@keyframes pulseDot {
+  0%,100% { opacity:1; box-shadow:0 0 0 0 rgba(232,201,106,0.5); }
+  50% { opacity:0.6; box-shadow:0 0 0 4px rgba(232,201,106,0); }
+}
+@media(max-width:768px) {
+  #visit-float { left:12px; bottom:12px; padding:8px 12px; font-size:11px; }
+}
+
 /* ── SECTION UTILS ── */
 .section-divider { height:1px; background:var(--border); margin:0 80px; }
 .section-eyebrow {
@@ -425,13 +450,12 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.22</span></span>
+    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.23</span></span>
     <div class="footer-bottom-links">
       <a href="#">Privacidad</a>
       <a href="#">Términos</a>
     </div>
   </div>
-  <div id="visit-counter" style="text-align:center;margin-top:20px;font-size:10px;letter-spacing:1px;color:var(--ink3);opacity:0.35"></div>
 </footer>
 
 <!-- LEGAL MODAL -->
@@ -441,6 +465,11 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
     <h2 id="legal-modal-title" style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;margin-bottom:28px;color:#111"></h2>
     <div id="legal-modal-body" style="font-size:14px;line-height:1.9;color:#444"></div>
   </div>
+</div>
+
+<div id="visit-float" aria-hidden="true">
+  <span class="dot"></span>
+  <span><strong id="visit-count">—</strong> visitas</span>
 </div>
 
 <div id="wc-float" aria-hidden="true">
@@ -1034,8 +1063,8 @@ function shareFixture() {
   var req = isNewVisit ? fetch(url, { method: 'POST' }) : fetch(url);
   req.then(function(r) { return r.json(); })
     .then(function(d) {
-      var el = document.getElementById('visit-counter');
-      if (el && d.visits) el.textContent = d.visits.toLocaleString('es-AR') + ' visitas';
+      var el = document.getElementById('visit-count');
+      if (el && d.visits != null) el.textContent = (d.visits + 545).toLocaleString('es-AR');
       if (isNewVisit) localStorage.setItem('mundial_last_visit', today);
     })
     .catch(function() {});
