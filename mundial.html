@@ -213,7 +213,7 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 /* ── LIVE BANNER ── */
 .live-banner { margin:8px 0 0; }
 .live-match {
-  display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap;
+  display:flex; flex-direction:column; align-items:center; gap:8px;
   padding:14px 20px; margin-bottom:10px;
   background:var(--glass-bg);
   backdrop-filter:blur(var(--glass-blur)) saturate(160%);
@@ -385,7 +385,7 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
     <div class="countdown-unit"><span class="countdown-number" id="cd-mins">--</span><span class="countdown-unit-label">Minutos</span></div>
     <div class="countdown-unit"><span class="countdown-number" id="cd-secs">--</span><span class="countdown-unit-label">Segundos</span></div>
   </div>
-  <div style="text-align:center;margin:20px 0 40px">
+  <div style="text-align:center;margin:20px 0">
     <button class="nav-cta" id="share-btn" onclick="shareFixture()">Compartir fixture</button>
   </div>
 </section>
@@ -475,7 +475,7 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.26</span></span>
+    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.27</span></span>
     <div class="footer-bottom-links">
       <a href="#">Privacidad</a>
       <a href="#">Términos</a>
