@@ -152,14 +152,12 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 /* ── WORLD CUP FLOAT ── */
 #wc-float {
   position:fixed; bottom:32px; right:32px; z-index:500;
-  width:56px; height:56px; border-radius:50%;
-  background:var(--paper2); border:1px solid var(--gold);
-  display:flex; align-items:center; justify-content:center;
-  box-shadow:0 4px 24px rgba(201,168,76,0.35); transition:transform var(--trans), box-shadow var(--trans);
+  width:48px; transition:transform var(--trans);
+  filter:drop-shadow(0 4px 16px rgba(0,0,0,0.5));
   animation: wcBounce 0.5s ease 2s both;
 }
-#wc-float:hover { transform:scale(1.1) rotate(8deg); box-shadow:0 6px 32px rgba(201,168,76,0.5); }
-#wc-float img { width:72%; height:72%; object-fit:contain; }
+#wc-float:hover { transform:scale(1.08) rotate(6deg); }
+#wc-float img { display:block; width:100%; height:auto; }
 @keyframes wcBounce { from{transform:scale(0)} to{transform:scale(1)} }
 
 /* ── SECTION UTILS ── */
@@ -418,7 +416,7 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.15</span></span>
+    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.16</span></span>
     <div class="footer-bottom-links">
       <a href="#">Privacidad</a>
       <a href="#">Términos</a>
