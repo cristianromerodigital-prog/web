@@ -77,7 +77,7 @@ nav.scrolled { box-shadow: 0 4px 40px rgba(0,0,0,0.5); }
   background: #111111; color: #ffffff !important; cursor:pointer; font-family:inherit;
   padding: 10px 24px !important; border-bottom: none !important;
   font-weight: 600 !important; transition: background var(--trans) !important;
-  margin-left: 8px;
+  margin-left: 8px; border-radius:var(--radius) !important;
 }
 .nav-cta:hover { background: #333333 !important; }
 .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 20px 0; }
@@ -179,6 +179,11 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 /* ── FIXTURE ── */
 .fixture-filters { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin:32px 0; padding:16px; background:var(--glass-bg); backdrop-filter:blur(var(--glass-blur)) saturate(160%); -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(160%); border:1px solid var(--glass-border); border-radius:var(--radius); box-shadow:0 4px 16px rgba(0,0,0,0.25); }
 .fixture-filters select, .fixture-filters label { font-family:'DM Sans',sans-serif; font-size:13px; padding:8px 12px; border:1px solid var(--black4); border-radius:var(--radius); background:var(--paper); color:var(--ink); }
+.fixture-filters select {
+  -webkit-appearance:none; -moz-appearance:none; appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23f5f0e6' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 12px center; padding-right:32px;
+}
 .fixture-scroll {
   display:flex; align-items:flex-start; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory;
   -webkit-overflow-scrolling:touch; padding:8px 4px 8px; cursor:grab;
@@ -416,7 +421,7 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.16</span></span>
+    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.17</span></span>
     <div class="footer-bottom-links">
       <a href="#">Privacidad</a>
       <a href="#">Términos</a>
