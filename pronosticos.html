@@ -244,6 +244,27 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 .pred-result__teams { display:flex; align-items:center; gap:6px; }
 .pred-result__detail { display:flex; align-items:center; gap:14px; margin-left:auto; font-size:13px; color:var(--ink2); flex-wrap:wrap; }
 .pred-result__detail strong { color:var(--ink); }
+.leaderboard-tabs { display:flex; justify-content:center; gap:8px; margin-bottom:16px; }
+.leaderboard-tab {
+  padding:8px 20px; border-radius:999px; border:1px solid var(--glass-border);
+  background:transparent; color:var(--ink2); font-family:inherit; font-size:13px; font-weight:600;
+  cursor:pointer; transition:all 0.2s; letter-spacing:0.5px;
+}
+.leaderboard-tab.active { background:var(--gold); color:#14110d; border-color:var(--gold); }
+.leaderboard-table {
+  width:100%; border-collapse:collapse;
+  background:var(--glass-bg);
+  backdrop-filter:blur(var(--glass-blur)) saturate(160%);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(160%);
+  border:1px solid var(--glass-border); border-radius:var(--radius); overflow:hidden;
+}
+.leaderboard-table th, .leaderboard-table td { padding:10px 16px; text-align:left; font-size:13px; }
+.leaderboard-table th { color:var(--ink3); font-size:11px; letter-spacing:1px; text-transform:uppercase; border-bottom:1px solid var(--glass-border); }
+.leaderboard-row td { border-bottom:1px solid rgba(255,255,255,0.05); }
+.leaderboard-row:last-child td { border-bottom:none; }
+.leaderboard-row--me { background:rgba(255,200,87,0.12); }
+.leaderboard-row__rank { font-weight:700; color:var(--gold2); width:40px; }
+.leaderboard-row__points { text-align:right; font-weight:700; }
 
 /* PRED STYLES */
 </style>
@@ -316,6 +337,17 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
   <p class="section-eyebrow center">Tus resultados</p>
   <h2 class="section-title center">Pronósticos <em>puntuados</em></h2>
   <div id="pred-results-list" class="pred-list"></div>
+</section>
+
+<section id="pred-leaderboard" class="pred-section">
+  <p class="section-eyebrow center">Ranking</p>
+  <h2 class="section-title center">Tabla de <em>posiciones</em></h2>
+  <div class="leaderboard-tabs">
+    <button class="leaderboard-tab active" data-tab="round" id="tab-round">Esta ronda</button>
+    <button class="leaderboard-tab" data-tab="general" id="tab-general">General</button>
+  </div>
+  <div id="leaderboard-round"></div>
+  <div id="leaderboard-general" style="display:none"></div>
 </section>
 
 <!-- PRED SECTIONS -->
@@ -697,6 +729,65 @@ function renderResultMatch(p) {
 }
 
 PRED_INIT.push(loadResults);
+
+async function loadLeaderboard() {
+  const user = getMundialUser();
+  const url = PRED_CONFIG.API + '/mundial/leaderboard' + (user.id ? ('?userId=' + user.id) : '');
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    document.getElementById('leaderboard-round').innerHTML = renderLeaderboard(data.round, data.me, 'round', data.roundInfo);
+    document.getElementById('leaderboard-general').innerHTML = renderLeaderboard(data.general, data.me, 'general', null);
+  } catch (e) {
+    document.getElementById('leaderboard-round').innerHTML = '<p class="pred-empty">No se pudo cargar el ranking.</p>';
+  }
+}
+
+function renderLeaderboard(rows, me, kind, roundInfo) {
+  const meRank = kind === 'round' ? (me && me.roundRank) : (me && me.generalRank);
+  const mePoints = kind === 'round' ? (me && me.roundPoints) : (me && me.generalPoints);
+  const meInTop = me && rows.some(r => r.id === me.id);
+  let html = '';
+  if (roundInfo) html += '<p class="pred-empty" style="margin-bottom:10px">Ronda actual: ' + roundInfo.label + '</p>';
+  if (rows.length === 0) {
+    html += '<p class="pred-empty">Todavía no hay pronósticos puntuados.</p>';
+    return html;
+  }
+  html += '<table class="leaderboard-table"><thead><tr><th>#</th><th>Jugador</th><th style="text-align:right">Puntos</th></tr></thead><tbody>';
+  rows.forEach((r, i) => {
+    const isMe = me && r.id === me.id;
+    html += '<tr class="leaderboard-row' + (isMe ? ' leaderboard-row--me' : '') + '">' +
+      '<td class="leaderboard-row__rank">' + (i + 1) + '</td>' +
+      '<td>' + r.nickname + '</td>' +
+      '<td class="leaderboard-row__points">' + r.points + '</td>' +
+    '</tr>';
+  });
+  if (me && !meInTop && meRank) {
+    html += '<tr class="leaderboard-row leaderboard-row--me">' +
+      '<td class="leaderboard-row__rank">' + meRank + '</td>' +
+      '<td>' + me.nickname + '</td>' +
+      '<td class="leaderboard-row__points">' + mePoints + '</td>' +
+    '</tr>';
+  }
+  html += '</tbody></table>';
+  return html;
+}
+
+document.getElementById('tab-round').addEventListener('click', () => {
+  document.getElementById('tab-round').classList.add('active');
+  document.getElementById('tab-general').classList.remove('active');
+  document.getElementById('leaderboard-round').style.display = '';
+  document.getElementById('leaderboard-general').style.display = 'none';
+});
+
+document.getElementById('tab-general').addEventListener('click', () => {
+  document.getElementById('tab-general').classList.add('active');
+  document.getElementById('tab-round').classList.remove('active');
+  document.getElementById('leaderboard-general').style.display = '';
+  document.getElementById('leaderboard-round').style.display = 'none';
+});
+
+PRED_INIT.push(loadLeaderboard);
 
 // PRED FUNCTIONS
 
