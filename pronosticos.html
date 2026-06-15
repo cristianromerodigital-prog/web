@@ -209,15 +209,34 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 }
 .pred-error { color:#ff8080; font-size:12px; margin-top:10px; }
 .pred-list { display:flex; flex-direction:column; gap:10px; margin-top:8px; }
+.pred-days-hint { text-align:center; font-size:12px; letter-spacing:2px; color:var(--ink3); margin:8px 0 4px; text-transform:uppercase; }
+.pred-days-scroll {
+  display:flex; align-items:flex-start; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch; padding:8px 4px 16px; cursor:grab;
+}
+.pred-days-scroll:active { cursor:grabbing; }
+.pred-days-scroll::-webkit-scrollbar { height:4px; }
+.pred-days-scroll::-webkit-scrollbar-track { background:var(--paper2); border-radius:2px; }
+.pred-days-scroll::-webkit-scrollbar-thumb { background:var(--gold); border-radius:2px; }
+.pred-day-card {
+  flex:0 0 88%; max-width:380px; scroll-snap-align:center; padding:14px;
+  background:rgba(255,255,255,0.09);
+  backdrop-filter:blur(16px) saturate(160%);
+  -webkit-backdrop-filter:blur(16px) saturate(160%);
+  border:1px solid rgba(232,201,106,0.35);
+  border-radius:var(--radius);
+  box-shadow:0 12px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.12);
+}
+.pred-day-card__title {
+  display:block; font-size:13px; font-weight:700; color:var(--gold2);
+  text-transform:capitalize; margin-bottom:8px; text-shadow:0 0 8px rgba(232,201,106,0.5);
+}
 .pred-match {
   display:flex; align-items:center; justify-content:space-between; gap:12px;
-  flex-wrap:wrap; padding:12px 16px;
-  background:var(--glass-bg);
-  backdrop-filter:blur(var(--glass-blur)) saturate(160%);
-  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(160%);
-  border:1px solid var(--glass-border); border-radius:var(--radius);
+  flex-wrap:wrap; padding:8px 0; border-top:1px solid rgba(232,201,106,0.25);
   font-size:14px;
 }
+.pred-match:first-of-type { border-top:none; padding-top:0; }
 .pred-match__meta { width:100%; color:var(--ink3); font-size:11px; letter-spacing:1px; }
 .pred-match__teams { display:flex; align-items:center; gap:6px; }
 .pred-match__inputs { display:flex; align-items:center; gap:6px; margin-left:auto; }
@@ -330,7 +349,8 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
   <p class="section-eyebrow center">Próximos partidos</p>
   <h2 class="section-title center">Hacé tu <em>pronóstico</em></h2>
   <p id="pred-upcoming-notice" class="pred-notice">Elegí un apodo arriba para guardar tus pronósticos.</p>
-  <div id="pred-upcoming-list" class="pred-list"></div>
+  <p class="pred-days-hint">&#8592; Deslizá para ver los próximos días &#8594;</p>
+  <div id="pred-upcoming-list" class="pred-days-scroll"></div>
 </section>
 
 <section id="pred-results" class="pred-section" style="display:none">
@@ -571,6 +591,12 @@ function setMundialUser(id, nickname) {
   localStorage.setItem('mundial_nickname', nickname);
 }
 
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
 function showPlayingAs() {
   const user = getMundialUser();
   if (!user.id) return;
@@ -626,8 +652,8 @@ async function loadUpcoming() {
   try {
     const res = await fetch(PRED_CONFIG.API + '/mundial/fixture');
     const data = await res.json();
-    const upcoming = (data.fixture || []).slice(0, 10);
-    if (upcoming.length === 0) {
+    const fixture = data.fixture || [];
+    if (fixture.length === 0) {
       listEl.innerHTML = '<p class="pred-empty">No hay próximos partidos por ahora.</p>';
       return;
     }
@@ -637,7 +663,14 @@ async function loadUpcoming() {
       const predsData = await predsRes.json();
       (predsData.predictions || []).forEach(p => { myPreds[p.matchKey] = p; });
     }
-    listEl.innerHTML = upcoming.map(m => renderUpcomingMatch(m, myPreds[m.matchKey])).join('');
+    const byDate = {};
+    const order = [];
+    fixture.forEach(m => {
+      const dateKey = new Date(m.kickoffISO).toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' });
+      if (!byDate[dateKey]) { byDate[dateKey] = []; order.push(dateKey); }
+      byDate[dateKey].push(m);
+    });
+    listEl.innerHTML = order.slice(0, 6).map(dateKey => renderDayCard(byDate[dateKey], myPreds)).join('');
     listEl.querySelectorAll('.pred-match__inputs input').forEach(input => {
       input.addEventListener('change', onPredictionChange);
     });
@@ -646,19 +679,26 @@ async function loadUpcoming() {
   }
 }
 
+function renderDayCard(matches, myPreds) {
+  const d = new Date(matches[0].kickoffISO);
+  const label = d.toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires', weekday: 'long', day: 'numeric', month: 'numeric' }).replace(',', '');
+  const rows = matches.map(m => renderUpcomingMatch(m, myPreds[m.matchKey])).join('');
+  return '<div class="pred-day-card"><span class="pred-day-card__title">' + label + '</span>' + rows + '</div>';
+}
+
 function renderUpcomingMatch(m, pred) {
   const [homeCode, awayCode] = m.matchKey.split('-');
   const home = CODE_INFO[homeCode] || { flag: '', name: homeCode };
   const away = CODE_INFO[awayCode] || { flag: '', name: awayCode };
   const d = new Date(m.kickoffISO);
-  const dateStr = d.toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  const timeStr = d.toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires', hour: '2-digit', minute: '2-digit' });
   const homeVal = pred ? pred.predHome : '';
   const awayVal = pred ? pred.predAway : '';
   const user = getMundialUser();
   const started = d.getTime() <= Date.now();
   const disabled = (!user.id || started) ? 'disabled' : '';
   return '<div class="pred-match" data-match-key="' + m.matchKey + '">' +
-    '<div class="pred-match__meta">' + dateStr + ' ART</div>' +
+    '<div class="pred-match__meta">' + timeStr + ' ART</div>' +
     '<div class="pred-match__teams"><span class="flag">' + home.flag + '</span> ' + home.name + ' vs ' + away.name + ' <span class="flag">' + away.flag + '</span></div>' +
     '<div class="pred-match__inputs">' +
       '<input type="number" min="0" max="99" inputmode="numeric" data-side="home" value="' + homeVal + '" ' + disabled + '>' +
@@ -758,14 +798,14 @@ function renderLeaderboard(rows, me, kind, roundInfo) {
     const isMe = me && r.id === me.id;
     html += '<tr class="leaderboard-row' + (isMe ? ' leaderboard-row--me' : '') + '">' +
       '<td class="leaderboard-row__rank">' + (i + 1) + '</td>' +
-      '<td>' + r.nickname + '</td>' +
+      '<td>' + escapeHtml(r.nickname) + '</td>' +
       '<td class="leaderboard-row__points">' + r.points + '</td>' +
     '</tr>';
   });
   if (me && !meInTop && meRank) {
     html += '<tr class="leaderboard-row leaderboard-row--me">' +
       '<td class="leaderboard-row__rank">' + meRank + '</td>' +
-      '<td>' + me.nickname + '</td>' +
+      '<td>' + escapeHtml(me.nickname) + '</td>' +
       '<td class="leaderboard-row__points">' + mePoints + '</td>' +
     '</tr>';
   }
