@@ -189,9 +189,28 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
   0%,100% { opacity:1; box-shadow:0 0 0 0 rgba(232,201,106,0.5); }
   50% { opacity:0.6; box-shadow:0 0 0 4px rgba(232,201,106,0); }
 }
+
+/* ── PREDICT FLOAT ── */
+#predict-float {
+  display:flex; align-items:center; gap:8px;
+  padding:10px 18px; border-radius:999px;
+  background:var(--glass-bg);
+  backdrop-filter:blur(var(--glass-blur)) saturate(160%);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(160%);
+  border:1px solid var(--gold);
+  font-size:12px; font-weight:600; letter-spacing:0.5px; color:var(--ink);
+  text-decoration:none; white-space:nowrap;
+  animation: wcBounce 0.5s ease 2.1s both, pulseGlow 2.5s ease-in-out infinite;
+}
+#predict-float:hover { transform:scale(1.03); }
+@keyframes pulseGlow {
+  0%,100% { box-shadow:0 0 0 0 rgba(232,201,106,0.4); }
+  50% { box-shadow:0 0 0 6px rgba(232,201,106,0); }
+}
 @media(max-width:768px) {
-  #float-bar { left:12px; right:12px; bottom:12px; }
+  #float-bar { left:12px; right:12px; bottom:12px; flex-wrap:wrap; gap:8px; }
   #visit-float { padding:8px 12px; font-size:11px; }
+  #predict-float { order:-1; flex-basis:100%; justify-content:center; padding:8px 12px; font-size:11px; }
 }
 
 /* ── SECTION UTILS ── */
@@ -475,7 +494,7 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.28</span></span>
+    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.29</span></span>
     <div class="footer-bottom-links">
       <a href="#">Privacidad</a>
       <a href="#">Términos</a>
@@ -497,6 +516,7 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
     <span class="dot"></span>
     <span><strong id="visit-count">—</strong> visitas</span>
   </div>
+  <a id="predict-float" href="pronosticos.html">🔮 ¿Quién gana? Pronosticá</a>
   <div id="wc-float">
     <img src="worldcup-icon.png" alt="">
   </div>
