@@ -208,6 +208,30 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
   border:1px solid var(--black4); background:var(--paper); color:var(--ink);
 }
 .pred-error { color:#ff8080; font-size:12px; margin-top:10px; }
+.pred-list { display:flex; flex-direction:column; gap:10px; margin-top:8px; }
+.pred-match {
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  flex-wrap:wrap; padding:12px 16px;
+  background:var(--glass-bg);
+  backdrop-filter:blur(var(--glass-blur)) saturate(160%);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(160%);
+  border:1px solid var(--glass-border); border-radius:var(--radius);
+  font-size:14px;
+}
+.pred-match__meta { width:100%; color:var(--ink3); font-size:11px; letter-spacing:1px; }
+.pred-match__teams { display:flex; align-items:center; gap:6px; }
+.pred-match__inputs { display:flex; align-items:center; gap:6px; margin-left:auto; }
+.pred-match__inputs input {
+  width:38px; text-align:center; padding:6px 4px; border-radius:5px; border:none;
+  background:rgba(255,255,255,0.95); color:#14110d; font-size:14px; font-weight:600; font-family:inherit;
+  -moz-appearance:textfield;
+}
+.pred-match__inputs input::-webkit-outer-spin-button,
+.pred-match__inputs input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+.pred-match__inputs input:disabled { background:var(--gold); color:#14110d; opacity:0.85; }
+.score-sep { color:var(--ink3); font-weight:600; }
+.pred-match__status { font-size:11px; color:var(--gold2); margin-left:4px; opacity:0; transition:opacity 0.2s; white-space:nowrap; }
+.pred-match__status.show { opacity:1; }
 
 /* PRED STYLES */
 </style>
@@ -267,6 +291,13 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
   <div id="nickname-playing" class="pred-card" style="display:none">
     <p>Jugando como <strong id="nickname-display" style="color:var(--gold2)"></strong></p>
   </div>
+</section>
+
+<section id="pred-upcoming" class="pred-section">
+  <p class="section-eyebrow center">Próximos partidos</p>
+  <h2 class="section-title center">Hacé tu <em>pronóstico</em></h2>
+  <p id="pred-upcoming-notice" class="pred-notice">Elegí un apodo arriba para guardar tus pronósticos.</p>
+  <div id="pred-upcoming-list" class="pred-list"></div>
 </section>
 
 <!-- PRED SECTIONS -->
@@ -535,6 +566,84 @@ document.getElementById('nickname-submit').addEventListener('click', async () =>
 });
 
 PRED_INIT.push(showPlayingAs);
+
+async function loadUpcoming() {
+  const listEl = document.getElementById('pred-upcoming-list');
+  const user = getMundialUser();
+  const notice = document.getElementById('pred-upcoming-notice');
+  notice.style.display = user.id ? 'none' : 'block';
+  listEl.innerHTML = '<p class="pred-empty">Cargando...</p>';
+  try {
+    const res = await fetch(PRED_CONFIG.API + '/mundial/fixture');
+    const data = await res.json();
+    const upcoming = (data.fixture || []).slice(0, 10);
+    if (upcoming.length === 0) {
+      listEl.innerHTML = '<p class="pred-empty">No hay próximos partidos por ahora.</p>';
+      return;
+    }
+    let myPreds = {};
+    if (user.id) {
+      const predsRes = await fetch(PRED_CONFIG.API + '/mundial/predictions?userId=' + user.id);
+      const predsData = await predsRes.json();
+      (predsData.predictions || []).forEach(p => { myPreds[p.matchKey] = p; });
+    }
+    listEl.innerHTML = upcoming.map(m => renderUpcomingMatch(m, myPreds[m.matchKey])).join('');
+    listEl.querySelectorAll('.pred-match__inputs input').forEach(input => {
+      input.addEventListener('change', onPredictionChange);
+    });
+  } catch (e) {
+    listEl.innerHTML = '<p class="pred-empty">No se pudieron cargar los próximos partidos.</p>';
+  }
+}
+
+function renderUpcomingMatch(m, pred) {
+  const [homeCode, awayCode] = m.matchKey.split('-');
+  const home = CODE_INFO[homeCode] || { flag: '', name: homeCode };
+  const away = CODE_INFO[awayCode] || { flag: '', name: awayCode };
+  const d = new Date(m.kickoffISO);
+  const dateStr = d.toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  const homeVal = pred ? pred.predHome : '';
+  const awayVal = pred ? pred.predAway : '';
+  const user = getMundialUser();
+  const started = d.getTime() <= Date.now();
+  const disabled = (!user.id || started) ? 'disabled' : '';
+  return '<div class="pred-match" data-match-key="' + m.matchKey + '">' +
+    '<div class="pred-match__meta">' + dateStr + ' ART</div>' +
+    '<div class="pred-match__teams"><span class="flag">' + home.flag + '</span> ' + home.name + ' vs ' + away.name + ' <span class="flag">' + away.flag + '</span></div>' +
+    '<div class="pred-match__inputs">' +
+      '<input type="number" min="0" max="99" inputmode="numeric" data-side="home" value="' + homeVal + '" ' + disabled + '>' +
+      '<span class="score-sep">-</span>' +
+      '<input type="number" min="0" max="99" inputmode="numeric" data-side="away" value="' + awayVal + '" ' + disabled + '>' +
+      '<span class="pred-match__status"></span>' +
+    '</div>' +
+  '</div>';
+}
+
+async function onPredictionChange(e) {
+  const matchEl = e.target.closest('.pred-match');
+  const matchKey = matchEl.dataset.matchKey;
+  const homeInput = matchEl.querySelector('[data-side="home"]');
+  const awayInput = matchEl.querySelector('[data-side="away"]');
+  const statusEl = matchEl.querySelector('.pred-match__status');
+  const predHome = parseInt(homeInput.value, 10);
+  const predAway = parseInt(awayInput.value, 10);
+  if (isNaN(predHome) || isNaN(predAway) || predHome < 0 || predAway < 0) return;
+  const user = getMundialUser();
+  if (!user.id) return;
+  try {
+    const res = await fetch(PRED_CONFIG.API + '/mundial/predict', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id, matchKey, predHome, predAway })
+    });
+    statusEl.textContent = res.ok ? 'Guardado ✓' : 'Error';
+  } catch (err) {
+    statusEl.textContent = 'Error';
+  }
+  statusEl.classList.add('show');
+  setTimeout(() => statusEl.classList.remove('show'), 1500);
+}
+
+PRED_INIT.push(loadUpcoming);
 
 // PRED FUNCTIONS
 
