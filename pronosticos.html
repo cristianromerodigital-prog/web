@@ -232,6 +232,18 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 .score-sep { color:var(--ink3); font-weight:600; }
 .pred-match__status { font-size:11px; color:var(--gold2); margin-left:4px; opacity:0; transition:opacity 0.2s; white-space:nowrap; }
 .pred-match__status.show { opacity:1; }
+.pred-result {
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  flex-wrap:wrap; padding:12px 16px;
+  background:var(--glass-bg);
+  backdrop-filter:blur(var(--glass-blur)) saturate(160%);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(160%);
+  border:1px solid var(--glass-border); border-radius:var(--radius);
+  font-size:14px;
+}
+.pred-result__teams { display:flex; align-items:center; gap:6px; }
+.pred-result__detail { display:flex; align-items:center; gap:14px; margin-left:auto; font-size:13px; color:var(--ink2); flex-wrap:wrap; }
+.pred-result__detail strong { color:var(--ink); }
 
 /* PRED STYLES */
 </style>
@@ -298,6 +310,12 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
   <h2 class="section-title center">Hacé tu <em>pronóstico</em></h2>
   <p id="pred-upcoming-notice" class="pred-notice">Elegí un apodo arriba para guardar tus pronósticos.</p>
   <div id="pred-upcoming-list" class="pred-list"></div>
+</section>
+
+<section id="pred-results" class="pred-section" style="display:none">
+  <p class="section-eyebrow center">Tus resultados</p>
+  <h2 class="section-title center">Pronósticos <em>puntuados</em></h2>
+  <div id="pred-results-list" class="pred-list"></div>
 </section>
 
 <!-- PRED SECTIONS -->
@@ -644,6 +662,41 @@ async function onPredictionChange(e) {
 }
 
 PRED_INIT.push(loadUpcoming);
+
+async function loadResults() {
+  const user = getMundialUser();
+  const section = document.getElementById('pred-results');
+  const listEl = document.getElementById('pred-results-list');
+  if (!user.id) { section.style.display = 'none'; return; }
+  try {
+    const res = await fetch(PRED_CONFIG.API + '/mundial/predictions?userId=' + user.id);
+    const data = await res.json();
+    const scored = (data.predictions || []).filter(p => p.scored);
+    if (scored.length === 0) { section.style.display = 'none'; return; }
+    listEl.innerHTML = scored.map(renderResultMatch).join('');
+    section.style.display = '';
+  } catch (e) {
+    section.style.display = 'none';
+  }
+}
+
+function renderResultMatch(p) {
+  const [homeCode, awayCode] = p.matchKey.split('-');
+  const home = CODE_INFO[homeCode] || { flag: '', name: homeCode };
+  const away = CODE_INFO[awayCode] || { flag: '', name: awayCode };
+  const badgeClass = p.points === 3 ? 'pred-badge--3' : (p.points === 1 ? 'pred-badge--1' : 'pred-badge--0');
+  const badgeLabel = p.points === 3 ? '✅ 3 pts' : (p.points === 1 ? '🟡 1 pt' : '❌ 0 pts');
+  return '<div class="pred-result">' +
+    '<div class="pred-result__teams"><span class="flag">' + home.flag + '</span> ' + home.name + ' vs ' + away.name + ' <span class="flag">' + away.flag + '</span></div>' +
+    '<div class="pred-result__detail">' +
+      '<span>Tu pronóstico: <strong>' + p.predHome + '-' + p.predAway + '</strong></span>' +
+      '<span>Resultado: <strong>' + p.actualHome + '-' + p.actualAway + '</strong></span>' +
+      '<span class="pred-badge ' + badgeClass + '">' + badgeLabel + '</span>' +
+    '</div>' +
+  '</div>';
+}
+
+PRED_INIT.push(loadResults);
 
 // PRED FUNCTIONS
 
