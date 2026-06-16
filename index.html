@@ -507,6 +507,70 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 #ig-float:hover { transform:scale(1.1); box-shadow:0 6px 32px rgba(214,36,159,0.5); }
 #ig-float svg { width:26px; height:26px; fill:white; }
 
+/* ── MUNDIAL FLOAT ── */
+#wc-float-index {
+  position:fixed; bottom:168px; right:32px; z-index:500;
+  width:56px; height:56px; border-radius:50%;
+  background:rgba(20,17,13,0.85);
+  backdrop-filter:blur(12px) saturate(160%);
+  -webkit-backdrop-filter:blur(12px) saturate(160%);
+  border:1.5px solid rgba(232,201,106,0.6);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 4px 20px rgba(0,0,0,0.5), 0 0 0 0 rgba(232,201,106,0.4);
+  transition:transform var(--trans), box-shadow var(--trans);
+  animation:waBounce 0.5s ease 2.4s both;
+  text-decoration:none;
+}
+#wc-float-index:hover { transform:scale(1.1); box-shadow:0 6px 28px rgba(232,201,106,0.35); }
+#wc-float-index img { width:30px; height:30px; object-fit:contain; display:block; }
+
+/* ── MUNDIAL MODAL ── */
+#mundial-modal {
+  position:fixed; inset:0; z-index:2000;
+  background:rgba(0,0,0,0.82);
+  display:flex; align-items:center; justify-content:center; padding:24px;
+}
+.mundial-modal-box {
+  background:linear-gradient(145deg,#1a1510 0%,#0d1a0d 100%);
+  border:1px solid rgba(232,201,106,0.35); border-radius:18px;
+  padding:40px 32px 32px; max-width:400px; width:100%; text-align:center;
+  position:relative;
+  box-shadow:0 24px 64px rgba(0,0,0,0.7), inset 0 1px 0 rgba(232,201,106,0.15);
+}
+.mundial-modal-close-x {
+  position:absolute; top:16px; right:20px;
+  background:none; border:none; color:rgba(232,201,106,0.5);
+  font-size:20px; cursor:pointer; line-height:1; padding:4px;
+  transition:color var(--trans);
+}
+.mundial-modal-close-x:hover { color:var(--gold,#e8c96a); }
+.mundial-modal-badge {
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(232,201,106,0.12); border:1px solid rgba(232,201,106,0.4);
+  border-radius:999px; padding:4px 14px; font-size:10px; letter-spacing:3px;
+  text-transform:uppercase; color:#e8c96a; margin-bottom:20px;
+}
+.mundial-modal-badge::before { content:''; width:6px; height:6px; border-radius:50%; background:#e8c96a; animation:pulseDot 2s ease-in-out infinite; }
+.mundial-modal-icon { width:80px; height:80px; margin:0 auto 16px; }
+.mundial-modal-icon img { width:100%; height:100%; object-fit:contain; }
+.mundial-modal-title {
+  font-family:'Cormorant Garamond',Georgia,serif; font-size:34px; font-weight:300;
+  color:#e8e0d0; letter-spacing:4px; text-transform:uppercase; margin-bottom:6px; line-height:1.1;
+}
+.mundial-modal-sub { font-size:13px; color:#9a8870; margin-bottom:16px; line-height:1.6; }
+.mundial-modal-flags { font-size:22px; margin-bottom:24px; letter-spacing:4px; }
+.mundial-modal-cta {
+  display:block; background:#e8c96a; color:#0d0a07;
+  font-size:13px; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+  padding:14px 28px; border-radius:999px; text-decoration:none;
+  margin-bottom:14px; transition:opacity var(--trans);
+}
+.mundial-modal-cta:hover { opacity:0.88; }
+.mundial-modal-skip {
+  background:none; border:none; color:#7a7060; font-size:12px;
+  cursor:pointer; letter-spacing:1px; transition:color var(--trans); padding:4px;
+}
+.mundial-modal-skip:hover { color:#9a8870; }
 
 /* ── ANIMATIONS ── */
 @keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:none} }
@@ -1137,7 +1201,7 @@ body::before {
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.02</span></span>
+    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.03</span></span>
     <div class="footer-bottom-links">
       <a href="#">Privacidad</a>
       <a href="#">Términos</a>
@@ -1145,9 +1209,28 @@ body::before {
   </div>
 </footer>
 
+<!-- MUNDIAL MODAL -->
+<div id="mundial-modal">
+  <div class="mundial-modal-box">
+    <button class="mundial-modal-close-x" onclick="closeMundialModal()" aria-label="Cerrar">✕</button>
+    <div class="mundial-modal-badge">En vivo</div>
+    <div class="mundial-modal-icon"><img src="worldcup-icon.png" alt="Mundial 2026"></div>
+    <h2 class="mundial-modal-title">Mundial 2026</h2>
+    <p class="mundial-modal-sub">Seguí resultados, fixture y tabla de posiciones en tiempo real</p>
+    <div class="mundial-modal-flags">🇦🇷 🇧🇷 🇺🇾 🇩🇪 🇫🇷 🇪🇸 🇵🇹 🇲🇽</div>
+    <a href="mundial.html" class="mundial-modal-cta">Ver fixture →</a>
+    <button class="mundial-modal-skip" onclick="closeMundialModal()">× Seguir navegando</button>
+  </div>
+</div>
+
 <!-- INSTAGRAM FLOAT -->
 <a href="https://instagram.com/cristian.romero.digital" target="_blank" id="ig-float" aria-label="Instagram">
   <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+</a>
+
+<!-- MUNDIAL FLOAT -->
+<a href="mundial.html" id="wc-float-index" aria-label="Fixture Mundial 2026">
+  <img src="worldcup-icon.png" alt="Mundial 2026">
 </a>
 
 <!-- WHATSAPP FLOAT -->
@@ -1780,6 +1863,15 @@ function closeLegalModal() {
 }
 document.getElementById('legal-modal').addEventListener('click', function(e) {
   if(e.target === this) closeLegalModal();
+});
+
+// ── MUNDIAL MODAL ──
+function closeMundialModal() {
+  document.getElementById('mundial-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+document.getElementById('mundial-modal').addEventListener('click', function(e) {
+  if(e.target === this) closeMundialModal();
 });
 
 // ── WA CTA HANDLER ──
