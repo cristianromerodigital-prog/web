@@ -525,17 +525,28 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 #wc-float-index img { width:30px; height:30px; object-fit:contain; display:block; }
 
 /* ── MUNDIAL MODAL ── */
+@keyframes pulseDot {
+  0%,100% { opacity:1; box-shadow:0 0 0 0 rgba(232,201,106,0.5); }
+  50% { opacity:0.6; box-shadow:0 0 0 4px rgba(232,201,106,0); }
+}
 #mundial-modal {
   position:fixed; inset:0; z-index:2000;
   background:rgba(0,0,0,0.82);
   display:flex; align-items:center; justify-content:center; padding:24px;
+  overflow-y:auto;
 }
 .mundial-modal-box {
   background:linear-gradient(145deg,#1a1510 0%,#0d1a0d 100%);
   border:1px solid rgba(232,201,106,0.35); border-radius:18px;
   padding:40px 32px 32px; max-width:400px; width:100%; text-align:center;
-  position:relative;
+  position:relative; margin:auto;
   box-shadow:0 24px 64px rgba(0,0,0,0.7), inset 0 1px 0 rgba(232,201,106,0.15);
+}
+@media(max-width:480px) {
+  .mundial-modal-box { padding:28px 20px 24px; }
+  .mundial-modal-icon { width:60px; height:60px; }
+  .mundial-modal-title { font-size:26px; }
+  .mundial-modal-flags { font-size:18px; margin-bottom:16px; }
 }
 .mundial-modal-close-x {
   position:absolute; top:16px; right:20px;
