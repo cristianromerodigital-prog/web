@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='104';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='105';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -199,7 +199,7 @@ const params = new URLSearchParams(window.location.search);
 const EVENT_ID = params.get('e') || '';
 
 let settings = (() => { try { return JSON.parse(localStorage.getItem('crd_settings')) || {}; } catch(e) { return {}; } })();
-fetch(WORKER_URL + '/site/config').then(r=>r.json()).then(function(d){ settings = Object.assign({}, settings, { logo_url: d.logo_url||'', whatsapp: d.whatsapp||'', website: d.website||'' }); applyBranding(); }).catch(function(){});
+fetch('https://web.cristian-romero-digital.workers.dev/crd_settings',{headers:{Authorization:'crd2025'}}).then(r=>r.json()).then(function(d){ settings=Object.assign({},settings,{logo_url:d.logoUrl||'',whatsapp:d.waSuffix||'',website:d.entregaWebUrl||''}); applyBranding(); }).catch(function(){});
 
 let evento = null;
 let fotos = [];
