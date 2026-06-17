@@ -99,7 +99,7 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
 /* LIGHTBOX */
 #lightbox { display:none; position:fixed; inset:0; z-index:600; background:rgba(0,0,0,.95); align-items:center; justify-content:center; }
 #lightbox.active { display:flex; }
-#lb-img { width:100vw; height:100vh; object-fit:contain; }
+#lb-img { width:100vw; height:100vh; object-fit:contain; pointer-events:none; }
 #lb-close { position:fixed; top:20px; right:24px; background:none; border:none; color:rgba(255,255,255,.6); font-size:28px; cursor:pointer !important; z-index:601; }
 #lb-prev,#lb-next { position:fixed; top:50%; transform:translateY(-50%); background:rgba(0,0,0,.5); border:none; color:rgba(255,255,255,.7); font-size:36px; padding:16px 12px; cursor:pointer !important; z-index:601; }
 #lb-prev { left:8px; }
