@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='107';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='108';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -88,6 +88,9 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
 #tv-no-fotos { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; }
 #tv-no-fotos .nf-title { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:clamp(32px,5vw,64px); color:rgba(255,255,255,.7); }
 #tv-no-fotos .nf-sub { font-size:11px; letter-spacing:.4em; text-transform:uppercase; color:rgba(255,255,255,.25); }
+#tv-qr { position:absolute; top:32px; right:32px; display:none; flex-direction:column; align-items:center; gap:10px; }
+#tv-qr img { width:140px; height:140px; border-radius:10px; background:#fff; padding:6px; }
+#tv-qr-label { font-size:10px; letter-spacing:.3em; text-transform:uppercase; color:rgba(255,255,255,.4); text-align:center; }
 
 /* UPLOAD FAB */
 #btn-upload { display:none; position:fixed; bottom:28px; right:28px; z-index:200; width:56px; height:56px; border-radius:50%; background:var(--gold); border:none; color:#000; font-size:28px; font-weight:300; line-height:1; align-items:center; justify-content:center; box-shadow:0 4px 20px rgba(0,0,0,.4); transition:transform .2s; cursor:pointer !important; }
@@ -157,6 +160,10 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
 
 <div id="tv-mode">
   <div id="tv-slide"></div>
+  <div id="tv-qr">
+    <img id="tv-qr-img" alt="QR">
+    <div id="tv-qr-label">Escaneá para ver y subir fotos</div>
+  </div>
   <div id="tv-no-fotos" style="display:none">
     <div class="nf-title" id="tv-no-fotos-nombre"></div>
     <div class="nf-sub">Esperando las primeras fotos...</div>
@@ -285,6 +292,9 @@ function setupTV() {
   document.getElementById('hero').classList.add('hidden');
   document.getElementById('gallery-section').classList.add('hidden');
   document.getElementById('social-float').style.display = 'none';
+  const eventUrl = window.location.origin + window.location.pathname + '?e=' + EVENT_ID;
+  document.getElementById('tv-qr-img').src = 'https://chart.googleapis.com/chart?cht=qr&chs=280x280&chl=' + encodeURIComponent(eventUrl) + '&choe=UTF-8';
+  document.getElementById('tv-qr').style.display = 'flex';
   document.getElementById('tv-nombre').textContent = evento.nombre;
   document.getElementById('tv-no-fotos-nombre').textContent = evento.nombre;
   loadFotosTV();
