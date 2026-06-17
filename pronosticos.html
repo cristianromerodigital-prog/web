@@ -263,32 +263,48 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 .pred-result__teams { display:flex; align-items:center; gap:6px; }
 .pred-result__detail { display:flex; align-items:center; gap:14px; margin-left:auto; font-size:13px; color:var(--ink2); flex-wrap:wrap; }
 .pred-result__detail strong { color:var(--ink); }
-.leaderboard-tabs { display:flex; justify-content:center; gap:8px; margin-bottom:16px; }
-.leaderboard-tab {
-  padding:8px 20px; border-radius:999px; border:1px solid var(--glass-border);
-  background:transparent; color:var(--ink2); font-family:inherit; font-size:13px; font-weight:600;
-  cursor:pointer; transition:all 0.2s; letter-spacing:0.5px;
+.lb-wrap { position:relative; }
+.lb-cards {
+  display:flex; flex-direction:row; overflow-x:auto; gap:12px;
+  padding:8px 24px 20px; scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch; scrollbar-width:none;
 }
-.leaderboard-tab.active { background:var(--gold); color:#14110d; border-color:var(--gold); }
-.leaderboard-table {
-  width:100%; border-collapse:collapse;
+.lb-cards::-webkit-scrollbar { display:none; }
+.lb-card {
+  flex:0 0 260px; min-width:260px;
   background:var(--glass-bg);
   backdrop-filter:blur(var(--glass-blur)) saturate(160%);
   -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(160%);
-  border:1px solid var(--glass-border); border-radius:var(--radius); overflow:hidden;
+  border:1px solid var(--glass-border); border-radius:var(--radius);
+  overflow:hidden; scroll-snap-align:start;
 }
-.leaderboard-table th, .leaderboard-table td { padding:10px 16px; text-align:left; font-size:13px; }
-.leaderboard-table th { color:var(--ink3); font-size:11px; letter-spacing:1px; text-transform:uppercase; border-bottom:1px solid var(--glass-border); }
-.leaderboard-row td { border-bottom:1px solid rgba(255,255,255,0.05); }
-.leaderboard-row:last-child td { border-bottom:none; }
-.leaderboard-row--me { background:rgba(255,200,87,0.12); }
-.leaderboard-row__rank { font-weight:700; color:var(--gold2); width:40px; }
-.leaderboard-row__points { text-align:center; font-weight:700; }
-.leaderboard-row__total { text-align:center; font-weight:700; color:var(--gold); }
-.leaderboard-row__fecha { text-align:center; color:var(--ink2); font-size:12px; min-width:48px; }
-.leaderboard-table th.round-col { text-align:center; }
-.leaderboard-table th.fecha-col { text-align:center; white-space:nowrap; }
-.leaderboard-table th.total-col { text-align:center; color:var(--gold2); }
+.lb-card--total {
+  border-color:rgba(232,201,106,0.45);
+  box-shadow:0 0 28px rgba(201,168,76,0.14);
+}
+.lb-card__header { padding:14px 18px 12px; border-bottom:1px solid var(--glass-border); }
+.lb-card__title { font-family:'Cormorant Garamond',serif; font-size:19px; font-weight:400; color:var(--gold2); letter-spacing:1px; }
+.lb-card--total .lb-card__title { font-size:22px; color:var(--gold); }
+.lb-card__sub { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--ink3); margin-top:3px; }
+.lb-card__row { display:flex; align-items:center; gap:10px; padding:9px 18px; border-bottom:1px solid rgba(255,255,255,0.04); }
+.lb-card__row:last-child { border-bottom:none; }
+.lb-card__row--me { background:rgba(255,200,87,0.10); }
+.lb-card__rank { font-weight:700; color:var(--gold2); width:22px; font-size:12px; flex-shrink:0; }
+.lb-card__name { flex:1; font-size:13px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.lb-card__pts { font-weight:700; font-size:16px; color:var(--ink2); flex-shrink:0; }
+.lb-card--total .lb-card__pts { color:var(--gold); }
+.lb-hint {
+  position:absolute; left:0; top:0; bottom:20px; width:80px;
+  background:linear-gradient(to right, var(--black2) 15%, transparent);
+  pointer-events:none; z-index:5;
+  display:flex; align-items:center; padding-left:12px;
+  transition:opacity 0.35s;
+}
+.lb-hint__arrow { font-size:26px; color:var(--gold2); animation:lbPulse 1.5s ease-in-out infinite; }
+@keyframes lbPulse {
+  0%,100% { opacity:0.15; transform:translateX(0); }
+  50% { opacity:1; transform:translateX(-6px); }
+}
 
 /* PRED STYLES */
 </style>
@@ -367,12 +383,10 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 <section id="pred-leaderboard" class="pred-section">
   <p class="section-eyebrow center">Ranking</p>
   <h2 class="section-title center">Tabla de <em>posiciones</em></h2>
-  <div class="leaderboard-tabs">
-    <button class="leaderboard-tab active" data-tab="round" id="tab-round">Esta ronda</button>
-    <button class="leaderboard-tab" data-tab="general" id="tab-general">General</button>
+  <div class="lb-wrap">
+    <div class="lb-hint" id="lb-hint"><span class="lb-hint__arrow">‹</span></div>
+    <div class="lb-cards" id="lb-cards"></div>
   </div>
-  <div id="leaderboard-round"></div>
-  <div id="leaderboard-general" style="display:none"></div>
 </section>
 
 <!-- PRED SECTIONS -->
@@ -781,77 +795,68 @@ async function loadLeaderboard() {
   try {
     const res = await fetch(url);
     const data = await res.json();
-    const activeRounds = data.activeRounds || [];
-    document.getElementById('leaderboard-round').innerHTML = renderLeaderboard(data.round, data.me, 'round', data.roundInfo, activeRounds);
-    document.getElementById('leaderboard-general').innerHTML = renderLeaderboard(data.general, data.me, 'general', null, activeRounds);
+    renderLbCards(data, user);
   } catch (e) {
-    document.getElementById('leaderboard-round').innerHTML = '<p class="pred-empty">No se pudo cargar el ranking.</p>';
+    document.getElementById('lb-cards').innerHTML = '<p class="pred-empty" style="padding:20px">No se pudo cargar el ranking.</p>';
   }
 }
 
-function renderLeaderboard(rows, me, kind, roundInfo, activeRounds) {
-  activeRounds = activeRounds || [];
-  const meRank = kind === 'round' ? (me && me.roundRank) : (me && me.generalRank);
-  const mePoints = kind === 'round' ? (me && me.roundPoints) : (me && me.generalPoints);
-  const meInTop = me && rows.some(r => r.id === me.id);
+function renderLbCards(data, user) {
+  const { general, activeRounds, me, roundInfo } = data;
+  const container = document.getElementById('lb-cards');
+  const hint = document.getElementById('lb-hint');
   let html = '';
-  if (roundInfo) html += '<p class="pred-empty" style="margin-bottom:10px">Ronda actual: ' + roundInfo.label + '</p>';
-  if (rows.length === 0) {
-    html += '<p class="pred-empty">Todavía no hay pronósticos puntuados.</p>';
-    return html;
-  }
 
-  // Header
-  let thead = '<tr><th>#</th><th>Jugador</th>';
-  if (kind === 'round') thead += '<th class="round-col">Esta ronda</th><th class="total-col">Total</th>';
-  else thead += '<th class="total-col">Total</th>';
-  activeRounds.forEach(ar => { thead += '<th class="fecha-col">' + escapeHtml(ar.label) + '</th>'; });
-  thead += '</tr>';
-
-  function buildRow(r, rank, isMe, isSeparator) {
-    const byRound = r.byRound || {};
-    const total = r.total !== undefined ? r.total : r.points;
-    let row = '<tr class="leaderboard-row' + (isMe ? ' leaderboard-row--me' : '') + (isSeparator ? '" style="border-top:2px dashed var(--glass-border)' : '') + '">';
-    row += '<td class="leaderboard-row__rank">' + rank + '</td>';
-    row += '<td>' + escapeHtml(r.nickname) + '</td>';
-    if (kind === 'round') {
-      row += '<td class="leaderboard-row__points">' + r.points + '</td>';
-      row += '<td class="leaderboard-row__total">' + total + '</td>';
-    } else {
-      row += '<td class="leaderboard-row__total">' + total + '</td>';
-    }
-    activeRounds.forEach(ar => {
-      row += '<td class="leaderboard-row__fecha">' + (byRound[ar.id] !== undefined ? byRound[ar.id] : 0) + '</td>';
+  // Per-fecha cards (DOM: fechas primero, Total al final = rightmost)
+  for (const ar of (activeRounds || [])) {
+    const isCurrent = roundInfo && ar.id === roundInfo.id;
+    const sorted = [...general]
+      .map(u => ({ id: u.id, nickname: u.nickname, pts: (u.byRound || {})[ar.id] || 0 }))
+      .sort((a, b) => b.pts - a.pts || a.nickname.localeCompare(b.nickname));
+    html += '<div class="lb-card">';
+    html += '<div class="lb-card__header">';
+    html += '<div class="lb-card__title">' + escapeHtml(ar.label) + '</div>';
+    html += '<div class="lb-card__sub">' + (isCurrent ? 'ronda actual' : 'puntos de la fecha') + '</div>';
+    html += '</div>';
+    sorted.forEach((u, i) => {
+      const isMe = me && u.id === me.id;
+      html += '<div class="lb-card__row' + (isMe ? ' lb-card__row--me' : '') + '">';
+      html += '<span class="lb-card__rank">' + (i + 1) + '</span>';
+      html += '<span class="lb-card__name">' + escapeHtml(u.nickname) + '</span>';
+      html += '<span class="lb-card__pts">' + u.pts + '</span>';
+      html += '</div>';
     });
-    row += '</tr>';
-    return row;
+    html += '</div>';
   }
 
-  html += '<div style="overflow-x:auto"><table class="leaderboard-table"><thead>' + thead + '</thead><tbody>';
-  rows.forEach((r, i) => {
-    html += buildRow(r, i + 1, me && r.id === me.id, false);
+  // Tarjeta Total (última en DOM = más a la derecha)
+  html += '<div class="lb-card lb-card--total">';
+  html += '<div class="lb-card__header">';
+  html += '<div class="lb-card__title">Total General</div>';
+  html += '<div class="lb-card__sub">puntos acumulados</div>';
+  html += '</div>';
+  general.forEach((u, i) => {
+    const isMe = me && u.id === me.id;
+    html += '<div class="lb-card__row' + (isMe ? ' lb-card__row--me' : '') + '">';
+    html += '<span class="lb-card__rank">' + (i + 1) + '</span>';
+    html += '<span class="lb-card__name">' + escapeHtml(u.nickname) + '</span>';
+    html += '<span class="lb-card__pts">' + u.points + '</span>';
+    html += '</div>';
   });
-  if (me && !meInTop && meRank) {
-    const meRow = { id: me.id, nickname: me.nickname, points: mePoints, total: me.generalPoints, byRound: {} };
-    html += buildRow(meRow, meRank, true, true);
+  html += '</div>';
+
+  container.innerHTML = html;
+
+  // Iniciar con Total visible (scroll al final)
+  requestAnimationFrame(() => { container.scrollLeft = container.scrollWidth; });
+
+  // Hint: visible cuando hay contenido a la izquierda
+  function updateHint() {
+    hint.style.opacity = container.scrollLeft > 20 ? '1' : '0';
   }
-  html += '</tbody></table></div>';
-  return html;
+  updateHint();
+  container.addEventListener('scroll', updateHint, { passive: true });
 }
-
-document.getElementById('tab-round').addEventListener('click', () => {
-  document.getElementById('tab-round').classList.add('active');
-  document.getElementById('tab-general').classList.remove('active');
-  document.getElementById('leaderboard-round').style.display = '';
-  document.getElementById('leaderboard-general').style.display = 'none';
-});
-
-document.getElementById('tab-general').addEventListener('click', () => {
-  document.getElementById('tab-general').classList.add('active');
-  document.getElementById('tab-round').classList.remove('active');
-  document.getElementById('leaderboard-general').style.display = '';
-  document.getElementById('leaderboard-round').style.display = 'none';
-});
 
 PRED_INIT.push(loadLeaderboard);
 
