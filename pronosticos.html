@@ -294,16 +294,16 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 .lb-card__pts { font-weight:700; font-size:16px; color:var(--ink2); flex-shrink:0; }
 .lb-card--total .lb-card__pts { color:var(--gold); }
 .lb-hint {
-  position:absolute; left:0; top:0; bottom:20px; width:80px;
-  background:linear-gradient(to right, var(--black2) 15%, transparent);
+  position:absolute; right:0; top:0; bottom:20px; width:80px;
+  background:linear-gradient(to left, var(--black2) 15%, transparent);
   pointer-events:none; z-index:5;
-  display:flex; align-items:center; padding-left:12px;
+  display:flex; align-items:center; justify-content:flex-end; padding-right:12px;
   transition:opacity 0.35s;
 }
 .lb-hint__arrow { font-size:26px; color:var(--gold2); animation:lbPulse 1.5s ease-in-out infinite; }
 @keyframes lbPulse {
   0%,100% { opacity:0.15; transform:translateX(0); }
-  50% { opacity:1; transform:translateX(-6px); }
+  50% { opacity:1; transform:translateX(6px); }
 }
 
 /* PRED STYLES */
@@ -384,7 +384,7 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
   <p class="section-eyebrow center">Ranking</p>
   <h2 class="section-title center">Tabla de <em>posiciones</em></h2>
   <div class="lb-wrap">
-    <div class="lb-hint" id="lb-hint"><span class="lb-hint__arrow">‹</span></div>
+    <div class="lb-hint" id="lb-hint"><span class="lb-hint__arrow">›</span></div>
     <div class="lb-cards" id="lb-cards"></div>
   </div>
 </section>
@@ -807,7 +807,23 @@ function renderLbCards(data, user) {
   const hint = document.getElementById('lb-hint');
   let html = '';
 
-  // Per-fecha cards (DOM: fechas primero, Total al final = rightmost)
+  // Tarjeta Total (primera en DOM = visible al cargar)
+  html += '<div class="lb-card lb-card--total">';
+  html += '<div class="lb-card__header">';
+  html += '<div class="lb-card__title">Total General</div>';
+  html += '<div class="lb-card__sub">puntos acumulados</div>';
+  html += '</div>';
+  general.forEach((u, i) => {
+    const isMe = me && u.id === me.id;
+    html += '<div class="lb-card__row' + (isMe ? ' lb-card__row--me' : '') + '">';
+    html += '<span class="lb-card__rank">' + (i + 1) + '</span>';
+    html += '<span class="lb-card__name">' + escapeHtml(u.nickname) + '</span>';
+    html += '<span class="lb-card__pts">' + u.points + '</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // Tarjetas por fecha (a la derecha, se descubren deslizando)
   for (const ar of (activeRounds || [])) {
     const isCurrent = roundInfo && ar.id === roundInfo.id;
     const sorted = [...general]
@@ -829,30 +845,12 @@ function renderLbCards(data, user) {
     html += '</div>';
   }
 
-  // Tarjeta Total (última en DOM = más a la derecha)
-  html += '<div class="lb-card lb-card--total">';
-  html += '<div class="lb-card__header">';
-  html += '<div class="lb-card__title">Total General</div>';
-  html += '<div class="lb-card__sub">puntos acumulados</div>';
-  html += '</div>';
-  general.forEach((u, i) => {
-    const isMe = me && u.id === me.id;
-    html += '<div class="lb-card__row' + (isMe ? ' lb-card__row--me' : '') + '">';
-    html += '<span class="lb-card__rank">' + (i + 1) + '</span>';
-    html += '<span class="lb-card__name">' + escapeHtml(u.nickname) + '</span>';
-    html += '<span class="lb-card__pts">' + u.points + '</span>';
-    html += '</div>';
-  });
-  html += '</div>';
-
   container.innerHTML = html;
 
-  // Iniciar con Total visible (scroll al final)
-  requestAnimationFrame(() => { container.scrollLeft = container.scrollWidth; });
-
-  // Hint: visible cuando hay contenido a la izquierda
+  // Hint: visible cuando queda contenido a la derecha
   function updateHint() {
-    hint.style.opacity = container.scrollLeft > 20 ? '1' : '0';
+    const remaining = container.scrollWidth - container.clientWidth - container.scrollLeft;
+    hint.style.opacity = remaining > 20 ? '1' : '0';
   }
   updateHint();
   container.addEventListener('scroll', updateHint, { passive: true });
