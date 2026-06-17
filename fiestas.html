@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='124';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='125';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -108,6 +108,28 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
 @keyframes label-fadeout { 0%{opacity:1} 80%{opacity:1} 100%{opacity:0} }
 #upload-progress { display:none; position:fixed; bottom:96px; right:24px; z-index:201; background:rgba(0,0,0,.85); border:1px solid rgba(255,255,255,.12); padding:10px 18px; font-size:11px; letter-spacing:.2em; color:rgba(255,255,255,.6); }
 
+/* ACTION + FRASE MODALS */
+#action-modal,#frase-modal { position:fixed; inset:0; z-index:450; background:rgba(0,0,0,.8); backdrop-filter:blur(6px); display:flex; align-items:flex-end; justify-content:center; padding-bottom:env(safe-area-inset-bottom,0); }
+#action-box,#frase-box { background:#0d1117; border:1px solid rgba(255,255,255,.1); border-radius:20px 20px 0 0; padding:28px 24px 32px; width:100%; max-width:480px; }
+.am-title { font-size:10px; letter-spacing:.35em; text-transform:uppercase; color:var(--gray2); text-align:center; margin-bottom:20px; }
+.am-btn { display:flex; align-items:center; gap:14px; width:100%; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:16px 18px; margin-bottom:10px; cursor:pointer; text-align:left; transition:background .2s; }
+.am-btn:active { background:rgba(255,255,255,.1); }
+.am-btn-icon { font-size:22px; line-height:1; }
+.am-btn-label { font-size:13px; color:#fff; font-weight:500; display:block; }
+.am-btn-sub { font-size:10px; color:var(--gray2); display:block; margin-top:2px; }
+.am-cancel { display:block; width:100%; background:none; border:none; color:var(--gray2); font-size:11px; letter-spacing:.2em; text-transform:uppercase; margin-top:16px; cursor:pointer; padding:8px; }
+#frase-input { width:100%; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:10px; padding:14px; color:#fff; font-size:15px; font-family:inherit; resize:none; height:100px; box-sizing:border-box; margin-bottom:6px; }
+#frase-input:focus { outline:none; border-color:rgba(0,212,232,.5); }
+#frase-counter { font-size:10px; color:var(--gray2); text-align:right; margin-bottom:10px; }
+#frase-error { font-size:11px; color:#ff4d6d; margin-bottom:10px; display:none; }
+#frase-submit { width:100%; padding:14px; background:var(--gold); border:none; border-radius:10px; font-size:11px; letter-spacing:.3em; text-transform:uppercase; font-weight:600; color:#000; cursor:pointer; }
+#frase-submit:disabled { opacity:.4; cursor:default; }
+/* TV TICKER */
+#tv-ticker { position:absolute; bottom:0; left:0; right:0; height:44px; overflow:hidden; z-index:6; display:none; background:linear-gradient(to top,rgba(0,0,0,.5),transparent); mask-image:linear-gradient(to right,transparent 0%,black 4%,black 96%,transparent 100%); -webkit-mask-image:linear-gradient(to right,transparent 0%,black 4%,black 96%,transparent 100%); }
+#tv-ticker-inner { display:inline-flex; white-space:nowrap; height:100%; align-items:center; }
+.tv-ticker-text { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:clamp(15px,2vw,22px); color:rgba(255,255,255,.7); letter-spacing:.08em; padding-right:120px; }
+@keyframes ticker-move { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
 /* WELCOME MODAL */
 #welcome-modal { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,.85); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; padding:24px; }
 #welcome-box { background:#0d1117; border:1px solid rgba(0,212,232,.2); border-radius:16px; padding:36px 28px 28px; max-width:340px; width:100%; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,.6); }
@@ -191,6 +213,7 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
     <div class="nf-title" id="tv-no-fotos-nombre"></div>
     <div class="nf-sub">Esperando las primeras fotos...</div>
   </div>
+  <div id="tv-ticker"><div id="tv-ticker-inner"></div></div>
   <div id="tv-overlay">
     <img id="tv-logo" alt="CR">
     <div id="tv-nombre"></div>
@@ -202,7 +225,7 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
 </div>
 
 <div id="upload-label">subí tu foto</div>
-<button id="btn-upload" title="Subir foto" onclick="document.getElementById('file-input').click()">
+<button id="btn-upload" title="Subir foto" onclick="openActionModal()">
   <input type="file" id="file-input" accept="image/*" capture="environment" style="display:none">
   +
 </button>
@@ -219,6 +242,34 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
 
 <div id="upload-hint"><span>cargá tu foto</span><div class="hint-arrow"></div></div>
 <div id="toast"></div>
+
+<!-- Action choice modal -->
+<div id="action-modal" style="display:none">
+  <div id="action-box">
+    <div class="am-title">¿Qué querés compartir?</div>
+    <button class="am-btn" onclick="choosePhoto()">
+      <span class="am-btn-icon">📸</span>
+      <span><span class="am-btn-label">Subir una foto</span><span class="am-btn-sub">Elegí una imagen de tu cámara o galería</span></span>
+    </button>
+    <button class="am-btn" onclick="chooseFrase()">
+      <span class="am-btn-icon">💬</span>
+      <span><span class="am-btn-label">Escribir una frase</span><span class="am-btn-sub">Dejá un mensaje para el festejo</span></span>
+    </button>
+    <button class="am-cancel" onclick="closeActionModal()">Cancelar</button>
+  </div>
+</div>
+
+<!-- Frase input modal -->
+<div id="frase-modal" style="display:none">
+  <div id="frase-box">
+    <div class="am-title">Escribí tu frase</div>
+    <textarea id="frase-input" placeholder="Ej: ¡Qué noche más especial! 🎉" maxlength="150" oninput="onFraseInput()"></textarea>
+    <div id="frase-counter">0 / 150</div>
+    <div id="frase-error"></div>
+    <button id="frase-submit" onclick="submitFrase()">Enviar frase</button>
+    <button class="am-cancel" onclick="closeFraseModal()">Cancelar</button>
+  </div>
+</div>
 
 <!-- Welcome Modal -->
 <div id="welcome-modal" style="display:none">
@@ -391,7 +442,29 @@ function setupTV() {
   document.getElementById('tv-nombre').textContent = evento.nombre;
   document.getElementById('tv-no-fotos-nombre').textContent = evento.nombre;
   loadFotosTV();
+  loadFrasesTV();
   refreshTimer = setInterval(loadFotosTV, 15000);
+  setInterval(loadFrasesTV, 30000);
+}
+
+async function loadFrasesTV() {
+  try {
+    const res = await fetch(`${WORKER_URL}/eventos/${EVENT_ID}/frases`);
+    const data = await res.json();
+    if (data.frases && data.frases.length) startTicker(data.frases);
+  } catch(e) {}
+}
+
+function startTicker(frases) {
+  const el = document.getElementById('tv-ticker');
+  const inner = document.getElementById('tv-ticker-inner');
+  const text = frases.map(f => `✦  ${f.texto}`).join('       ');
+  inner.innerHTML = `<span class="tv-ticker-text">${text}</span><span class="tv-ticker-text">${text}</span>`;
+  const dur = Math.max(20, text.length * 0.16);
+  inner.style.animation = 'none';
+  inner.offsetHeight; // reflow to restart animation
+  inner.style.animation = `ticker-move ${dur}s linear infinite`;
+  el.style.display = 'block';
 }
 
 // ── FOTOS ──
@@ -520,6 +593,75 @@ function showSlide(index) {
     slide.style.backgroundImage = `url('${fotos[index].url}')`;
     slide.classList.remove('fade-out');
   }, 400);
+}
+
+// ── ACTION MODAL ──
+function openActionModal() {
+  document.getElementById('action-modal').style.display = 'flex';
+}
+function closeActionModal() {
+  document.getElementById('action-modal').style.display = 'none';
+}
+function choosePhoto() {
+  closeActionModal();
+  document.getElementById('file-input').click();
+}
+function chooseFrase() {
+  closeActionModal();
+  document.getElementById('frase-input').value = '';
+  document.getElementById('frase-counter').textContent = '0 / 150';
+  document.getElementById('frase-error').style.display = 'none';
+  document.getElementById('frase-submit').disabled = true;
+  document.getElementById('frase-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('frase-input').focus(), 50);
+}
+function closeFraseModal() {
+  document.getElementById('frase-modal').style.display = 'none';
+}
+function onFraseInput() {
+  const val = document.getElementById('frase-input').value;
+  document.getElementById('frase-counter').textContent = val.length + ' / 150';
+  document.getElementById('frase-submit').disabled = val.trim().length < 3;
+  document.getElementById('frase-error').style.display = 'none';
+}
+const _MALAS = ['puto','puta','pelotudo','pelotuda','boludo','boluda','concha','mierda','forro','hdp','hijo de puta','cagon','cagona','mogolico','tarado','tarada','imbecil','idiota','estupido','estupida'];
+async function submitFrase() {
+  const texto = document.getElementById('frase-input').value.trim();
+  if (texto.length < 3) return;
+  const lower = texto.toLowerCase();
+  if (_MALAS.some(w => lower.includes(w))) {
+    const err = document.getElementById('frase-error');
+    err.textContent = 'La frase contiene palabras no permitidas.';
+    err.style.display = 'block';
+    return;
+  }
+  const btn = document.getElementById('frase-submit');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+  try {
+    const res = await fetch(`${WORKER_URL}/eventos/${EVENT_ID}/frases`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texto })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      closeFraseModal();
+      showToast('¡Frase enviada! 🎉');
+    } else {
+      const err = document.getElementById('frase-error');
+      err.textContent = data.error || 'Error al enviar';
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Enviar frase';
+    }
+  } catch(e) {
+    const err = document.getElementById('frase-error');
+    err.textContent = 'Error de conexión, intentá de nuevo.';
+    err.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Enviar frase';
+  }
 }
 
 // ── UPLOAD ──
