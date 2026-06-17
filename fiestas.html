@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='120';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='121';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -49,7 +49,8 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
 @keyframes fadeUp { from{opacity:0;transform:translateY(40px)} to{opacity:1;transform:translateY(0)} }
 .hero-logo-seal { width:72px; height:72px; margin:0 auto 24px; display:none; }
 .hero-logo { width:100%; height:100%; object-fit:contain; filter:invert(1); mix-blend-mode:color-dodge; border-radius:50%; }
-.hero-brand { font-size:clamp(9px,1.3vw,11px); letter-spacing:.5em; text-transform:uppercase; color:var(--cyan); margin-bottom:20px; opacity:.85; }
+.hero-brand { display:none; }
+#top-brand { position:fixed; top:0; left:0; right:0; z-index:100; text-align:center; padding:10px 16px; font-size:9px; letter-spacing:.5em; text-transform:uppercase; color:var(--cyan); opacity:.85; background:linear-gradient(to bottom,rgba(13,17,23,.85) 0%,rgba(13,17,23,0) 100%); pointer-events:none; }
 .hero-nombres { font-family:'Cormorant Garamond',serif; font-weight:300; font-style:italic; font-size:clamp(40px,7vw,88px); line-height:1; color:var(--white); text-shadow:0 0 60px rgba(0,212,232,.2); margin-bottom:10px; }
 .hero-divider { display:flex; align-items:center; justify-content:center; gap:12px; margin:14px 0; }
 .hero-divider::before { content:''; flex:1; max-width:80px; height:1px; background:linear-gradient(to right,transparent,rgba(201,168,76,.6)); }
@@ -140,6 +141,8 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
   <div class="msg-title">Este evento ya no está disponible</div>
   <div class="msg-sub">Cristian Romero Producciones</div>
 </div>
+
+<div id="top-brand">Cristian Romero Producciones</div>
 
 <section id="hero">
   <div id="hero-bg"></div>
