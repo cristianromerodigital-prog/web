@@ -3197,12 +3197,21 @@ const CLIENTES_TOKEN  = 'crd2025';
 let _clientes = [];
 let _clienteActual = null;
 
+async function _fetchClientes() {
+  const r = await fetch(CLIENTES_WORKER + '/solicitudes', { headers: { 'Authorization': 'Bearer ' + CLIENTES_TOKEN } });
+  const d = await r.json();
+  _clientes = d.solicitudes || [];
+}
+
 async function loadClientesPage() {
+  if (_clientes.length) {
+    renderClientes(_clientes);
+    _fetchClientes().then(function(){ renderClientes(_clientes); }).catch(function(){});
+    return;
+  }
   document.getElementById('clientes-list').innerHTML = '<div style="color:var(--gray2);font-size:12px">Cargando...</div>';
   try {
-    const r = await fetch(CLIENTES_WORKER + '/solicitudes', { headers: { 'Authorization': 'Bearer ' + CLIENTES_TOKEN } });
-    const d = await r.json();
-    _clientes = d.solicitudes || [];
+    await _fetchClientes();
     renderClientes(_clientes);
   } catch(e) {
     document.getElementById('clientes-list').innerHTML = '<div style="color:var(--red);font-size:12px">Error: ' + e.message + '</div>';
@@ -3574,6 +3583,7 @@ async function init() {
 
   updateUnreadBadge();
   renderDashboard();
+  _fetchClientes().catch(function(){});
 }
 
 function updateUnreadBadge() {
