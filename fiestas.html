@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='113';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='114';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -57,8 +57,10 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
 .hero-divider-star { color:var(--gold); font-size:12px; }
 .hero-fecha { font-size:clamp(10px,1.3vw,13px); letter-spacing:.4em; text-transform:uppercase; color:rgba(255,255,255,.55); }
 #upload-hint { position:fixed; right:96px; bottom:42px; z-index:199; display:none; align-items:center; gap:10px; color:rgba(255,255,255,.65); font-size:9px; letter-spacing:.25em; text-transform:uppercase; pointer-events:none; animation:hint-slide 1.2s ease-in-out infinite; }
+#upload-hint span { animation:hint-text-fade 0.6s ease forwards 4s; }
 .hint-arrow { width:14px; height:14px; border-right:1.5px solid rgba(0,212,232,.9); border-bottom:1.5px solid rgba(0,212,232,.9); transform:rotate(-45deg); flex-shrink:0; }
 @keyframes hint-slide { 0%,100%{transform:translateX(0)} 50%{transform:translateX(6px)} }
+@keyframes hint-text-fade { to { opacity:0; width:0; overflow:hidden; margin:0; } }
 
 /* GALLERY */
 #gallery-section { padding:60px 24px 140px; max-width:1200px; margin:0 auto; }
@@ -276,7 +278,6 @@ function setupMobile() {
   if (!isClosed()) {
     const hint = document.getElementById('upload-hint');
     hint.style.display = 'flex';
-    window.addEventListener('scroll', () => { hint.style.display = 'none'; }, { once: true });
     setTimeout(() => {
       window.scrollBy({ top: 90, behavior: 'smooth' });
       setTimeout(() => window.scrollBy({ top: -90, behavior: 'smooth' }), 900);
