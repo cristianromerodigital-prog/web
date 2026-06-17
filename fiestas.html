@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='112';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='113';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -56,9 +56,9 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
 .hero-divider::after  { content:''; flex:1; max-width:80px; height:1px; background:linear-gradient(to left,transparent,rgba(201,168,76,.6)); }
 .hero-divider-star { color:var(--gold); font-size:12px; }
 .hero-fecha { font-size:clamp(10px,1.3vw,13px); letter-spacing:.4em; text-transform:uppercase; color:rgba(255,255,255,.55); }
-.scroll-hint { position:absolute; bottom:36px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:8px; color:rgba(255,255,255,.3); font-size:9px; letter-spacing:.3em; text-transform:uppercase; z-index:2; animation:bounce 2.5s ease-in-out infinite; }
-.scroll-arrow { width:18px; height:18px; border-right:1px solid rgba(0,212,232,.5); border-bottom:1px solid rgba(0,212,232,.5); transform:rotate(45deg); }
-@keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(8px)} }
+#upload-hint { position:fixed; right:96px; bottom:42px; z-index:199; display:none; align-items:center; gap:10px; color:rgba(255,255,255,.65); font-size:9px; letter-spacing:.25em; text-transform:uppercase; pointer-events:none; animation:hint-slide 1.2s ease-in-out infinite; }
+.hint-arrow { width:14px; height:14px; border-right:1.5px solid rgba(0,212,232,.9); border-bottom:1.5px solid rgba(0,212,232,.9); transform:rotate(-45deg); flex-shrink:0; }
+@keyframes hint-slide { 0%,100%{transform:translateX(0)} 50%{transform:translateX(6px)} }
 
 /* GALLERY */
 #gallery-section { padding:60px 24px 140px; max-width:1200px; margin:0 auto; }
@@ -143,7 +143,6 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
     <div class="hero-divider"><span class="hero-divider-star">✦</span></div>
     <div id="hero-fecha" class="hero-fecha"></div>
   </div>
-  <div class="scroll-hint"><div class="scroll-arrow"></div><span>ver fotos</span></div>
 </section>
 
 <section id="gallery-section">
@@ -187,6 +186,7 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
   </a>
 </div>
 
+<div id="upload-hint"><span>cargá tu foto</span><div class="hint-arrow"></div></div>
 <div id="toast"></div>
 
 <div id="lightbox">
@@ -273,6 +273,15 @@ function setupMobile() {
   }
   loadFotos();
   refreshTimer = setInterval(loadFotos, 15000);
+  if (!isClosed()) {
+    const hint = document.getElementById('upload-hint');
+    hint.style.display = 'flex';
+    window.addEventListener('scroll', () => { hint.style.display = 'none'; }, { once: true });
+    setTimeout(() => {
+      window.scrollBy({ top: 90, behavior: 'smooth' });
+      setTimeout(() => window.scrollBy({ top: -90, behavior: 'smooth' }), 900);
+    }, 2200);
+  }
 }
 
 // ── TV MODE ──
