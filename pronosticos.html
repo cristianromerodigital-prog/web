@@ -283,11 +283,12 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 .leaderboard-row:last-child td { border-bottom:none; }
 .leaderboard-row--me { background:rgba(255,200,87,0.12); }
 .leaderboard-row__rank { font-weight:700; color:var(--gold2); width:40px; }
-.leaderboard-row__points { text-align:right; font-weight:700; }
-.leaderboard-row__total { text-align:right; font-weight:700; color:var(--gold); }
+.leaderboard-row__points { text-align:center; font-weight:700; }
+.leaderboard-row__total { text-align:center; font-weight:700; color:var(--gold); }
 .leaderboard-row__fecha { text-align:center; color:var(--ink2); font-size:12px; min-width:48px; }
+.leaderboard-table th.round-col { text-align:center; }
 .leaderboard-table th.fecha-col { text-align:center; white-space:nowrap; }
-.leaderboard-table th.total-col { text-align:right; color:var(--gold2); }
+.leaderboard-table th.total-col { text-align:center; color:var(--gold2); }
 
 /* PRED STYLES */
 </style>
@@ -802,7 +803,7 @@ function renderLeaderboard(rows, me, kind, roundInfo, activeRounds) {
 
   // Header
   let thead = '<tr><th>#</th><th>Jugador</th>';
-  if (kind === 'round') thead += '<th style="text-align:right">Esta ronda</th><th class="total-col">Total</th>';
+  if (kind === 'round') thead += '<th class="round-col">Esta ronda</th><th class="total-col">Total</th>';
   else thead += '<th class="total-col">Total</th>';
   activeRounds.forEach(ar => { thead += '<th class="fecha-col">' + escapeHtml(ar.label) + '</th>'; });
   thead += '</tr>';
@@ -820,7 +821,7 @@ function renderLeaderboard(rows, me, kind, roundInfo, activeRounds) {
       row += '<td class="leaderboard-row__total">' + total + '</td>';
     }
     activeRounds.forEach(ar => {
-      row += '<td class="leaderboard-row__fecha">' + (byRound[ar.id] !== undefined ? byRound[ar.id] : '—') + '</td>';
+      row += '<td class="leaderboard-row__fecha">' + (byRound[ar.id] !== undefined ? byRound[ar.id] : 0) + '</td>';
     });
     row += '</tr>';
     return row;
