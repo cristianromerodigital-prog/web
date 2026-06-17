@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='106';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='107';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -108,11 +108,13 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
 #lb-next { right:8px; }
 
 /* FLOATING BUTTONS */
-#btn-wsp { display:none; position:fixed; bottom:100px; right:28px; z-index:250; align-items:center; justify-content:center; border-radius:50%; text-decoration:none; transition:transform .2s; width:56px; height:56px; cursor:pointer !important; background:#25D366; box-shadow:0 8px 24px rgba(37,211,102,.4); }
-#btn-wsp:hover { transform:scale(1.1); }
-#btn-wsp svg { width:26px; height:26px; fill:#000; }
-#logo-float { display:none; position:fixed; bottom:168px; right:28px; z-index:250; width:56px; height:56px; border-radius:50%; overflow:hidden; background:rgba(0,0,0,.7); box-shadow:0 4px 20px rgba(0,0,0,.5); text-decoration:none; align-items:center; justify-content:center; }
-#logo-float img { width:78%; height:78%; object-fit:contain; filter:invert(1); }
+#social-float { position:fixed; bottom:100px; right:28px; z-index:250; display:flex; flex-direction:column; align-items:center; gap:14px; }
+.sfloat-btn { width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-decoration:none; transition:all .3s; cursor:pointer !important; }
+.sfloat-btn:hover { transform:scale(1.12); }
+#logo-float { background:#0d1117; border:1px solid rgba(0,212,232,.5); box-shadow:0 8px 24px rgba(0,212,232,.2); display:none; overflow:hidden; }
+#logo-float img { width:76%; height:76%; object-fit:contain; filter:invert(1); }
+#ig-float { background:radial-gradient(circle at 30% 107%,#fdf497 0%,#fdf497 5%,#fd5949 45%,#d6249f 60%,#285AEB 90%); box-shadow:0 8px 24px rgba(214,36,159,.3); }
+#wsp-float { background:#25d366; box-shadow:0 8px 24px rgba(37,211,102,.4); }
 </style>
 </head>
 <body>
@@ -172,12 +174,17 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
 </button>
 <div id="upload-progress">Subiendo foto...</div>
 
-<a id="btn-wsp" target="_blank" title="WhatsApp">
-  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-</a>
-<a id="logo-float" href="https://cristianromeroproducciones.com.ar" target="_blank">
-  <img id="logo-float-img" alt="CR">
-</a>
+<div id="social-float">
+  <a id="logo-float" class="sfloat-btn" href="https://cristianromeroproducciones.com.ar" target="_blank">
+    <img id="logo-float-img" alt="CR">
+  </a>
+  <a id="ig-float" class="sfloat-btn" href="https://www.instagram.com/cristian.romero.producciones" target="_blank">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" width="26" height="26"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke-linecap="round" stroke-width="2.5"/></svg>
+  </a>
+  <a id="wsp-float" class="sfloat-btn" href="https://wa.me/5491162557763" target="_blank">
+    <svg viewBox="0 0 24 24" fill="white" width="26" height="26"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.374 0 0 5.373 0 12c0 2.123.558 4.114 1.531 5.837L.031 24l6.336-1.483A11.946 11.946 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.892a9.875 9.875 0 01-5.031-1.378l-.361-.214-3.741.876.938-3.648-.235-.374A9.863 9.863 0 012.108 12c0-5.455 4.437-9.892 9.892-9.892 5.456 0 9.893 4.437 9.893 9.892 0 5.456-4.437 9.892-9.893 9.892z"/></svg>
+  </a>
+</div>
 
 <div id="toast"></div>
 
@@ -194,7 +201,7 @@ const params = new URLSearchParams(window.location.search);
 const EVENT_ID = params.get('e') || '';
 
 let settings = (() => { try { return JSON.parse(localStorage.getItem('crd_settings')) || {}; } catch(e) { return {}; } })();
-fetch('https://web.cristian-romero-digital.workers.dev/crd_settings',{headers:{Authorization:'crd2025'}}).then(r=>r.json()).then(function(d){ settings=Object.assign({},settings,{logo_url:d.logoUrl||'',whatsapp:d.waSuffix||'',website:d.entregaWebUrl||''}); applyBranding(); }).catch(function(){});
+fetch('https://web.cristian-romero-digital.workers.dev/crd_settings',{headers:{Authorization:'crd2025'}}).then(r=>r.json()).then(function(d){ settings=Object.assign({},settings,{logo_url:d.logoUrl||'',whatsapp:d.waSuffix||'',website:d.entregaWebUrl||'',instagram:d.instagram||'',entregaIgUrl:d.entregaIgUrl||''}); applyBranding(); }).catch(function(){});
 
 let evento = null;
 let fotos = [];
@@ -249,12 +256,10 @@ function applyBranding() {
     document.getElementById('logo-float-img').src = logo;
     fl.style.display = 'flex';
   }
-  const wa = settings.whatsapp || settings.wa_number || '';
-  if (wa && !IS_TV) {
-    const btn = document.getElementById('btn-wsp');
-    btn.href = 'https://wa.me/' + wa.replace(/\D/g,'');
-    btn.style.display = 'flex';
-  }
+  const wa = settings.whatsapp || '';
+  if (wa) document.getElementById('wsp-float').href = 'https://wa.me/' + wa.replace(/\D/g,'');
+  const igUrl = settings.entregaIgUrl || (settings.instagram ? 'https://www.instagram.com/'+settings.instagram : '');
+  if (igUrl) document.getElementById('ig-float').href = igUrl;
 }
 
 // ── MOBILE MODE ──
@@ -279,6 +284,7 @@ function setupTV() {
   document.getElementById('tv-mode').classList.add('active');
   document.getElementById('hero').classList.add('hidden');
   document.getElementById('gallery-section').classList.add('hidden');
+  document.getElementById('social-float').style.display = 'none';
   document.getElementById('tv-nombre').textContent = evento.nombre;
   document.getElementById('tv-no-fotos-nombre').textContent = evento.nombre;
   loadFotosTV();
