@@ -823,8 +823,8 @@ function renderLbCards(data, user) {
   });
   html += '</div>';
 
-  // Tarjetas por fecha (a la derecha, se descubren deslizando)
-  for (const ar of (activeRounds || [])) {
+  // Tarjetas por fecha (a la derecha, de más reciente a más antigua)
+  for (const ar of [...(activeRounds || [])].reverse()) {
     const isCurrent = roundInfo && ar.id === roundInfo.id;
     const sorted = [...general]
       .map(u => ({ id: u.id, nickname: u.nickname, pts: (u.byRound || {})[ar.id] || 0 }))
