@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='131';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='132';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -59,10 +59,9 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
 #hero-idea { margin-top:20px; font-size:clamp(13px,1.8vw,16px); letter-spacing:.08em; color:#fff; text-shadow:0 1px 12px rgba(0,0,0,.8); min-height:24px; opacity:0; transform:translateY(10px); transition:opacity .55s ease, transform .55s ease; }
 #hero-idea.visible { opacity:1; transform:translateY(0); }
 #hero-idea.out { opacity:0; transform:translateY(-8px); }
-#upload-hint { position:fixed; right:96px; bottom:42px; z-index:199; display:none; align-items:center; gap:10px; color:rgba(255,255,255,.65); font-size:9px; letter-spacing:.25em; text-transform:uppercase; pointer-events:none; animation:hint-slide 1.2s ease-in-out infinite; }
-#upload-hint span { animation:hint-text-fade 0.6s ease forwards 4s; }
-.hint-arrow { width:14px; height:14px; border-right:1.5px solid rgba(0,212,232,.9); border-bottom:1.5px solid rgba(0,212,232,.9); transform:rotate(-45deg); flex-shrink:0; }
-@keyframes hint-slide { 0%,100%{transform:translateX(0)} 50%{transform:translateX(6px)} }
+#upload-hint { position:fixed; right:92px; bottom:36px; z-index:201; display:none; align-items:center; gap:8px; color:rgba(255,255,255,.85); font-size:9px; letter-spacing:.25em; text-transform:uppercase; pointer-events:none; }
+.hint-arrow { width:22px; height:22px; border-right:2.5px solid rgba(0,212,232,1); border-bottom:2.5px solid rgba(0,212,232,1); transform:rotate(-45deg); flex-shrink:0; animation:hint-bounce .75s ease-in-out infinite; }
+@keyframes hint-bounce { 0%,100%{transform:rotate(-45deg) translateX(0)} 50%{transform:rotate(-45deg) translateX(5px)} }
 @keyframes hint-text-fade { to { opacity:0; width:0; overflow:hidden; margin:0; } }
 
 /* GALLERY */
@@ -401,10 +400,6 @@ function setupMobile() {
   if (!isClosed()) {
     const uploadBtn = document.getElementById('btn-upload');
     uploadBtn.style.display = 'flex';
-    const uploadLabel = document.getElementById('upload-label');
-    uploadLabel.style.display = 'block';
-    uploadLabel.style.animation = 'label-fadeout 5s ease forwards';
-    uploadLabel.addEventListener('animationend', function() { uploadLabel.style.display = 'none'; }, { once: true });
     const uploadHint = document.getElementById('upload-hint');
     uploadHint.style.display = 'flex';
     uploadBtn.addEventListener('click', () => { uploadHint.style.display = 'none'; }, { once: true });
