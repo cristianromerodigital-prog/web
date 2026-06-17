@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='125';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='126';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -624,12 +624,47 @@ function onFraseInput() {
   document.getElementById('frase-submit').disabled = val.trim().length < 3;
   document.getElementById('frase-error').style.display = 'none';
 }
-const _MALAS = ['puto','puta','pelotudo','pelotuda','boludo','boluda','concha','mierda','forro','hdp','hijo de puta','cagon','cagona','mogolico','tarado','tarada','imbecil','idiota','estupido','estupida'];
+const _MALAS = [
+  // Pene
+  'pija','poronga','verga','chota','garcha',
+  // Vagina
+  'concha','cajeta',
+  // Trasero / cuerpo
+  'orto','culo','teta',
+  // Sexo
+  'garchar','culear','coger','pete','petera','petero','chuparla','chupame','chupala',
+  // Masturbación
+  'pajero','pajera','pajerear','paja',
+  // Testículos
+  'bolas','pelotas','huevos',
+  // Insultos
+  'forro','forrear','boludo','boluda','pelotudo','pelotuda',
+  'sorete','gil','garca','cagon','cagona','puto','puta','trola',
+  'choto','degenerado','degenerada','baboso','satiro','lacra',
+  // Compuestos
+  'rompebolas','rompepelotas','hinchapelotas','tocapelotas','chupapija',
+  // Frases (con espacio — se buscan con includes directo)
+  'hijo de puta','hdp','la concha','la puta','la re puta','la reput',
+  'me chupa','andate a la mierda','cerr el orto',
+  // Exclamaciones
+  'mierda','carajo','cagar',
+];
+function _hasBadWord(text) {
+  // Normalizar: minúsculas, sin acentos, leet básico
+  const norm = text.toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/0/g,'o').replace(/1/g,'i').replace(/3/g,'e')
+    .replace(/4/g,'a').replace(/\$/g,'s').replace(/@/g,'a').replace(/!/g,'i');
+  return _MALAS.some(w => {
+    if (w.includes(' ')) return norm.includes(w); // frases: includes directo
+    // palabras: word-boundary para evitar falsos positivos ("computadora" → "puta")
+    return new RegExp('(?:^|[^a-z])' + w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '(?:[^a-z]|$)').test(norm);
+  });
+}
 async function submitFrase() {
   const texto = document.getElementById('frase-input').value.trim();
   if (texto.length < 3) return;
-  const lower = texto.toLowerCase();
-  if (_MALAS.some(w => lower.includes(w))) {
+  if (_hasBadWord(texto)) {
     const err = document.getElementById('frase-error');
     err.textContent = 'La frase contiene palabras no permitidas.';
     err.style.display = 'block';
