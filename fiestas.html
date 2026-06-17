@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='123';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='124';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -108,6 +108,21 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
 @keyframes label-fadeout { 0%{opacity:1} 80%{opacity:1} 100%{opacity:0} }
 #upload-progress { display:none; position:fixed; bottom:96px; right:24px; z-index:201; background:rgba(0,0,0,.85); border:1px solid rgba(255,255,255,.12); padding:10px 18px; font-size:11px; letter-spacing:.2em; color:rgba(255,255,255,.6); }
 
+/* WELCOME MODAL */
+#welcome-modal { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,.85); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; padding:24px; }
+#welcome-box { background:#0d1117; border:1px solid rgba(0,212,232,.2); border-radius:16px; padding:36px 28px 28px; max-width:340px; width:100%; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,.6); }
+.wm-eyebrow { font-size:8px; letter-spacing:.5em; text-transform:uppercase; color:var(--cyan); opacity:.7; margin-bottom:16px; }
+.wm-title { font-family:'Cormorant Garamond',serif; font-size:clamp(26px,6vw,34px); font-weight:300; font-style:italic; color:#fff; margin-bottom:28px; line-height:1.15; }
+.wm-rules { display:flex; flex-direction:column; gap:16px; margin-bottom:32px; text-align:left; }
+.wm-rule { display:flex; align-items:center; gap:14px; }
+.wm-rule-icon { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:18px; background:rgba(255,255,255,.06); }
+.wm-rule-text { font-size:12px; color:rgba(255,255,255,.75); line-height:1.45; letter-spacing:.02em; }
+.wm-rule-text strong { color:#fff; display:block; font-size:13px; margin-bottom:2px; }
+#welcome-btn { width:100%; padding:14px; background:var(--gold); border:none; border-radius:10px; font-size:11px; letter-spacing:.3em; text-transform:uppercase; font-weight:600; color:#000; cursor:pointer; transition:opacity .2s; }
+#welcome-btn:active { opacity:.8; }
+@keyframes wm-in { from{opacity:0;transform:scale(.95)} to{opacity:1;transform:scale(1)} }
+#welcome-box { animation:wm-in .35s cubic-bezier(.16,1,.3,1) forwards; }
+
 /* TOAST */
 #toast { position:fixed; bottom:108px; left:50%; transform:translateX(-50%) translateY(20px); z-index:400; background:rgba(0,0,0,.9); border:1px solid rgba(255,255,255,.12); padding:12px 24px; font-size:12px; letter-spacing:.15em; color:var(--white); opacity:0; transition:opacity .3s,transform .3s; pointer-events:none; text-align:center; max-width:320px; white-space:normal; }
 #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
@@ -205,6 +220,29 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
 <div id="upload-hint"><span>cargá tu foto</span><div class="hint-arrow"></div></div>
 <div id="toast"></div>
 
+<!-- Welcome Modal -->
+<div id="welcome-modal" style="display:none">
+  <div id="welcome-box">
+    <div class="wm-eyebrow">Bienvenido/a</div>
+    <div class="wm-title">¡Participá<br>del festejo!</div>
+    <div class="wm-rules">
+      <div class="wm-rule">
+        <div class="wm-rule-icon">📸</div>
+        <div class="wm-rule-text"><strong>Subí tus fotos</strong>Tocá el botón <strong style="display:inline;font-size:inherit">+</strong> y compartí tus mejores momentos.</div>
+      </div>
+      <div class="wm-rule">
+        <div class="wm-rule-icon">❤️</div>
+        <div class="wm-rule-text"><strong>Dale me gusta</strong>Tocá el corazón en las fotos que más te gusten.</div>
+      </div>
+      <div class="wm-rule">
+        <div class="wm-rule-icon">🏆</div>
+        <div class="wm-rule-text"><strong>¡La más votada gana!</strong>La foto con más corazones se lleva el premio.</div>
+      </div>
+    </div>
+    <button id="welcome-btn" onclick="closeWelcome()">¡Empezar!</button>
+  </div>
+</div>
+
 <div id="lightbox">
   <img id="lb-img" alt="">
   <button id="lb-close" onclick="closeLightbox()">✕</button>
@@ -274,8 +312,21 @@ function applyBranding() {
   if (igUrl) document.getElementById('ig-float').href = igUrl;
 }
 
+// ── WELCOME MODAL ──
+function showWelcome() {
+  const m = document.getElementById('welcome-modal');
+  m.style.display = 'flex';
+}
+function closeWelcome() {
+  const m = document.getElementById('welcome-modal');
+  m.style.opacity = '0';
+  m.style.transition = 'opacity .25s';
+  setTimeout(() => { m.style.display = 'none'; }, 260);
+}
+
 // ── MOBILE MODE ──
 function setupMobile() {
+  showWelcome();
   document.getElementById('hero-nombres').textContent = evento.nombre;
   document.getElementById('hero-fecha').textContent = formatDate(evento.fecha);
   document.getElementById('gallery-title').textContent = evento.nombre;
