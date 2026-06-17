@@ -284,6 +284,10 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 .leaderboard-row--me { background:rgba(255,200,87,0.12); }
 .leaderboard-row__rank { font-weight:700; color:var(--gold2); width:40px; }
 .leaderboard-row__points { text-align:right; font-weight:700; }
+.leaderboard-row__total { text-align:right; font-weight:700; color:var(--gold); }
+.leaderboard-row__fecha { text-align:center; color:var(--ink2); font-size:12px; min-width:48px; }
+.leaderboard-table th.fecha-col { text-align:center; white-space:nowrap; }
+.leaderboard-table th.total-col { text-align:right; color:var(--gold2); }
 
 /* PRED STYLES */
 </style>
@@ -776,14 +780,16 @@ async function loadLeaderboard() {
   try {
     const res = await fetch(url);
     const data = await res.json();
-    document.getElementById('leaderboard-round').innerHTML = renderLeaderboard(data.round, data.me, 'round', data.roundInfo);
-    document.getElementById('leaderboard-general').innerHTML = renderLeaderboard(data.general, data.me, 'general', null);
+    const activeRounds = data.activeRounds || [];
+    document.getElementById('leaderboard-round').innerHTML = renderLeaderboard(data.round, data.me, 'round', data.roundInfo, activeRounds);
+    document.getElementById('leaderboard-general').innerHTML = renderLeaderboard(data.general, data.me, 'general', null, activeRounds);
   } catch (e) {
     document.getElementById('leaderboard-round').innerHTML = '<p class="pred-empty">No se pudo cargar el ranking.</p>';
   }
 }
 
-function renderLeaderboard(rows, me, kind, roundInfo) {
+function renderLeaderboard(rows, me, kind, roundInfo, activeRounds) {
+  activeRounds = activeRounds || [];
   const meRank = kind === 'round' ? (me && me.roundRank) : (me && me.generalRank);
   const mePoints = kind === 'round' ? (me && me.roundPoints) : (me && me.generalPoints);
   const meInTop = me && rows.some(r => r.id === me.id);
@@ -793,23 +799,42 @@ function renderLeaderboard(rows, me, kind, roundInfo) {
     html += '<p class="pred-empty">Todavía no hay pronósticos puntuados.</p>';
     return html;
   }
-  html += '<table class="leaderboard-table"><thead><tr><th>#</th><th>Jugador</th><th style="text-align:right">Puntos</th></tr></thead><tbody>';
+
+  // Header
+  let thead = '<tr><th>#</th><th>Jugador</th>';
+  if (kind === 'round') thead += '<th style="text-align:right">Esta ronda</th><th class="total-col">Total</th>';
+  else thead += '<th class="total-col">Total</th>';
+  activeRounds.forEach(ar => { thead += '<th class="fecha-col">' + escapeHtml(ar.label) + '</th>'; });
+  thead += '</tr>';
+
+  function buildRow(r, rank, isMe, isSeparator) {
+    const byRound = r.byRound || {};
+    const total = r.total !== undefined ? r.total : r.points;
+    let row = '<tr class="leaderboard-row' + (isMe ? ' leaderboard-row--me' : '') + (isSeparator ? '" style="border-top:2px dashed var(--glass-border)' : '') + '">';
+    row += '<td class="leaderboard-row__rank">' + rank + '</td>';
+    row += '<td>' + escapeHtml(r.nickname) + '</td>';
+    if (kind === 'round') {
+      row += '<td class="leaderboard-row__points">' + r.points + '</td>';
+      row += '<td class="leaderboard-row__total">' + total + '</td>';
+    } else {
+      row += '<td class="leaderboard-row__total">' + total + '</td>';
+    }
+    activeRounds.forEach(ar => {
+      row += '<td class="leaderboard-row__fecha">' + (byRound[ar.id] !== undefined ? byRound[ar.id] : '—') + '</td>';
+    });
+    row += '</tr>';
+    return row;
+  }
+
+  html += '<div style="overflow-x:auto"><table class="leaderboard-table"><thead>' + thead + '</thead><tbody>';
   rows.forEach((r, i) => {
-    const isMe = me && r.id === me.id;
-    html += '<tr class="leaderboard-row' + (isMe ? ' leaderboard-row--me' : '') + '">' +
-      '<td class="leaderboard-row__rank">' + (i + 1) + '</td>' +
-      '<td>' + escapeHtml(r.nickname) + '</td>' +
-      '<td class="leaderboard-row__points">' + r.points + '</td>' +
-    '</tr>';
+    html += buildRow(r, i + 1, me && r.id === me.id, false);
   });
   if (me && !meInTop && meRank) {
-    html += '<tr class="leaderboard-row leaderboard-row--me">' +
-      '<td class="leaderboard-row__rank">' + meRank + '</td>' +
-      '<td>' + escapeHtml(me.nickname) + '</td>' +
-      '<td class="leaderboard-row__points">' + mePoints + '</td>' +
-    '</tr>';
+    const meRow = { id: me.id, nickname: me.nickname, points: mePoints, total: me.generalPoints, byRound: {} };
+    html += buildRow(meRow, meRank, true, true);
   }
-  html += '</tbody></table>';
+  html += '</tbody></table></div>';
   return html;
 }
 
