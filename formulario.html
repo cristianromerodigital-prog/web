@@ -262,25 +262,36 @@ function enviar() {
   document.getElementById('btn-submit').disabled = true;
   document.getElementById('spinner').style.display = 'block';
 
-  fetch(APPS_URL, {
+  var gasFetch = fetch(APPS_URL, {
     method: 'POST',
     redirect: 'follow',
     body: JSON.stringify({ action: 'guardarSolicitud', formData: data })
-  })
-  .then(r => r.json())
-  .then(json => {
-    if (json.ok) {
-      document.getElementById('form-area').style.display = 'none';
-      document.getElementById('success').style.display = 'block';
-    } else {
-      throw new Error(json.error || 'Error desconocido');
-    }
-  })
-  .catch(err => {
-    document.getElementById('spinner').style.display = 'none';
-    document.getElementById('btn-submit').disabled = false;
-    alert('Error al enviar: ' + err.message);
-  });
+  }).then(function(r){ return r.json(); });
+
+  var workerFetch = fetch('https://crclub-worker.cristian-romero-digital.workers.dev/solicitudes', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  }).catch(function(){ return null; });
+
+  Promise.allSettled([gasFetch, workerFetch])
+    .then(function(results) {
+      document.getElementById('spinner').style.display = 'none';
+      var gasResult = results[0];
+      if (gasResult.status === 'fulfilled' && gasResult.value && gasResult.value.ok) {
+        document.getElementById('form-area').style.display = 'none';
+        document.getElementById('success').style.display = 'block';
+      } else {
+        var errMsg = (gasResult.status === 'fulfilled' && gasResult.value && gasResult.value.error)
+          ? gasResult.value.error : 'Error desconocido';
+        throw new Error(errMsg);
+      }
+    })
+    .catch(function(err) {
+      document.getElementById('spinner').style.display = 'none';
+      document.getElementById('btn-submit').disabled = false;
+      alert('Error al enviar: ' + err.message);
+    });
 }
 
 // Logo desde crd_settings
