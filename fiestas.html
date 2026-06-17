@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='102';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='103';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -19,7 +19,7 @@ html { scroll-behavior:smooth; }
 body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-serif; font-weight:300; overflow-x:hidden; }
 
 /* CURSOR */
-*, *::before, *::after { cursor:none !important; }
+body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after { cursor:none !important; }
 #lightbox.active, #lightbox.active * { cursor:auto !important; }
 #lightbox.active button { cursor:pointer !important; }
 #cursor { position:fixed; width:10px; height:10px; background:var(--cyan); border-radius:50%; pointer-events:none; z-index:9999; left:0; top:0; transform:translate(-50%,-50%); mix-blend-mode:difference; transition:opacity .3s; }
@@ -209,6 +209,7 @@ const IS_TV = window.innerWidth > 1024 && window.innerHeight > 600 && !('ontouch
 const cur = document.getElementById('cursor');
 const ring = document.getElementById('cursor-ring');
 if (!IS_TV) {
+  document.body.classList.add('custom-cursor');
   document.addEventListener('mousemove', e => {
     cur.style.left = e.clientX + 'px'; cur.style.top = e.clientY + 'px';
     ring.style.left = e.clientX + 'px'; ring.style.top = e.clientY + 'px';
@@ -388,8 +389,9 @@ function openLightbox(i) {
   lbIndex = i;
   document.getElementById('lb-img').src = fotos[i].url;
   document.getElementById('lightbox').classList.add('active');
+  document.getElementById('tv-mode').style.pointerEvents = 'none';
 }
-function closeLightbox() { document.getElementById('lightbox').classList.remove('active'); }
+function closeLightbox() { document.getElementById('lightbox').classList.remove('active'); document.getElementById('tv-mode').style.pointerEvents = ''; }
 function lbPrev() { lbIndex = (lbIndex - 1 + fotos.length) % fotos.length; document.getElementById('lb-img').src = fotos[lbIndex].url; }
 function lbNext() { lbIndex = (lbIndex + 1) % fotos.length; document.getElementById('lb-img').src = fotos[lbIndex].url; }
 document.addEventListener('keydown', e => {
