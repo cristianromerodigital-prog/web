@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='128';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='129';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -708,10 +708,7 @@ function _hasBadWord(text) {
     .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .replace(/0/g,'o').replace(/1/g,'i').replace(/3/g,'e')
     .replace(/4/g,'a').replace(/\$/g,'s').replace(/@/g,'a').replace(/!/g,'i');
-  return _MALAS.some(w => {
-    if (w.includes(' ')) return norm.includes(w);
-    return new RegExp('\\b' + w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\b').test(norm);
-  });
+  return _MALAS.some(w => norm.includes(w));
 }
 async function submitFrase() {
   const texto = document.getElementById('frase-input').value.trim();
