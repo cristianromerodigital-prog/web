@@ -382,7 +382,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.23</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.24</div>
     </div>
   </aside>
 
@@ -2323,6 +2323,13 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     <div style="margin-top:20px;display:flex;gap:10px">
       <button class="btn-add" onclick="fiestaGuardarEdit()">Guardar</button>
       <button class="btn-sm btn-sec" onclick="document.getElementById('fiesta-modal').style.display='none'">Cancelar</button>
+    </div>
+    <div style="margin-top:24px;border-top:1px solid rgba(255,255,255,.07);padding-top:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--cyan)">Ranking ❤️</div>
+        <button class="btn-sm btn-sec" onclick="loadFiestaRanking()" style="font-size:10px;padding:4px 10px">Ver ranking</button>
+      </div>
+      <div id="fm-ranking-list" style="display:none;max-height:300px;overflow-y:auto"></div>
     </div>
   </div>
 </div>
@@ -8106,6 +8113,8 @@ async function fiestaEdit(id) {
     document.getElementById('fm-moderacion').checked = !!ev.moderacion;
     document.getElementById('fm-estado').value = ev.estado || 'activo';
     document.getElementById('fm-cierre').value = ev.cierre_auto ? ev.cierre_auto.slice(0,16) : '';
+    document.getElementById('fm-ranking-list').style.display = 'none';
+    document.getElementById('fm-ranking-list').innerHTML = '';
     document.getElementById('fiesta-modal').style.display = 'block';
   } catch(e) { showToast('Error al cargar evento'); }
 }
@@ -8185,6 +8194,34 @@ function pickFiestaPortada() {
 }
 function pickFiestaPortadaModal() {
   openDriveBrowser(url => { document.getElementById('fm-portada').value = url; });
+}
+
+async function loadFiestaRanking() {
+  const id = document.getElementById('fm-id').value;
+  const list = document.getElementById('fm-ranking-list');
+  list.style.display = 'block';
+  list.innerHTML = '<div style="font-size:11px;color:var(--gray2);text-align:center;padding:12px">Cargando...</div>';
+  try {
+    const r = await fiestasFetch(`/eventos/admin/${id}/ranking`);
+    const data = await r.json();
+    if (!data.ranking || !data.ranking.length) {
+      list.innerHTML = '<div style="font-size:11px;color:var(--gray2);text-align:center;padding:12px">Todavía no hay votos.</div>';
+      return;
+    }
+    const max = data.ranking[0].likes;
+    list.innerHTML = data.ranking.map((row, i) => `
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+        <span style="font-size:11px;color:var(--gray2);width:20px;text-align:right">${i + 1}</span>
+        <img src="https://lh3.googleusercontent.com/d/${row.foto_id}" style="width:48px;height:48px;object-fit:cover;border-radius:4px;flex-shrink:0" loading="lazy">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:${i === 0 ? 'var(--gold)' : 'var(--text)'}">${row.likes} ❤️${i === 0 && row.likes > 0 ? ' 👑' : ''}</div>
+        </div>
+        ${i === 0 && max > 0 ? `<button class="btn-sm" style="font-size:10px;padding:4px 10px;background:var(--gold);color:#000;border-color:var(--gold)" onclick="alert('Foto ganadora\\n${row.likes} votos\\nID: ${row.foto_id}')">🎁 Premio</button>` : ''}
+      </div>
+    `).join('');
+  } catch(e) {
+    list.innerHTML = '<div style="font-size:11px;color:var(--gray2);text-align:center;padding:12px">Error al cargar ranking.</div>';
+  }
 }
 
 // Check session on load
