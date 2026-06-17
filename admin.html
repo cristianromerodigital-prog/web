@@ -351,6 +351,10 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
         Entregas
       </div>
+      <div class="sidebar-item" onclick="showPage('fiestas')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Fiestas
+      </div>
       <div class="sidebar-item" onclick="showPage('invites')">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
         Invitaciones
@@ -370,7 +374,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.14</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.15</div>
     </div>
   </aside>
 
@@ -2138,9 +2142,122 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         </div>
       </div>
 
+      <div class="page" id="page-fiestas">
+        <h2 class="section-h" style="margin-bottom:4px">Fiestas — Foto QR</h2>
+        <p style="font-size:12px;color:var(--gray);margin-bottom:24px;letter-spacing:1px">Creá eventos con QR para que los invitados suban fotos desde el celular.</p>
+
+        <!-- GAS Config -->
+        <div class="settings-section" style="margin-bottom:24px">
+          <div class="settings-section-title" style="display:flex;justify-content:space-between;align-items:center">
+            <span>GAS Config</span>
+          </div>
+          <div class="form-row" style="margin-top:12px;align-items:flex-end">
+            <div class="form-group" style="flex:1"><label class="form-label">URL del Google Apps Script</label><input class="form-input" id="fi-gas-url" placeholder="https://script.google.com/macros/s/.../exec"></div>
+            <button class="btn-sm" onclick="fiestasSaveGasUrl()" style="white-space:nowrap;padding:10px 16px">Guardar</button>
+          </div>
+        </div>
+
+        <!-- Nuevo evento -->
+        <div class="settings-section" style="margin-bottom:24px">
+          <div class="settings-section-title">Nuevo evento</div>
+          <div class="form-row" style="margin-top:12px">
+            <div class="form-group" style="flex:2"><label class="form-label">Nombre del evento</label><input class="form-input" id="fi-nombre" placeholder="Boda Lucía & Martín"></div>
+            <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" type="date" id="fi-fecha"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="flex:2"><label class="form-label">Carpeta Drive (ID)</label><input class="form-input" id="fi-folder" placeholder="ID de la carpeta en Drive"></div>
+            <div class="form-group"><label class="form-label">Cierre automático</label><input class="form-input" type="datetime-local" id="fi-cierre"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Foto de portada (URL)</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input class="form-input" id="fi-portada" placeholder="URL de imagen de portada">
+              <button class="btn-sm" onclick="pickFiestaPortada()" style="white-space:nowrap">Desde Drive</button>
+            </div>
+          </div>
+          <div class="form-row" style="margin-top:8px;gap:24px;align-items:center">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:12px;color:var(--gray2)">
+              <input type="checkbox" id="fi-moderacion" style="accent-color:var(--gold);width:16px;height:16px;flex-shrink:0">
+              Moderación manual de fotos
+            </label>
+          </div>
+          <div style="margin-top:14px">
+            <button class="btn-add" onclick="fiestaCrear()">Crear Evento</button>
+          </div>
+        </div>
+
+        <!-- Lista -->
+        <div class="settings-section">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div class="settings-section-title" style="margin-bottom:0">Eventos activos</div>
+            <button class="btn-sm btn-sec" onclick="loadFiestasPage()" style="font-size:9px;letter-spacing:1.5px">↻ Actualizar</button>
+          </div>
+          <div id="fi-list"><div style="color:var(--gray);font-size:12px">Cargando...</div></div>
+        </div>
+      </div>
+
     </div><!-- /content -->
   </div><!-- /main -->
 </div><!-- /app -->
+
+<!-- Fiesta Modal (editar) -->
+<div id="fiesta-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:3200;overflow-y:auto;padding:24px">
+  <div style="max-width:600px;margin:0 auto;background:var(--black2);border:1px solid rgba(255,255,255,0.1);padding:28px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h3 style="font-size:12px;letter-spacing:2px;text-transform:uppercase" id="fm-title">Editar Evento</h3>
+      <button onclick="document.getElementById('fiesta-modal').style.display='none'" style="background:none;border:none;color:var(--gray);font-size:20px;cursor:pointer">&#x2715;</button>
+    </div>
+    <input type="hidden" id="fm-id">
+    <div class="form-row">
+      <div class="form-group" style="flex:2"><label class="form-label">Nombre</label><input class="form-input" id="fm-nombre"></div>
+      <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" type="date" id="fm-fecha"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:2"><label class="form-label">Carpeta Drive (ID)</label><input class="form-input" id="fm-folder"></div>
+      <div class="form-group"><label class="form-label">Cierre automático</label><input class="form-input" type="datetime-local" id="fm-cierre"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Foto de portada (URL)</label>
+      <div style="display:flex;gap:8px">
+        <input class="form-input" id="fm-portada" style="flex:1">
+        <button class="btn-sm" onclick="pickFiestaPortadaModal()" style="white-space:nowrap">Drive</button>
+      </div>
+    </div>
+    <div class="form-row" style="margin-top:8px;gap:24px;align-items:center">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:12px;color:var(--gray2)">
+        <input type="checkbox" id="fm-moderacion" style="accent-color:var(--gold);width:16px;height:16px">
+        Moderación manual
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:12px;color:var(--gray2)">
+        <select class="form-input" id="fm-estado" style="width:auto;padding:6px 10px;font-size:11px">
+          <option value="activo">Activo</option>
+          <option value="cerrado">Cerrado</option>
+        </select>
+      </label>
+    </div>
+    <div style="margin-top:20px;display:flex;gap:10px">
+      <button class="btn-add" onclick="fiestaGuardarEdit()">Guardar</button>
+      <button class="btn-sm btn-sec" onclick="document.getElementById('fiesta-modal').style.display='none'">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Fiesta QR Modal -->
+<div id="fiesta-qr-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:3200;overflow-y:auto;padding:24px">
+  <div style="max-width:440px;margin:0 auto;background:var(--black2);border:1px solid rgba(255,255,255,0.1);padding:28px;text-align:center">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h3 style="font-size:12px;letter-spacing:2px;text-transform:uppercase">QR del Evento</h3>
+      <button onclick="document.getElementById('fiesta-qr-modal').style.display='none'" style="background:none;border:none;color:var(--gray);font-size:20px;cursor:pointer">&#x2715;</button>
+    </div>
+    <div id="qr-nombre-display" style="font-size:13px;color:var(--gray2);margin-bottom:16px;letter-spacing:1px"></div>
+    <div id="qr-canvas-container" style="display:inline-block;padding:16px;background:#fff;margin-bottom:16px"></div>
+    <div id="qr-url-display" style="font-size:10px;color:var(--gray);word-break:break-all;margin-bottom:16px;letter-spacing:.5px"></div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="btn-add" onclick="downloadQr()">Descargar PNG</button>
+      <a id="qr-open-link" href="#" target="_blank" class="btn-sm">Abrir visualizador</a>
+    </div>
+  </div>
+</div>
 
 <!-- Drive Browser Modal -->
 <div id="drive-browser-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:3100;overflow-y:auto;padding:24px">
@@ -2997,7 +3114,7 @@ function showPage(id) {
   document.getElementById('page-'+id).classList.add('active');
   document.querySelector(`[onclick="showPage('${id}')"]`).classList.add('active');
   window.scrollTo(0, 0);
-  const titles = { dashboard:'Dashboard', portfolio:'Portfolio', blog:'Blog', photos:'Fotos del Sitio', video:'Video Hero', content:'Contenido', messages:'Mensajes', testimonials:'Testimonios', settings:'Configuración', invites:'Invitaciones', contratos:'Contratos', presupuesto:'Presupuesto PDF', entregas:'Entregas a Clientes' };
+  const titles = { dashboard:'Dashboard', portfolio:'Portfolio', blog:'Blog', photos:'Fotos del Sitio', video:'Video Hero', content:'Contenido', messages:'Mensajes', testimonials:'Testimonios', settings:'Configuración', invites:'Invitaciones', contratos:'Contratos', presupuesto:'Presupuesto PDF', entregas:'Entregas a Clientes', fiestas:'Fiestas — Foto QR' };
   document.getElementById('page-title').textContent = titles[id] || id;
   currentPage = id;
   if (id === 'portfolio') renderPortfolioAdmin();
@@ -3010,6 +3127,7 @@ function showPage(id) {
   if (id === 'video') loadVideoPage();
   if (id === 'content') { loadContentPage(); setTimeout(loadDestinations, 100); }
   if (id === 'invites') renderInvitesPage();
+  if (id === 'fiestas') loadFiestasPage();
   if (id === 'contratos') initContratosPage();
   if (id === 'presupuesto') {
     Promise.all([
@@ -7534,6 +7652,180 @@ function ctCancelEdit() {
   if (banner) banner.style.display = 'none';
   const btn = document.getElementById('ct-btn-gen');
   if (btn) btn.textContent = 'GENERAR CONTRATO';
+}
+
+// ── FIESTAS ──
+const FIESTAS_WORKER = 'https://crclub-worker.cristian-romero-digital.workers.dev';
+const FIESTAS_TOKEN  = 'crd2025';
+
+async function fiestasFetch(path, opts = {}) {
+  opts.headers = Object.assign({ Authorization: 'Bearer ' + FIESTAS_TOKEN }, opts.headers || {});
+  return fetch(FIESTAS_WORKER + path, opts);
+}
+
+async function loadFiestasPage() {
+  const list = document.getElementById('fi-list');
+  list.innerHTML = '<div style="color:var(--gray);font-size:12px">Cargando...</div>';
+  try {
+    const r = await fiestasFetch('/eventos/admin/config');
+    if (r.ok) {
+      const d = await r.json();
+      if (d.gas_url) document.getElementById('fi-gas-url').value = d.gas_url;
+    }
+  } catch(e) {}
+  try {
+    const r = await fiestasFetch('/eventos/admin');
+    if (!r.ok) { list.innerHTML = '<div style="color:var(--gray);font-size:12px">Error al cargar.</div>'; return; }
+    const data = await r.json();
+    renderFiestasList(data.eventos || []);
+  } catch(e) {
+    list.innerHTML = '<div style="color:var(--gray);font-size:12px">Error de conexión.</div>';
+  }
+}
+
+function renderFiestasList(eventos) {
+  const list = document.getElementById('fi-list');
+  if (!eventos.length) { list.innerHTML = '<div style="color:var(--gray);font-size:12px">No hay eventos creados.</div>'; return; }
+  list.innerHTML = eventos.map(ev => {
+    const estadoBadge = ev.estado === 'activo'
+      ? '<span style="background:rgba(37,211,102,.15);color:#25D366;font-size:9px;padding:2px 8px;letter-spacing:1px;text-transform:uppercase">Activo</span>'
+      : '<span style="background:rgba(255,255,255,.07);color:var(--gray);font-size:9px;padding:2px 8px;letter-spacing:1px;text-transform:uppercase">Cerrado</span>';
+    const modBadge = ev.moderacion
+      ? '<span style="background:rgba(201,168,76,.12);color:var(--gold);font-size:9px;padding:2px 8px;letter-spacing:1px;text-transform:uppercase">Moderado</span>'
+      : '';
+    return `<div style="border:1px solid rgba(255,255,255,.07);padding:14px 16px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-size:13px;color:var(--white);margin-bottom:4px">${ev.nombre}</div>
+          <div style="font-size:10px;color:var(--gray);letter-spacing:1px">${ev.fecha || ''}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">${estadoBadge}${modBadge}</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn-sm" onclick="fiestaEdit('${ev.id}')">Editar</button>
+        <button class="btn-sm" onclick="fiestaShowQr('${ev.id}','${(ev.nombre||'').replace(/'/g,"\\'")}')">QR</button>
+        <a href="fiestas.html?e=${ev.id}" target="_blank" class="btn-sm">Visualizador</a>
+        <button class="btn-sm" onclick="fiestaEliminar('${ev.id}','${(ev.nombre||'').replace(/'/g,"\\'")}' )" style="background:rgba(220,50,50,.08);border-color:rgba(220,50,50,.3);color:#ff6b6b">Eliminar</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function fiestaCrear() {
+  const nombre  = document.getElementById('fi-nombre').value.trim();
+  const fecha   = document.getElementById('fi-fecha').value;
+  const folder  = document.getElementById('fi-folder').value.trim();
+  const cierre  = document.getElementById('fi-cierre').value;
+  const portada = document.getElementById('fi-portada').value.trim();
+  const mod     = document.getElementById('fi-moderacion').checked ? 1 : 0;
+  if (!nombre || !fecha || !folder) { showToast('Nombre, fecha y carpeta son obligatorios.'); return; }
+  const body = { nombre, fecha, folder_id: folder, portada, moderacion: mod };
+  if (cierre) body.cierre_auto = new Date(cierre).toISOString();
+  try {
+    const r = await fiestasFetch('/eventos/admin', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    const d = await r.json();
+    if (d.id) {
+      showToast('Evento creado: ' + d.id);
+      ['fi-nombre','fi-fecha','fi-folder','fi-cierre','fi-portada'].forEach(id => { document.getElementById(id).value = ''; });
+      document.getElementById('fi-moderacion').checked = false;
+      loadFiestasPage();
+    } else {
+      showToast(d.error || 'Error al crear');
+    }
+  } catch(e) { showToast('Error de conexión'); }
+}
+
+async function fiestaEdit(id) {
+  try {
+    const r = await fiestasFetch('/eventos/admin');
+    const d = await r.json();
+    const ev = (d.eventos || []).find(e => e.id === id);
+    if (!ev) { showToast('Evento no encontrado'); return; }
+    document.getElementById('fm-id').value = ev.id;
+    document.getElementById('fm-nombre').value = ev.nombre || '';
+    document.getElementById('fm-fecha').value = ev.fecha || '';
+    document.getElementById('fm-folder').value = ev.folder_id || '';
+    document.getElementById('fm-portada').value = ev.portada || '';
+    document.getElementById('fm-moderacion').checked = !!ev.moderacion;
+    document.getElementById('fm-estado').value = ev.estado || 'activo';
+    document.getElementById('fm-cierre').value = ev.cierre_auto ? ev.cierre_auto.slice(0,16) : '';
+    document.getElementById('fiesta-modal').style.display = 'block';
+  } catch(e) { showToast('Error al cargar evento'); }
+}
+
+async function fiestaGuardarEdit() {
+  const id      = document.getElementById('fm-id').value;
+  const nombre  = document.getElementById('fm-nombre').value.trim();
+  const fecha   = document.getElementById('fm-fecha').value;
+  const folder  = document.getElementById('fm-folder').value.trim();
+  const portada = document.getElementById('fm-portada').value.trim();
+  const mod     = document.getElementById('fm-moderacion').checked ? 1 : 0;
+  const estado  = document.getElementById('fm-estado').value;
+  const cierre  = document.getElementById('fm-cierre').value;
+  const body = { nombre, fecha, folder_id: folder, portada, moderacion: mod, estado };
+  if (cierre) body.cierre_auto = new Date(cierre).toISOString(); else body.cierre_auto = null;
+  try {
+    const r = await fiestasFetch(`/eventos/admin/${id}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    const d = await r.json();
+    if (d.ok) { showToast('Evento actualizado'); document.getElementById('fiesta-modal').style.display = 'none'; loadFiestasPage(); }
+    else showToast(d.error || 'Error al guardar');
+  } catch(e) { showToast('Error de conexión'); }
+}
+
+async function fiestaEliminar(id, nombre) {
+  if (!confirm(`¿Eliminar el evento "${nombre}"? Esta acción no se puede deshacer.`)) return;
+  try {
+    const r = await fiestasFetch(`/eventos/admin/${id}`, { method: 'DELETE' });
+    const d = await r.json();
+    if (d.ok) { showToast('Evento eliminado'); loadFiestasPage(); }
+    else showToast(d.error || 'Error al eliminar');
+  } catch(e) { showToast('Error de conexión'); }
+}
+
+async function fiestasSaveGasUrl() {
+  const url = document.getElementById('fi-gas-url').value.trim();
+  if (!url) { showToast('Ingresá la URL del GAS'); return; }
+  try {
+    const r = await fiestasFetch('/eventos/admin/config', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ gas_url: url }) });
+    const d = await r.json();
+    if (d.ok) showToast('URL guardada'); else showToast(d.error || 'Error');
+  } catch(e) { showToast('Error de conexión'); }
+}
+
+function fiestaShowQr(id, nombre) {
+  const url = window.location.origin + window.location.pathname.replace('admin.html','') + 'fiestas.html?e=' + id;
+  document.getElementById('qr-nombre-display').textContent = nombre;
+  document.getElementById('qr-url-display').textContent = url;
+  document.getElementById('qr-open-link').href = url;
+  const container = document.getElementById('qr-canvas-container');
+  container.innerHTML = '';
+  const genQr = () => { new QRCode(container, { text: url, width: 200, height: 200, colorDark:'#000000', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.H }); };
+  if (typeof QRCode === 'undefined') {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+    s.onload = genQr;
+    document.head.appendChild(s);
+  } else {
+    genQr();
+  }
+  document.getElementById('fiesta-qr-modal').style.display = 'block';
+}
+
+function downloadQr() {
+  const container = document.getElementById('qr-canvas-container');
+  const canvas = container.querySelector('canvas');
+  if (!canvas) { showToast('QR aún no generado'); return; }
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = 'qr-fiesta.png';
+  a.click();
+}
+
+function pickFiestaPortada() {
+  openDriveBrowser(url => { document.getElementById('fi-portada').value = url; });
+}
+function pickFiestaPortadaModal() {
+  openDriveBrowser(url => { document.getElementById('fm-portada').value = url; });
 }
 
 // Check session on load
