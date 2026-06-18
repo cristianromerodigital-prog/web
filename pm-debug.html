@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Premiere Debug</title>
+<style>
+body { background:#0a0a0f; color:#fff; font-family:monospace; font-size:13px; padding:20px; }
+h2 { color:#00d4e8; margin-bottom:16px; }
+.ok  { color:#4caf50; }
+.err { color:#e05555; }
+.val { color:#c9a84c; word-break:break-all; }
+pre  { background:#111; padding:12px; border-radius:4px; overflow-x:auto; font-size:11px; white-space:pre-wrap; word-break:break-all; }
+.section { margin-bottom:24px; border-bottom:1px solid #222; padding-bottom:16px; }
+</style>
+</head>
+<body>
+<h2>Premiere Debug — Kiary</h2>
+<div id="out">Cargando...</div>
+<script>
+const CF   = 'https://web.cristian-romero-digital.workers.dev';
+const SLUG = 'kiary-30-05-2026';
+const t    = Date.now();
+
+async function run() {
+  const out = document.getElementById('out');
+  let html = '';
+
+  const label = (name, ok, val, extra) =>
+    `<div class="section"><b>${name}</b>: <span class="${ok?'ok':'err'}">${ok?'OK':'ERROR'}</span><br>` +
+    `<span class="val">${val}</span>${extra?'<pre>'+extra+'</pre>':''}</div>`;
+
+  // 1. crd_pm_msg_SLUG
+  try {
+    const r = await fetch(CF + '/crd_pm_msg_' + SLUG + '?t=' + t);
+    if(r.ok) {
+      const d = await r.json();
+      html += label('crd_pm_msg_'+SLUG, true, d?.msg || 'VACÍO');
+    } else {
+      html += label('crd_pm_msg_'+SLUG, false, 'status ' + r.status + ' (key no existe todavía)');
+    }
+  } catch(e) { html += label('crd_pm_msg_'+SLUG, false, e.message); }
+
+  // 2. crd_pm_SLUG (welcomeMsg en el índice)
+  try {
+    const r = await fetch(CF + '/crd_pm_' + SLUG + '?t=' + t);
+    if(r.ok) {
+      const d = await r.json();
+      html += label('crd_pm_'+SLUG+' → welcomeMsg', true,
+        d?.welcomeMsg || 'no tiene welcomeMsg',
+        'photoRows: ' + (d?.photoRows?.length||0) + ' secciones | ts: ' + new Date(d?.ts||0).toLocaleString());
+    } else {
+      html += label('crd_pm_'+SLUG, false, 'status ' + r.status);
+    }
+  } catch(e) { html += label('crd_pm_'+SLUG, false, e.message); }
+
+  // 3. crd_entregas → welcomeMsg de Kiary
+  try {
+    const r = await fetch(CF + '/crd_entregas?t=' + t);
+    if(r.ok) {
+      const arr = await r.json();
+      const ev = arr.find(e => e.slug === SLUG || e.id === 5);
+      html += label('crd_entregas → '+SLUG, true,
+        ev?.welcomeMsg || 'VACÍO',
+        ev ? JSON.stringify({id:ev.id, nombres:ev.nombres, slug:ev.slug, welcomeMsg:ev.welcomeMsg}, null, 2) : 'no encontrado');
+    } else {
+      html += label('crd_entregas', false, 'status ' + r.status);
+    }
+  } catch(e) { html += label('crd_entregas', false, e.message); }
+
+  out.innerHTML = html;
+}
+
+run();
+</script>
+</body>
+</html>
