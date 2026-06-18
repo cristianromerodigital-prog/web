@@ -694,12 +694,6 @@ function showWelcome() {
   if(m) m.textContent = parts.join(' · ');
   // Mensaje: URL param ?msg= tiene prioridad, luego crd_entregas
   const welcomeText = p.get('msg') || CFG.welcomeMsg || '';
-  if(p.get('debug')) {
-    const dbg = document.createElement('div');
-    dbg.style.cssText = 'margin-top:12px;font-size:10px;color:rgba(255,255,255,.4);word-break:break-all;text-align:left;max-width:400px';
-    dbg.textContent = 'welcomeMsg: "' + (CFG.welcomeMsg||'VACÍO') + '" | msg param: "' + (p.get('msg')||'null') + '"';
-    document.querySelector('.welcome-inner')?.appendChild(dbg);
-  }
   if(msg) {
     if(welcomeText) { msg.textContent = welcomeText; msg.style.display = 'block'; }
     else msg.style.display = 'none';
@@ -808,7 +802,7 @@ async function init() {
     if(res.ok) {
       const data = await res.json();
       if(data && data.photoRows) {
-        if(data.welcomeMsg) CFG.welcomeMsg = data.welcomeMsg;
+        if(!CFG.welcomeMsg && data.welcomeMsg) CFG.welcomeMsg = data.welcomeMsg;
         applyStructure(data.photoRows, data.videoRows || []);
         stopFrases(); hideLoading(); return;
       }
