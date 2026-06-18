@@ -662,8 +662,12 @@ function hideLoading() {
 
 // ── WELCOME ──
 function showWelcome() {
+  console.log('[Premiere] showWelcome called');
+  console.log('[Premiere] CFG.welcomeMsg:', CFG.welcomeMsg);
+  console.log('[Premiere] p.get(msg):', p.get('msg'));
+  console.log('[Premiere] CFG:', JSON.stringify(CFG));
   const ov = document.getElementById('welcome-overlay');
-  if(!ov) return;
+  if(!ov) { console.log('[Premiere] ERROR: welcome-overlay not found'); return; }
   const t = document.getElementById('welcome-title');
   const m = document.getElementById('welcome-meta');
   const msg = document.getElementById('welcome-msg');
@@ -674,6 +678,7 @@ function showWelcome() {
   if(m) m.textContent = parts.join(' · ');
   // Mensaje: URL param ?msg= tiene prioridad, luego crd_entregas
   const welcomeText = p.get('msg') || CFG.welcomeMsg || '';
+  console.log('[Premiere] welcomeText final:', welcomeText);
   if(msg) {
     if(welcomeText) { msg.textContent = welcomeText; msg.style.display = 'block'; }
     else msg.style.display = 'none';
