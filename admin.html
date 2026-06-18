@@ -1253,6 +1253,11 @@ tr:hover td{background:rgba(255,255,255,0.02);}
             <div class="form-group"><label class="form-label">Sitio Web (URL completa)</label><input class="form-input" id="set-entrega-web" placeholder="https://cristian-romero-digital.pages.dev"></div>
           </div>
         </div>
+        <div class="settings-section" style="margin-top:24px">
+          <div class="settings-section-title">Premiere — Mensaje de bienvenida</div>
+          <p style="font-size:11px;color:var(--gray);margin-bottom:16px;letter-spacing:.5px">Aparece en la pantalla de bienvenida cuando el cliente abre su Premiere. Podés escribir un agradecimiento personalizado.</p>
+          <div class="form-group"><label class="form-label">Mensaje (opcional)</label><textarea class="form-input" id="set-premiere-welcome" rows="3" placeholder="Muchas gracias por confiar en nosotros. Fue un honor acompañarlos en este momento tan especial. ✦" style="resize:vertical;min-height:80px"></textarea></div>
+        </div>
           <div class="settings-section-title" style="margin-top:24px">EmailJS — Formulario de Contacto</div>
           <p style="font-size:12px;color:var(--gray2);margin-bottom:16px;line-height:1.6">Keys para el formulario de contacto del sitio público. Encontralas en emailjs.com → Account → API Keys.</p>
           <div class="form-group"><label class="form-label">Public Key</label><input class="form-input" id="set-emailjs-key" placeholder="odUJtdh1Z0U27ZkaN"></div>
@@ -4229,6 +4234,7 @@ function loadSettings() {
   document.getElementById('set-instagram').value = s.instagram || '';
   document.getElementById('set-entrega-ig').value  = s.entregaIgUrl  || '';
   document.getElementById('set-entrega-web').value = s.entregaWebUrl || '';
+  document.getElementById('set-premiere-welcome').value = s.premiereWelcomeMsg || '';
   document.getElementById('set-emailjs-key').value      = s.emailjsKey            || '';
   document.getElementById('set-emailjs-service').value  = s.emailjsServiceId       || '';
   document.getElementById('set-emailjs-template').value = s.emailjsContactTemplate || '';
@@ -4277,6 +4283,7 @@ function saveSettings() {
     instagram:         document.getElementById('set-instagram').value.trim(),
     entregaIgUrl:      document.getElementById('set-entrega-ig').value.trim(),
     entregaWebUrl:     document.getElementById('set-entrega-web').value.trim(),
+    premiereWelcomeMsg: document.getElementById('set-premiere-welcome').value.trim(),
     emailjsKey:              (document.getElementById('set-emailjs-key')      || {}).value?.trim() || existing.emailjsKey || '',
     emailjsServiceId:        (document.getElementById('set-emailjs-service')  || {}).value?.trim() || existing.emailjsServiceId || '',
     emailjsContactTemplate:  (document.getElementById('set-emailjs-template') || {}).value?.trim() || existing.emailjsContactTemplate || '',

@@ -234,7 +234,8 @@ body.select-mode .card:hover .card-overlay { opacity:0; }
 .welcome-brand { font-size:9px; letter-spacing:.6em; text-transform:uppercase; color:var(--cyan); margin-bottom:36px; display:block; }
 .welcome-title { font-family:'Cormorant Garamond',serif; font-weight:300; font-style:italic; font-size:clamp(48px,7vw,88px); line-height:.93; color:var(--white); margin-bottom:28px; }
 .welcome-divider { width:40px; height:1px; background:var(--gold); margin:0 auto 22px; }
-.welcome-meta { font-size:10px; letter-spacing:.35em; text-transform:uppercase; color:rgba(255,255,255,.38); margin-bottom:44px; }
+.welcome-meta { font-size:10px; letter-spacing:.35em; text-transform:uppercase; color:rgba(255,255,255,.38); margin-bottom:20px; }
+.welcome-msg { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:clamp(15px,1.8vw,20px); color:rgba(255,255,255,.55); line-height:1.65; margin-bottom:36px; max-width:440px; margin-left:auto; margin-right:auto; }
 .welcome-btn {
   display:inline-flex; align-items:center; gap:10px;
   padding:13px 32px; border:1px solid rgba(255,255,255,.25); border-radius:40px;
@@ -432,6 +433,7 @@ body.ae-select .ae-item .ae-check { display:flex; }
     <div class="welcome-title" id="welcome-title">Tu entrega</div>
     <div class="welcome-divider"></div>
     <p class="welcome-meta" id="welcome-meta"></p>
+    <p class="welcome-msg" id="welcome-msg" style="display:none"></p>
     <button class="welcome-btn" onclick="closeWelcome();event.stopPropagation()">Ver mi entrega →</button>
   </div>
 </div>
@@ -638,13 +640,20 @@ function showWelcome() {
   if(!ov) return;
   const t = document.getElementById('welcome-title');
   const m = document.getElementById('welcome-meta');
+  const msg = document.getElementById('welcome-msg');
   if(t) t.innerHTML = document.getElementById('hero-title').innerHTML;
   const parts = [];
   if(CFG.tipo)  parts.push(CFG.tipo);
   if(CFG.fecha) parts.push(CFG.fecha);
   if(m) m.textContent = parts.join(' · ');
+  // Mensaje personalizado desde crd_settings
+  const welcomeText = (window._premiereSettings || {}).premiereWelcomeMsg || '';
+  if(msg) {
+    if(welcomeText) { msg.textContent = welcomeText; msg.style.display = 'block'; }
+    else msg.style.display = 'none';
+  }
   ov.classList.add('visible');
-  setTimeout(closeWelcome, 4500);
+  setTimeout(closeWelcome, 5500);
 }
 function closeWelcome() {
   const ov = document.getElementById('welcome-overlay');
@@ -695,6 +704,7 @@ async function init() {
     if(!raw) return;
     try {
       const s = JSON.parse(raw);
+      window._premiereSettings = s;
       if(s.logoUrl) applyLogo(s.logoUrl);
       if(s.waSuffix) {
         const url = 'https://wa.me/' + s.waSuffix.replace(/\D/g,'');
