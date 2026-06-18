@@ -37,6 +37,49 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
 .loading-text { font-size:10px; letter-spacing:.45em; text-transform:uppercase; color:rgba(255,255,255,.35); }
 #loading-phrase { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:clamp(14px,2vw,18px); color:rgba(255,255,255,.3); max-width:440px; text-align:center; padding:0 24px; line-height:1.6; min-height:2.5em; transition:opacity .5s; }
 
+/* ── SUBNAV ── */
+#subnav {
+  position:fixed; top:64px; left:0; right:0; z-index:190;
+  display:none;
+  padding:0 52px;
+  background:rgba(10,10,15,.92);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(255,255,255,.05);
+  transition:top .3s;
+}
+#subnav.visible { display:block; }
+.subnav-inner {
+  display:flex; align-items:center; gap:4px;
+  overflow-x:auto; scrollbar-width:none;
+  padding:10px 0;
+}
+.subnav-inner::-webkit-scrollbar { display:none; }
+.subnav-sep {
+  width:1px; height:16px; background:rgba(255,255,255,.12);
+  flex-shrink:0; margin:0 8px;
+}
+.subnav-pill {
+  flex-shrink:0;
+  padding:7px 18px;
+  border-radius:20px;
+  font-size:10px; letter-spacing:.22em; text-transform:uppercase;
+  font-family:'Montserrat',sans-serif; font-weight:400;
+  color:rgba(255,255,255,.45);
+  background:transparent;
+  border:1px solid transparent;
+  cursor:pointer;
+  transition:all .2s;
+  white-space:nowrap;
+}
+.subnav-pill:hover { color:rgba(255,255,255,.8); border-color:rgba(255,255,255,.15); }
+.subnav-pill.active { color:var(--cyan); border-color:rgba(0,212,232,.4); background:rgba(0,212,232,.07); }
+.subnav-pill.video { color:rgba(255,255,255,.4); }
+.subnav-pill.video:hover { color:rgba(255,255,255,.75); }
+.subnav-pill.video.active { color:var(--gold); border-color:rgba(201,168,76,.4); background:rgba(201,168,76,.07); }
+
+/* cuando el subnav está visible, el content baja un poco */
+body.has-subnav #content { margin-top:-60px; }
+
 /* ── GRAIN ── */
 #grain { position:fixed; inset:0; z-index:999; pointer-events:none; opacity:.018;
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -265,6 +308,11 @@ body.select-mode .card:hover .card-overlay { opacity:0; }
     <div class="nav-avatar" id="nav-avatar">CR</div>
   </div>
 </nav>
+
+<!-- SUBNAV -->
+<div id="subnav">
+  <div class="subnav-inner" id="subnav-inner"></div>
+</div>
 
 <!-- HERO -->
 <section id="hero">
@@ -661,36 +709,90 @@ function renderRows(photoRows, videoRows) {
     return;
   }
 
-  if(photoRows.length > 0) {
-    const anchor = document.createElement('div');
-    anchor.id = 'fotos';
-    anchor.style.position = 'relative';
-    anchor.style.top = '-80px';
-    content.appendChild(anchor);
+  const subnavInner = document.getElementById('subnav-inner');
+  subnavInner.innerHTML = '';
+  const allSections = []; // {id, pill, type}
 
-    photoRows.forEach(row => content.appendChild(buildPhotoRow(row)));
-  }
+  // Photo rows
+  photoRows.forEach((row, ri) => {
+    const sectionId = 'row-' + row.label.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'') + '-' + ri;
+    const section = buildPhotoRow(row, sectionId);
+    content.appendChild(section);
+
+    const pill = document.createElement('button');
+    pill.className = 'subnav-pill';
+    pill.textContent = row.label;
+    pill.addEventListener('click', () => scrollToRow(sectionId));
+    subnavInner.appendChild(pill);
+    allSections.push({ id: sectionId, pill, type: 'foto' });
+  });
 
   if(videoRows.length > 0) {
     if(photoRows.length > 0) {
       const divider = document.createElement('div');
       divider.className = 'row-divider';
       content.appendChild(divider);
+
+      const sep = document.createElement('div');
+      sep.className = 'subnav-sep';
+      subnavInner.appendChild(sep);
     }
 
-    const anchor = document.createElement('div');
-    anchor.id = 'videos';
-    anchor.style.position = 'relative';
-    anchor.style.top = '-80px';
-    content.appendChild(anchor);
+    videoRows.forEach((row, ri) => {
+      const sectionId = 'row-video-' + row.label.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'') + '-' + ri;
+      const section = buildVideoRow(row, sectionId);
+      content.appendChild(section);
 
-    videoRows.forEach(row => content.appendChild(buildVideoRow(row)));
+      const pill = document.createElement('button');
+      pill.className = 'subnav-pill video';
+      pill.textContent = row.label;
+      pill.addEventListener('click', () => scrollToRow(sectionId));
+      subnavInner.appendChild(pill);
+      allSections.push({ id: sectionId, pill, type: 'video' });
+    });
+  }
+
+  // Show subnav only if there are 2+ sections
+  if(allSections.length >= 2) {
+    document.getElementById('subnav').classList.add('visible');
+    document.body.classList.add('has-subnav');
+    initScrollSpy(allSections);
   }
 }
 
-function buildPhotoRow(row) {
+function scrollToRow(sectionId) {
+  const el = document.getElementById(sectionId);
+  if(!el) return;
+  const offset = 64 + 45; // navbar + subnav height
+  const top = el.getBoundingClientRect().top + window.scrollY - offset;
+  window.scrollTo({ top, behavior: 'smooth' });
+}
+
+function initScrollSpy(sections) {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting) {
+        const hit = sections.find(s => s.id === entry.target.id);
+        if(hit) {
+          sections.forEach(s => s.pill.classList.remove('active'));
+          hit.pill.classList.add('active');
+          // scroll pill into view in subnav
+          hit.pill.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+        }
+      }
+    });
+  }, { rootMargin:'-30% 0px -60% 0px', threshold:0 });
+
+  sections.forEach(s => {
+    const el = document.getElementById(s.id);
+    if(el) obs.observe(el);
+  });
+}
+
+function buildPhotoRow(row, sectionId) {
   const section = document.createElement('section');
   section.className = 'row-section';
+  if(sectionId) section.id = sectionId;
   section.innerHTML = `
     <div class="row-header">
       <h2 class="row-title">${row.label}</h2>
@@ -741,9 +843,10 @@ function buildPhotoRow(row) {
   return section;
 }
 
-function buildVideoRow(row) {
+function buildVideoRow(row, sectionId) {
   const section = document.createElement('section');
   section.className = 'row-section';
+  if(sectionId) section.id = sectionId;
   section.innerHTML = `
     <div class="row-header">
       <h2 class="row-title">${row.label}</h2>
