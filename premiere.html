@@ -381,6 +381,14 @@ body.ae-select .ae-item .ae-check { display:flex; }
   #social-float { bottom:24px; right:16px; gap:8px; }
   .sfloat-btn { width:40px; height:40px; }
   .sfloat-btn svg { width:19px; height:19px; }
+  /* album expand mobile */
+  #ae-grid { padding:10px 6px; }
+  .ae-header { padding:14px 16px; }
+  .ae-album-section { padding:12px 16px 0; }
+  .ae-album-opts { justify-content:center; }
+  .ae-album-opt { min-width:0; flex:1; max-width:155px; padding:10px 12px; }
+  .ae-pedir-btn { display:block; width:100%; text-align:center; margin-bottom:12px; }
+  .ae-sel-info { text-align:center; }
 }
 </style>
 </head>
@@ -1207,7 +1215,7 @@ function openAlbumExpand(photos, albumName) {
   // Build masonry grid
   const grid = document.getElementById('ae-grid');
   grid.innerHTML = '';
-  const numCols = window.innerWidth <= 768 ? 2 : 3;
+  const numCols = 3;
   const cols = Array.from({ length: numCols }, () => document.createElement('div'));
   cols.forEach(c => { c.className = 'ae-col'; grid.appendChild(c); });
 
