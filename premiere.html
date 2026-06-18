@@ -265,11 +265,12 @@ body.select-mode .card:hover .card-overlay { opacity:0; }
 .ae-close:hover { border-color:var(--white); color:var(--white); }
 #ae-grid {
   flex:1; overflow-y:auto; padding:32px 52px;
-  display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:4px; align-items:start;
+  display:grid; grid-template-columns:repeat(3,1fr); gap:4px; align-items:start;
 }
-.ae-item { position:relative; cursor:pointer; overflow:hidden; border-radius:3px; }
-.ae-item img { width:100%; aspect-ratio:3/2; object-fit:cover; object-position:center; display:block; background:#1a1a20; transition:transform .3s ease; }
-.ae-item:hover img { transform:scale(1.04); }
+.ae-col { display:flex; flex-direction:column; gap:4px; }
+.ae-item { position:relative; cursor:pointer; overflow:hidden; }
+.ae-item img { width:100%; height:auto; display:block; background:#1a1a20; transition:transform .3s ease; }
+.ae-item:hover img { transform:scale(1.02); }
 
 /* ── ROW SEE-ALL ── */
 .row-see-all {
@@ -996,16 +997,22 @@ function openAlbumExpand(photos, albumName) {
   document.getElementById('ae-count').textContent = photos.length + ' foto' + (photos.length !== 1 ? 's' : '');
   const grid = document.getElementById('ae-grid');
   grid.innerHTML = '';
+
+  const numCols = window.innerWidth <= 768 ? 2 : 3;
+  const cols = Array.from({ length: numCols }, () => document.createElement('div'));
+  cols.forEach(c => { c.className = 'ae-col'; grid.appendChild(c); });
+
   photos.forEach((photo, idx) => {
     const item = document.createElement('div');
     item.className = 'ae-item';
-    item.innerHTML = `<img src="${thumbUrl(photo.id, 440)}" alt="${photo.name}" loading="lazy">`;
+    item.innerHTML = `<img src="${thumbUrl(photo.id, 600)}" alt="${photo.name}" loading="lazy">`;
     item.addEventListener('click', () => {
       closeAlbumExpand();
       setTimeout(() => openLb(photos, idx, albumName), 50);
     });
-    grid.appendChild(item);
+    cols[idx % numCols].appendChild(item);
   });
+
   document.getElementById('album-expand').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
