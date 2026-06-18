@@ -705,7 +705,7 @@ async function init() {
   const fetchSett = fetch(CONFIG.CF_URL + '/crd_settings').then(r=>r.text()).catch(()=>null);
   let fetchEvent  = Promise.resolve(null);
   if(CFG.eventId && !CFG.folderId) {
-    fetchEvent = fetch(CONFIG.CF_URL + '/crd_entregas').then(r=>r.json()).catch(()=>[]);
+    fetchEvent = fetch(CONFIG.CF_URL + '/crd_entregas?t=' + Date.now()).then(r=>r.json()).catch(()=>[]);
   }
 
   const [gasRaw, eventData] = await Promise.all([fetchGas, fetchEvent]);
