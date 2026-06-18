@@ -372,9 +372,15 @@ body.ae-select .ae-item .ae-check { display:flex; }
   .nav-btn { padding:7px 14px; font-size:9px; }
   .selbar-count { font-size:10px; }
   #select-bar { padding:12px 20px; }
-  #social-float { bottom:130px; right:18px; gap:8px; }
-  .sfloat-btn { width:42px; height:42px; }
-  .sfloat-btn svg { width:20px; height:20px; }
+  /* hero buttons — columna, fit-content, no chocan con float */
+  .hero-actions { flex-direction:column; align-items:flex-start; gap:8px; }
+  .btn-hero-play, .btn-hero-info { font-size:11px; padding:11px 22px; width:auto; }
+  /* hero content — más padding-bottom para no pisar el primer row */
+  .hero-content { padding:0 20px 140px; }
+  /* social float — abajo del viewport sin pisar botones */
+  #social-float { bottom:24px; right:16px; gap:8px; }
+  .sfloat-btn { width:40px; height:40px; }
+  .sfloat-btn svg { width:19px; height:19px; }
 }
 </style>
 </head>
