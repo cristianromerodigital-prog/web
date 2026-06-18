@@ -802,6 +802,7 @@ async function init() {
     if(res.ok) {
       const data = await res.json();
       if(data && data.photoRows) {
+        if(data.welcomeMsg) CFG.welcomeMsg = data.welcomeMsg;
         applyStructure(data.photoRows, data.videoRows || []);
         stopFrases(); hideLoading(); return;
       }

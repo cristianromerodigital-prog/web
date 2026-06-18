@@ -382,7 +382,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.30</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.31</div>
     </div>
   </aside>
 
@@ -7123,7 +7123,7 @@ async function preIndexPremiere(ev) {
     await fetch(CONFIG.CF_URL + '/crd_pm_' + ev.slug, {
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':CONFIG.CF_AUTH},
-      body: JSON.stringify({ photoRows, videoRows, ts:Date.now(), nombres:ev.nombres })
+      body: JSON.stringify({ photoRows, videoRows, ts:Date.now(), nombres:ev.nombres, welcomeMsg:ev.welcomeMsg||'' })
     });
     console.log('[Premiere] Indexado ✓ ' + total + ' archivos para ' + ev.nombres);
   } catch(e) {
@@ -7148,8 +7148,18 @@ async function guardarMsgPremiere(idx) {
       headers: { 'Content-Type': 'application/json', 'Authorization': CONFIG.CF_AUTH },
       body: str
     });
-    if(res.ok) { toast('Mensaje Premiere guardado ✓'); }
-    else        { toast('Error al sincronizar — intentá de nuevo', 'error'); }
+    if(res.ok) {
+      // También actualizar el índice pre-cargado con el nuevo mensaje
+      if(ev.slug) {
+        fetch(CONFIG.CF_URL + '/crd_pm_' + ev.slug).then(r=>r.ok?r.json():null).then(idx => {
+          if(idx && idx.photoRows) {
+            idx.welcomeMsg = msg.trim();
+            fetch(CONFIG.CF_URL + '/crd_pm_' + ev.slug, { method:'POST', headers:{'Content-Type':'application/json','Authorization':CONFIG.CF_AUTH}, body:JSON.stringify(idx) }).catch(()=>{});
+          }
+        }).catch(()=>{});
+      }
+      toast('Mensaje Premiere guardado ✓');
+    } else { toast('Error al sincronizar — intentá de nuevo', 'error'); }
   } catch(e) {
     toast('Error de red: ' + e.message, 'error');
   }
