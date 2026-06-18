@@ -109,8 +109,8 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
 }
 .sfloat-btn:hover { transform:scale(1.1); box-shadow:0 12px 36px rgba(0,0,0,.5); }
 .sfloat-btn svg { width:24px; height:24px; }
-#pm-logo-btn { display:none; overflow:hidden; cursor:default; }
-#pm-logo-btn img { width:100%; height:100%; object-fit:contain; filter:invert(1); mix-blend-mode:screen; }
+#pm-logo-btn { display:none; cursor:pointer; }
+#pm-logo-btn img { width:36px; height:36px; object-fit:contain; filter:invert(1); mix-blend-mode:screen; border-radius:50%; }
 
 /* ── CONTENT ── */
 #content { position:relative; z-index:10; margin-top:-100px; padding-bottom:100px; }
@@ -428,7 +428,7 @@ body.ae-select .ae-item .ae-check { display:flex; }
 
 <!-- SOCIAL FLOAT -->
 <div id="social-float">
-  <div class="sfloat-btn" id="pm-logo-btn"><img id="hero-logo-img" src="" alt="Logo"></div>
+  <a class="sfloat-btn" id="pm-logo-btn" href="https://cristianromeroproducciones.com.ar" target="_blank"><img id="hero-logo-img" src="" alt="Logo"></a>
   <a class="sfloat-btn" id="ig-float" href="https://www.instagram.com/cristian.romero.digital/" target="_blank" style="display:none">
     <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke-linecap="round" stroke-width="2.5"/></svg>
   </a>
