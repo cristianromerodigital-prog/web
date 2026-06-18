@@ -272,6 +272,63 @@ body.select-mode .card:hover .card-overlay { opacity:0; }
 .ae-item img { width:100%; height:auto; display:block; background:#1a1a20; transition:transform .3s ease; }
 .ae-item:hover img { transform:scale(1.02); }
 
+/* ── ALBUM EXPAND — SELECTOR & BAR ── */
+.ae-album-section {
+  padding:16px 52px 0;
+  flex-shrink:0;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.ae-album-label { font-size:9px; letter-spacing:.45em; text-transform:uppercase; color:var(--gold); margin-bottom:14px; }
+.ae-album-opts { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+.ae-album-opt { padding:12px 20px; border:1px solid rgba(255,255,255,.15); border-radius:4px; cursor:pointer; text-align:center; transition:all .3s; min-width:160px; }
+.ae-album-opt.selected { border-color:var(--gold); background:rgba(201,168,76,.08); }
+.ae-album-opt:hover:not(.selected) { border-color:rgba(255,255,255,.35); }
+.ae-album-opt-label { font-size:12px; font-weight:500; color:rgba(255,255,255,.85); margin-bottom:4px; }
+.ae-album-opt-detail { font-size:10px; color:var(--gold); letter-spacing:.2em; }
+.ae-pedir-btn {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 24px; border:1px solid rgba(201,168,76,.5); border-radius:40px;
+  color:var(--gold); background:transparent;
+  font-size:10px; letter-spacing:.3em; text-transform:uppercase;
+  font-family:'Montserrat',sans-serif; cursor:pointer; transition:all .3s; margin-bottom:16px;
+}
+.ae-pedir-btn:hover { background:rgba(201,168,76,.1); }
+.ae-sel-info { font-size:10px; letter-spacing:.2em; color:var(--cyan); margin-bottom:16px; display:none; }
+.ae-sel-info.visible { display:block; }
+
+/* checkboxes en expand */
+.ae-item .ae-check {
+  position:absolute; top:8px; left:8px; z-index:5;
+  width:20px; height:20px; border:2px solid rgba(255,255,255,.7); border-radius:50%;
+  background:rgba(10,10,15,.6); display:none; align-items:center; justify-content:center;
+  font-size:10px; font-weight:600; pointer-events:none;
+}
+body.ae-select .ae-item .ae-check { display:flex; }
+.ae-item.ae-selected .ae-check { background:var(--cyan); border-color:var(--cyan); color:var(--bg); }
+.ae-item.ae-selected::after { content:''; position:absolute; inset:0; border:2px solid var(--cyan); background:rgba(0,212,232,.12); pointer-events:none; z-index:4; }
+
+/* ── ALBUM ORDER MODAL ── */
+#album-modal { position:fixed; inset:0; z-index:600; background:rgba(10,10,15,.92); display:none; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(8px); }
+#album-modal.active { display:flex; }
+.album-form { background:#111; border:1px solid rgba(0,212,232,.25); padding:32px; max-width:520px; width:100%; max-height:90vh; overflow-y:auto; }
+.album-form h2 { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:28px; margin-bottom:6px; }
+.album-form .subtitle { font-size:10px; letter-spacing:.35em; text-transform:uppercase; color:var(--cyan); opacity:.7; margin-bottom:24px; }
+.album-form label { display:block; font-size:10px; letter-spacing:.3em; text-transform:uppercase; color:rgba(255,255,255,.5); margin-bottom:8px; margin-top:16px; }
+.album-form input, .album-form select, .album-form textarea { width:100%; background:rgba(255,255,255,.04); border:1px solid rgba(0,212,232,.25); color:var(--white); padding:10px 14px; font-size:13px; font-family:'Montserrat',sans-serif; outline:none; transition:border-color .2s; }
+.album-form input:focus, .album-form select:focus, .album-form textarea:focus { border-color:var(--cyan); }
+.album-form textarea { min-height:70px; resize:vertical; }
+.album-form select option { background:#111; }
+.album-form .selected-preview { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.album-form .sel-prev-item { width:52px; height:52px; object-fit:cover; border:1px solid rgba(0,212,232,.25); }
+.album-form .form-actions { display:flex; gap:12px; margin-top:24px; }
+.btn-submit { flex:1; padding:14px; background:var(--gold); color:#000; border:none; font-size:11px; letter-spacing:.3em; text-transform:uppercase; font-weight:500; cursor:pointer; transition:opacity .3s; }
+.btn-submit:hover { opacity:.85; }
+.btn-cancel-form { padding:14px 20px; background:transparent; border:1px solid rgba(0,212,232,.25); color:rgba(255,255,255,.5); font-size:11px; cursor:pointer; transition:all .3s; }
+.btn-cancel-form:hover { border-color:var(--white); color:var(--white); }
+.form-success { display:none; text-align:center; padding:24px 0; }
+.form-success .icon { font-size:40px; margin-bottom:12px; }
+.form-success p { font-size:13px; color:rgba(255,255,255,.6); line-height:1.7; }
+
 /* ── ROW SEE-ALL ── */
 .row-see-all {
   font-size:10px; letter-spacing:.2em; text-transform:uppercase;
@@ -378,12 +435,52 @@ body.select-mode .card:hover .card-overlay { opacity:0; }
 
 <!-- ALBUM EXPAND -->
 <div id="album-expand">
-  <div class="ae-header">
+  <div class="ae-header" id="ae-header">
     <span class="ae-title" id="ae-title"></span>
     <span class="ae-count" id="ae-count"></span>
     <button class="ae-close" onclick="closeAlbumExpand()">×</button>
   </div>
   <div id="ae-grid"></div>
+</div>
+
+<!-- ALBUM ORDER MODAL -->
+<div id="album-modal">
+  <div class="album-form">
+    <h2>Pedido de álbum</h2>
+    <div class="subtitle">Fotos seleccionadas para imprimir</div>
+    <div id="album-form-body">
+      <div class="selected-preview" id="album-preview"></div>
+      <label>Foto de tapa <span style="color:var(--gold)">*</span></label>
+      <select id="af-tapa"><option value="">— Elegí la foto de tapa —</option></select>
+      <label>Tu nombre</label>
+      <input type="text" id="af-nombre" placeholder="Nombre y apellido">
+      <label>WhatsApp</label>
+      <input type="tel" id="af-tel" placeholder="+54 9 11 ...">
+      <label>Tamaño del álbum</label>
+      <select id="af-size">
+        <option value="">Seleccioná un tamaño</option>
+        <option value="15x20">15×20 cm</option>
+        <option value="20x30">20×30 cm</option>
+        <option value="30x40">30×40 cm</option>
+        <option value="30x45">30×45 cm</option>
+        <option value="40x60">40×60 cm</option>
+      </select>
+      <label>Terminación</label>
+      <select id="af-finish"><option value="mate">Mate</option><option value="brillante">Brillante</option></select>
+      <label>Cantidad de copias</label>
+      <input type="number" id="af-qty" value="1" min="1" max="10">
+      <label>Notas adicionales (opcional)</label>
+      <textarea id="af-notas" placeholder="Indicá si querés alguna foto en particular en tapa, orden específico, etc."></textarea>
+      <div class="form-actions">
+        <button class="btn-cancel-form" onclick="cerrarPedidoAlbum()">Cancelar</button>
+        <button class="btn-submit" onclick="enviarPedidoAlbum()">Enviar pedido</button>
+      </div>
+    </div>
+    <div class="form-success" id="album-success">
+      <div class="icon">✦</div>
+      <p>¡Pedido recibido!<br>Te contactamos en las próximas horas para confirmar detalles y presupuesto.</p>
+    </div>
+  </div>
 </div>
 
 <!-- SELECT BAR -->
@@ -990,14 +1087,71 @@ function dlAll() {
 }
 
 // ═══════════════════════════════════════════
-// ALBUM EXPAND
+// ALBUM EXPAND + ORDERING
 // ═══════════════════════════════════════════
+let _aePhotos      = [];
+let _aeAlbumName   = '';
+let _aeAlbumOpts   = [];
+let _aeSelOpt      = -1;
+let _aeSelected    = new Set();
+const _pedidosExistentes = {};
+
+function getAlbumOptions(label) {
+  const nl = (label || '').toLowerCase();
+  if(nl.includes('book')) {
+    return [
+      { label:'Book de Firmas 30×30', detail:'11 fotos máx.', maxPhotos:11, formSize:'Book de Firmas 30x30' },
+      { label:'Book Revista 30×30',   detail:'21 fotos máx.', maxPhotos:21, formSize:'Book Revista 30x30'   }
+    ];
+  }
+  if(nl.includes('fiesta') || nl.includes('boda') || nl.includes('civil') || nl.includes('xv') || nl.includes('cumplea') || nl.includes('evento') || nl.includes('recep')) {
+    return [
+      { label:'Álbum Clásico',        detail:'91 fotos máx.', maxPhotos:91, formSize:'Album Clasico'         },
+      { label:'Álbum Interactivo QR', detail:'91 fotos máx.', maxPhotos:91, formSize:'Album Interactivo QR'  }
+    ];
+  }
+  return [];
+}
+
 function openAlbumExpand(photos, albumName) {
+  _aePhotos    = photos;
+  _aeAlbumName = albumName;
+  _aeAlbumOpts = getAlbumOptions(albumName);
+  _aeSelOpt    = -1;
+  _aeSelected.clear();
+  document.body.classList.remove('ae-select');
+
   document.getElementById('ae-title').textContent = albumName;
   document.getElementById('ae-count').textContent = photos.length + ' foto' + (photos.length !== 1 ? 's' : '');
+
+  // Render album selector section
+  let selectorHtml = '';
+  if(_aeAlbumOpts.length > 0) {
+    selectorHtml = `
+      <div class="ae-album-section" id="ae-album-section">
+        <div class="ae-album-label">Elegí el tipo de álbum antes de seleccionar fotos</div>
+        <div class="ae-album-opts" id="ae-album-opts">
+          ${_aeAlbumOpts.map((o,i) => `
+            <div class="ae-album-opt" id="aeopt-${i}" onclick="aeSelectOpt(${i})">
+              <div class="ae-album-opt-label">${o.label}</div>
+              <div class="ae-album-opt-detail">${o.detail}</div>
+            </div>`).join('')}
+        </div>
+        <div class="ae-sel-info" id="ae-sel-info">0 fotos seleccionadas</div>
+        <button class="ae-pedir-btn" onclick="abrirPedidoAlbum()">✦ Pedir álbum</button>
+      </div>`;
+  }
+
+  // Insert selector after ae-header
+  const existing = document.getElementById('ae-album-section');
+  if(existing) existing.remove();
+  if(selectorHtml) {
+    document.getElementById('ae-header').insertAdjacentHTML('afterend', selectorHtml);
+  }
+
+  // Build masonry grid
   const grid = document.getElementById('ae-grid');
   grid.innerHTML = '';
-
   const numCols = window.innerWidth <= 768 ? 2 : 3;
   const cols = Array.from({ length: numCols }, () => document.createElement('div'));
   cols.forEach(c => { c.className = 'ae-col'; grid.appendChild(c); });
@@ -1005,10 +1159,17 @@ function openAlbumExpand(photos, albumName) {
   photos.forEach((photo, idx) => {
     const item = document.createElement('div');
     item.className = 'ae-item';
-    item.innerHTML = `<img src="${thumbUrl(photo.id, 600)}" alt="${photo.name}" loading="lazy">`;
+    item.dataset.id = photo.id;
+    item.innerHTML = `
+      <div class="ae-check">✓</div>
+      <img src="${thumbUrl(photo.id, 600)}" alt="${photo.name}" loading="lazy">`;
     item.addEventListener('click', () => {
-      closeAlbumExpand();
-      setTimeout(() => openLb(photos, idx, albumName), 50);
+      if(document.body.classList.contains('ae-select')) {
+        aeToggleSelect(photo.id, item);
+      } else {
+        closeAlbumExpand();
+        setTimeout(() => openLb(photos, idx, albumName), 50);
+      }
     });
     cols[idx % numCols].appendChild(item);
   });
@@ -1016,9 +1177,146 @@ function openAlbumExpand(photos, albumName) {
   document.getElementById('album-expand').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
+
 function closeAlbumExpand() {
   document.getElementById('album-expand').classList.remove('open');
+  document.body.classList.remove('ae-select');
+  _aeSelected.clear();
+  _aeSelOpt = -1;
   document.body.style.overflow = '';
+}
+
+function aeSelectOpt(idx) {
+  _aeSelOpt = idx;
+  document.querySelectorAll('.ae-album-opt').forEach((el,i) => el.classList.toggle('selected', i===idx));
+  document.body.classList.add('ae-select');
+  // clear selection if over new max
+  const max = _aeAlbumOpts[idx].maxPhotos;
+  if(_aeSelected.size > max) {
+    _aeSelected.clear();
+    document.querySelectorAll('.ae-item.ae-selected').forEach(el => el.classList.remove('ae-selected'));
+  }
+  aeUpdateSelInfo();
+}
+
+function aeToggleSelect(id, item) {
+  if(_aeSelOpt < 0) { toast('Elegí primero el tipo de álbum', 'error'); return; }
+  const max = _aeAlbumOpts[_aeSelOpt].maxPhotos;
+  if(_aeSelected.has(id)) {
+    _aeSelected.delete(id);
+    item.classList.remove('ae-selected');
+  } else {
+    if(_aeSelected.size >= max) { toast('Máximo ' + max + ' fotos para este álbum', 'error'); return; }
+    _aeSelected.add(id);
+    item.classList.add('ae-selected');
+  }
+  aeUpdateSelInfo();
+}
+
+function aeUpdateSelInfo() {
+  const el = document.getElementById('ae-sel-info');
+  if(!el) return;
+  el.textContent = _aeSelected.size + ' foto' + (_aeSelected.size !== 1 ? 's' : '') + ' seleccionadas';
+  el.classList.toggle('visible', _aeSelected.size > 0);
+}
+
+// ─── Pedido álbum ───
+function abrirPedidoAlbum() {
+  if(_aeSelOpt < 0) { toast('Elegí primero el tipo de álbum', 'error'); return; }
+  const tipo = _aeAlbumOpts[_aeSelOpt].formSize.toLowerCase().replace(/\s+/g,'_');
+  if(_pedidosExistentes[tipo]) {
+    toast('Ya tenés un pedido de este álbum en proceso. Contactá a Cristian.', 'error'); return;
+  }
+  const fotos = _aeSelected.size > 0
+    ? _aePhotos.filter(f => _aeSelected.has(f.id))
+    : _aePhotos;
+
+  const preview = document.getElementById('album-preview');
+  preview.innerHTML = fotos.slice(0,12).map(f =>
+    `<img class="sel-prev-item" src="${thumbUrl(f.id, 80)}" alt="${f.name}">`
+  ).join('') + (fotos.length > 12 ? `<span style="font-size:11px;color:rgba(255,255,255,.4);align-self:center">+${fotos.length-12} más</span>` : '');
+
+  const tapaEl = document.getElementById('af-tapa');
+  tapaEl.innerHTML = '<option value="">— Elegí la foto de tapa —</option>'
+    + fotos.map(f => `<option value="${f.id}">${f.name.replace(/\.[^.]+$/,'')}</option>`).join('');
+
+  const sizeEl = document.getElementById('af-size');
+  const opt = _aeAlbumOpts[_aeSelOpt];
+  let found = false;
+  for(const o of sizeEl.options) { if(o.value === opt.formSize) { found=true; break; } }
+  if(!found) { const no = new Option(opt.label, opt.formSize); sizeEl.insertBefore(no, sizeEl.options[1]||null); }
+  sizeEl.value = opt.formSize;
+  sizeEl.disabled = true; sizeEl.style.opacity = '.6';
+
+  document.getElementById('album-form-body').style.display = 'block';
+  document.getElementById('album-success').style.display   = 'none';
+  document.getElementById('album-modal').classList.add('active');
+}
+
+function cerrarPedidoAlbum() {
+  document.getElementById('album-modal').classList.remove('active');
+  const sizeEl = document.getElementById('af-size');
+  sizeEl.disabled = false; sizeEl.style.opacity = '';
+}
+
+async function enviarPedidoAlbum() {
+  const nombre = document.getElementById('af-nombre').value.trim();
+  const tel    = document.getElementById('af-tel').value.trim();
+  const size   = document.getElementById('af-size').value;
+  const tapa   = document.getElementById('af-tapa').value;
+  if(!nombre || !tel || !size) { alert('Completá nombre, WhatsApp y tamaño'); return; }
+  if(!tapa) { alert('Elegí la foto de tapa'); return; }
+
+  const opt   = _aeAlbumOpts[_aeSelOpt];
+  const fotos = _aeSelected.size > 0
+    ? _aePhotos.filter(f => _aeSelected.has(f.id))
+    : _aePhotos;
+  const tapaFoto = fotos.find(f => f.id === tapa);
+
+  const pedido = {
+    action:'pedidoAlbum', evento:CFG.nombres,
+    tipoAlbum: opt.formSize,
+    nombre, tel, size,
+    finish: document.getElementById('af-finish').value,
+    qty:    document.getElementById('af-qty').value,
+    notas:  document.getElementById('af-notas').value,
+    tapa:   tapaFoto ? tapaFoto.name.replace(/\.[^.]+$/,'') : tapa,
+    tapaId: tapa,
+    fotos:  fotos.map(f=>f.id).join(','),
+    fotosNombres: fotos.map(f=>f.name.replace(/\.[^.]+$/,'')).join(', '),
+    total:  fotos.length
+  };
+
+  if(GAS_URL) { try { await gasRetry(pedido); } catch(e) {} }
+
+  const record = { ...pedido, id:Date.now().toString(36), fecha:new Date().toLocaleDateString('es-AR'), hora:new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) };
+  try {
+    const res = await fetch(CONFIG.CF_URL+'/crd_pedidos', { headers:{'Authorization':'crd2025'} });
+    const arr = (res.ok ? await res.json() : null) || [];
+    arr.unshift(record);
+    await fetch(CONFIG.CF_URL+'/crd_pedidos', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'crd2025'}, body:JSON.stringify(arr.slice(0,300)) });
+  } catch(e) {}
+
+  _pedidosExistentes[opt.formSize.toLowerCase().replace(/\s+/g,'_')] = true;
+  document.getElementById('album-form-body').style.display = 'none';
+  document.getElementById('album-success').style.display   = 'block';
+  setTimeout(cerrarPedidoAlbum, 3500);
+}
+
+function toast(msg, type) {
+  let el = document.getElementById('pm-toast');
+  if(!el) {
+    el = document.createElement('div');
+    el.id = 'pm-toast';
+    el.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1a2e;border:1px solid rgba(0,212,232,.3);color:#fff;padding:10px 20px;font-size:12px;letter-spacing:1px;z-index:9999;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;border-radius:3px';
+    document.body.appendChild(el);
+  }
+  el.style.borderColor = type==='error' ? 'rgba(232,0,61,.4)' : 'rgba(0,212,232,.3)';
+  el.textContent = msg;
+  el.style.opacity = '1';
+  el.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.opacity='0'; el.style.transform='translateX(-50%) translateY(20px)'; }, 3000);
 }
 
 // ═══════════════════════════════════════════
