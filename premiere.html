@@ -583,6 +583,7 @@ const CFG = {
   tipo:          p.get('tipo')    || '',
   portadaId:     p.get('portada') || '',
   allowDownload: p.get('dl') !== '0',
+  welcomeMsg:    p.get('msg')    || '',
 };
 
 // ═══════════════════════════════════════════
@@ -671,8 +672,8 @@ function showWelcome() {
   if(CFG.tipo)  parts.push(CFG.tipo);
   if(CFG.fecha) parts.push(CFG.fecha);
   if(m) m.textContent = parts.join(' · ');
-  // Mensaje personalizado desde el evento (crd_entregas)
-  const welcomeText = CFG.welcomeMsg || '';
+  // Mensaje: URL param ?msg= tiene prioridad, luego crd_entregas
+  const welcomeText = p.get('msg') || CFG.welcomeMsg || '';
   if(msg) {
     if(welcomeText) { msg.textContent = welcomeText; msg.style.display = 'block'; }
     else msg.style.display = 'none';

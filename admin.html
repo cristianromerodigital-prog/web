@@ -6738,7 +6738,9 @@ function buildEntregaUrl(ev) {
 }
 function buildPremiereUrl(ev) {
   const slug = ev.slug || [makeEntregaSlug(ev.nombres), parseFechaSlug(ev.fecha)].filter(Boolean).join('-') || ev.numId || ev.id;
-  return 'https://cristianromeroproducciones.com.ar/premiere.html?id=' + encodeURIComponent(slug);
+  let url = 'https://cristianromeroproducciones.com.ar/premiere.html?id=' + encodeURIComponent(slug);
+  if(ev.welcomeMsg && ev.welcomeMsg.trim()) url += '&msg=' + encodeURIComponent(ev.welcomeMsg.trim());
+  return url;
 }
 function updateEntregaPreview() {
   const raw = document.getElementById('ent-folder').value.trim();
