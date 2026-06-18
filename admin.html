@@ -6833,7 +6833,7 @@ function guardarEntrega() {
   const nombres = document.getElementById('ent-nombres').value.trim() || 'Entrega';
   const tipo = document.getElementById('ent-tipo').value;
   const fecha = document.getElementById('ent-fecha').value.trim();
-  const ev = { id: 0, folderId: fid, nombres, slug: [makeEntregaSlug(nombres), parseFechaSlug(fecha)].filter(Boolean).join('-'), fecha, tipo, frase: document.getElementById('ent-frase').value.trim(), welcomeMsg: (document.getElementById('ent-welcome-msg')||{}).value?.trim() || '', portadaId: document.getElementById('ent-portada').value.trim(), allowDownload: dlEl2 ? dlEl2.checked : true, overlay: _entOverlay, creado: new Date().toLocaleDateString('es-AR'), estado: 'En edición', notas: '' };
+  const ev = { id: 0, folderId: fid, nombres, slug: [makeEntregaSlug(nombres), parseFechaSlug(fecha)].filter(Boolean).join('-'), fecha, tipo, frase: document.getElementById('ent-frase').value.trim(), welcomeMsg: (() => { const _wm = document.getElementById('ent-welcome-msg'); return _wm ? (_wm.value || '').trim() : ''; })(), portadaId: document.getElementById('ent-portada').value.trim(), allowDownload: dlEl2 ? dlEl2.checked : true, overlay: _entOverlay, creado: new Date().toLocaleDateString('es-AR'), estado: 'En edición', notas: '' };
   const entregas = getEntregas();
   if(_editingEntregaIdx >= 0 && entregas[_editingEntregaIdx]) {
     ev.id = entregas[_editingEntregaIdx].id;
@@ -6855,13 +6855,16 @@ function guardarEntrega() {
     entregas.unshift(ev);
   }
   setEntregas(entregas);
-  const url = buildEntregaUrl(ev);
-  navigator.clipboard.writeText(url).then(() => toast('Link copiado al portapapeles'));
+  const url     = buildEntregaUrl(ev);
+  const premUrl = buildPremiereUrl(ev);
+  navigator.clipboard.writeText(premUrl).then(() => toast('Link Premiere copiado ✓'));
+  const linkEl = document.getElementById('ent-link-preview');
+  if(linkEl) linkEl.innerHTML = '<span style="color:var(--cyan);font-size:9px;letter-spacing:1px;display:block;margin-bottom:3px">ENTREGA</span>' + url
+    + '<span style="color:var(--gold);font-size:9px;letter-spacing:1px;display:block;margin:8px 0 3px">PREMIERE (copiado)</span>' + premUrl;
   renderEntregasList();
   ['ent-nombres','ent-fecha','ent-frase','ent-folder','ent-portada','ent-welcome-msg'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
   _entOverlay = 'violeta';
   document.querySelectorAll('.overlay-opt').forEach((el,i) => { const d=el.querySelector('div'); if(d) d.style.border = i===0 ? '2px solid var(--gold)' : '2px solid transparent'; });
-  document.getElementById('ent-link-preview').textContent = 'Completa los campos para generar el link';
   document.getElementById('ent-preview-btn').style.display = 'none';
 }
 const _ENT_COLORS = {'En edición':'#f5a623','Listo p/enviar':'#00d4e8','Enviado':'#7b2fd4','Entregado':'#4caf50','Con revisiones':'#e05555'};
