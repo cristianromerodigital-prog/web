@@ -668,10 +668,16 @@ function startFrases() {
 }
 function stopFrases() { clearInterval(_ft); }
 
+const _loadStart = Date.now();
+
 function hideLoading() {
-  const ls = document.getElementById('loading-screen');
-  ls.classList.add('hidden');
-  setTimeout(() => { ls.style.display = 'none'; showWelcome(); }, 700);
+  const remaining = Math.max(0, 4000 - (Date.now() - _loadStart));
+  setTimeout(() => {
+    showWelcome(); // welcome aparece primero, mientras loading aún está
+    const ls = document.getElementById('loading-screen');
+    ls.classList.add('hidden');
+    setTimeout(() => { ls.style.display = 'none'; }, 700);
+  }, remaining);
 }
 
 // ── WELCOME ──
