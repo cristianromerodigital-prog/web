@@ -382,7 +382,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.32</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.33</div>
     </div>
   </aside>
 
@@ -7056,8 +7056,13 @@ function editarEntrega(idx) {
 
 async function preIndexPremiere(ev) {
   if(!ev || !ev.folderId || !ev.slug) return;
-  let gasUrl = '';
-  try { const c = JSON.parse(localStorage.getItem('crd_contratos_cfg')); if(c && c.url) gasUrl = c.url; } catch(e) {}
+  let gasUrl = ctGetUrl();
+  if(!gasUrl) {
+    try {
+      const cfg = await fetchFromCloud('crd_contratos_cfg');
+      if(cfg && cfg.url) gasUrl = cfg.url;
+    } catch(e) {}
+  }
   if(!gasUrl) return;
 
   function _gasCall(params) {
