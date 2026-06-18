@@ -698,6 +698,7 @@ function showWelcome() {
     if(welcomeText) { msg.textContent = welcomeText; msg.style.display = 'block'; }
     else msg.style.display = 'none';
   }
+  if(p.get('showmsg')) alert('welcomeMsg: [' + (CFG.welcomeMsg||'VACÍO') + ']');
   ov.classList.add('visible');
   setTimeout(closeWelcome, 20000);
 }
@@ -797,12 +798,17 @@ async function init() {
   });
 
   // ── 1. Datos pre-indexados por el admin en CF KV (< 1s) ──
+  const slug = CFG.eventId || CFG.folderId;
+  const [indexRes, msgRes] = await Promise.all([
+    fetch(CONFIG.CF_URL + '/' + _cfIndexKey() + '?t=' + Date.now()).catch(()=>null),
+    fetch(CONFIG.CF_URL + '/crd_pm_msg_' + slug + '?t=' + Date.now()).catch(()=>null)
+  ]);
+  // Mensaje en key separada tiene máxima prioridad
+  try { if(msgRes && msgRes.ok) { const m = await msgRes.json(); if(m && m.msg) CFG.welcomeMsg = m.msg; } } catch(e) {}
   try {
-    const res = await fetch(CONFIG.CF_URL + '/' + _cfIndexKey() + '?t=' + Date.now());
-    if(res.ok) {
-      const data = await res.json();
+    if(indexRes && indexRes.ok) {
+      const data = await indexRes.json();
       if(data && data.photoRows) {
-        if(!CFG.welcomeMsg && data.welcomeMsg) CFG.welcomeMsg = data.welcomeMsg;
         applyStructure(data.photoRows, data.videoRows || []);
         stopFrases(); hideLoading(); return;
       }
