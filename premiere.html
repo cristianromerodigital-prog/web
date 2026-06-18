@@ -671,7 +671,7 @@ function stopFrases() { clearInterval(_ft); }
 const _loadStart = Date.now();
 
 function hideLoading() {
-  const remaining = Math.max(0, 4000 - (Date.now() - _loadStart));
+  const remaining = Math.max(0, 3000 - (Date.now() - _loadStart));
   setTimeout(() => {
     showWelcome(); // welcome aparece primero, mientras loading aún está
     const ls = document.getElementById('loading-screen');
