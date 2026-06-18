@@ -669,8 +669,8 @@ function showWelcome() {
   if(CFG.tipo)  parts.push(CFG.tipo);
   if(CFG.fecha) parts.push(CFG.fecha);
   if(m) m.textContent = parts.join(' · ');
-  // Mensaje personalizado desde crd_settings
-  const welcomeText = (window._premiereSettings || {}).premiereWelcomeMsg || '';
+  // Mensaje personalizado desde el evento (crd_entregas)
+  const welcomeText = CFG.welcomeMsg || '';
   if(msg) {
     if(welcomeText) { msg.textContent = welcomeText; msg.style.display = 'block'; }
     else msg.style.display = 'none';

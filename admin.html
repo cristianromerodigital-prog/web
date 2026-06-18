@@ -1253,11 +1253,6 @@ tr:hover td{background:rgba(255,255,255,0.02);}
             <div class="form-group"><label class="form-label">Sitio Web (URL completa)</label><input class="form-input" id="set-entrega-web" placeholder="https://cristian-romero-digital.pages.dev"></div>
           </div>
         </div>
-        <div class="settings-section" style="margin-top:24px">
-          <div class="settings-section-title">Premiere — Mensaje de bienvenida</div>
-          <p style="font-size:11px;color:var(--gray);margin-bottom:16px;letter-spacing:.5px">Aparece en la pantalla de bienvenida cuando el cliente abre su Premiere. Podés escribir un agradecimiento personalizado.</p>
-          <div class="form-group"><label class="form-label">Mensaje (opcional)</label><textarea class="form-input" id="set-premiere-welcome" rows="3" placeholder="Muchas gracias por confiar en nosotros. Fue un honor acompañarlos en este momento tan especial. ✦" style="resize:vertical;min-height:80px"></textarea></div>
-        </div>
           <div class="settings-section-title" style="margin-top:24px">EmailJS — Formulario de Contacto</div>
           <p style="font-size:12px;color:var(--gray2);margin-bottom:16px;line-height:1.6">Keys para el formulario de contacto del sitio público. Encontralas en emailjs.com → Account → API Keys.</p>
           <div class="form-group"><label class="form-label">Public Key</label><input class="form-input" id="set-emailjs-key" placeholder="odUJtdh1Z0U27ZkaN"></div>
@@ -2089,6 +2084,11 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           <div class="form-row">
             <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" id="ent-fecha" placeholder="13 Marzo 2026" oninput="updateEntregaPreview()"></div>
             <div class="form-group"><label class="form-label">Frase (opcional)</label><input class="form-input" id="ent-frase" placeholder="Una frase emotiva..." oninput="updateEntregaPreview()"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mensaje de bienvenida Premiere (opcional)</label>
+            <textarea class="form-input" id="ent-welcome-msg" rows="2" placeholder="Muchas gracias por confiar en nosotros. Fue un honor acompañarlos en este día tan especial. ✦" style="resize:vertical;min-height:64px"></textarea>
+            <p style="font-size:10px;color:var(--gray);margin-top:5px;letter-spacing:.5px">Aparece en la pantalla inicial cuando el cliente abre su Premiere.</p>
           </div>
           <div class="form-group">
             <label class="form-label">Carpeta de Drive (URL o ID)</label>
@@ -4234,7 +4234,6 @@ function loadSettings() {
   document.getElementById('set-instagram').value = s.instagram || '';
   document.getElementById('set-entrega-ig').value  = s.entregaIgUrl  || '';
   document.getElementById('set-entrega-web').value = s.entregaWebUrl || '';
-  document.getElementById('set-premiere-welcome').value = s.premiereWelcomeMsg || '';
   document.getElementById('set-emailjs-key').value      = s.emailjsKey            || '';
   document.getElementById('set-emailjs-service').value  = s.emailjsServiceId       || '';
   document.getElementById('set-emailjs-template').value = s.emailjsContactTemplate || '';
@@ -4283,7 +4282,6 @@ function saveSettings() {
     instagram:         document.getElementById('set-instagram').value.trim(),
     entregaIgUrl:      document.getElementById('set-entrega-ig').value.trim(),
     entregaWebUrl:     document.getElementById('set-entrega-web').value.trim(),
-    premiereWelcomeMsg: document.getElementById('set-premiere-welcome').value.trim(),
     emailjsKey:              (document.getElementById('set-emailjs-key')      || {}).value?.trim() || existing.emailjsKey || '',
     emailjsServiceId:        (document.getElementById('set-emailjs-service')  || {}).value?.trim() || existing.emailjsServiceId || '',
     emailjsContactTemplate:  (document.getElementById('set-emailjs-template') || {}).value?.trim() || existing.emailjsContactTemplate || '',
@@ -6738,6 +6736,10 @@ function buildEntregaUrl(ev) {
   const slug = ev.slug || [makeEntregaSlug(ev.nombres), parseFechaSlug(ev.fecha)].filter(Boolean).join('-') || ev.numId || ev.id;
   return 'https://cristianromeroproducciones.com.ar/entrega.html?id=' + encodeURIComponent(slug);
 }
+function buildPremiereUrl(ev) {
+  const slug = ev.slug || [makeEntregaSlug(ev.nombres), parseFechaSlug(ev.fecha)].filter(Boolean).join('-') || ev.numId || ev.id;
+  return 'https://cristianromeroproducciones.com.ar/premiere.html?id=' + encodeURIComponent(slug);
+}
 function updateEntregaPreview() {
   const raw = document.getElementById('ent-folder').value.trim();
   const fid = entFolderId(raw);
@@ -6747,7 +6749,9 @@ function updateEntregaPreview() {
   const prevBtn = document.getElementById('ent-preview-btn');
   if(!fid) { linkEl.textContent = 'Completa la carpeta de Drive para generar el link'; prevBtn.style.display='none'; return; }
   const url = buildEntregaUrl(ev);
-  linkEl.textContent = url;
+  const premUrl = buildPremiereUrl(ev);
+  linkEl.innerHTML = '<span style="color:var(--cyan);font-size:9px;letter-spacing:1px;display:block;margin-bottom:3px">ENTREGA</span>' + url
+    + '<span style="color:var(--gold);font-size:9px;letter-spacing:1px;display:block;margin:8px 0 3px">PREMIERE</span>' + premUrl;
   prevBtn.href = url; prevBtn.style.display = 'inline-flex';
 }
 function nextEntSysId() {
@@ -6827,7 +6831,7 @@ function guardarEntrega() {
   const nombres = document.getElementById('ent-nombres').value.trim() || 'Entrega';
   const tipo = document.getElementById('ent-tipo').value;
   const fecha = document.getElementById('ent-fecha').value.trim();
-  const ev = { id: 0, folderId: fid, nombres, slug: [makeEntregaSlug(nombres), parseFechaSlug(fecha)].filter(Boolean).join('-'), fecha, tipo, frase: document.getElementById('ent-frase').value.trim(), portadaId: document.getElementById('ent-portada').value.trim(), allowDownload: dlEl2 ? dlEl2.checked : true, overlay: _entOverlay, creado: new Date().toLocaleDateString('es-AR'), estado: 'En edición', notas: '' };
+  const ev = { id: 0, folderId: fid, nombres, slug: [makeEntregaSlug(nombres), parseFechaSlug(fecha)].filter(Boolean).join('-'), fecha, tipo, frase: document.getElementById('ent-frase').value.trim(), welcomeMsg: (document.getElementById('ent-welcome-msg')||{}).value?.trim() || '', portadaId: document.getElementById('ent-portada').value.trim(), allowDownload: dlEl2 ? dlEl2.checked : true, overlay: _entOverlay, creado: new Date().toLocaleDateString('es-AR'), estado: 'En edición', notas: '' };
   const entregas = getEntregas();
   if(_editingEntregaIdx >= 0 && entregas[_editingEntregaIdx]) {
     ev.id = entregas[_editingEntregaIdx].id;
@@ -6852,7 +6856,7 @@ function guardarEntrega() {
   const url = buildEntregaUrl(ev);
   navigator.clipboard.writeText(url).then(() => toast('Link copiado al portapapeles'));
   renderEntregasList();
-  ['ent-nombres','ent-fecha','ent-frase','ent-folder','ent-portada'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  ['ent-nombres','ent-fecha','ent-frase','ent-folder','ent-portada','ent-welcome-msg'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
   _entOverlay = 'violeta';
   document.querySelectorAll('.overlay-opt').forEach((el,i) => { const d=el.querySelector('div'); if(d) d.style.border = i===0 ? '2px solid var(--gold)' : '2px solid transparent'; });
   document.getElementById('ent-link-preview').textContent = 'Completa los campos para generar el link';
@@ -7015,11 +7019,13 @@ function editarEntrega(idx) {
   const ev = getEntregas()[idx];
   if(!ev) return;
   _editingEntregaIdx = idx;
-  document.getElementById('ent-nombres').value  = ev.nombres || '';
-  document.getElementById('ent-fecha').value    = ev.fecha   || '';
-  document.getElementById('ent-frase').value    = ev.frase   || '';
-  document.getElementById('ent-folder').value   = ev.folderId|| '';
-  document.getElementById('ent-portada').value  = ev.portadaId||'';
+  document.getElementById('ent-nombres').value  = ev.nombres    || '';
+  document.getElementById('ent-fecha').value    = ev.fecha      || '';
+  document.getElementById('ent-frase').value    = ev.frase      || '';
+  document.getElementById('ent-folder').value   = ev.folderId   || '';
+  document.getElementById('ent-portada').value  = ev.portadaId  || '';
+  const wmEl = document.getElementById('ent-welcome-msg');
+  if(wmEl) wmEl.value = ev.welcomeMsg || '';
   const dlEl = document.getElementById('ent-allow-dl');
   if(dlEl) dlEl.checked = ev.allowDownload !== false;
   // Set tipo
