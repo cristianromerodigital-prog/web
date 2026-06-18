@@ -622,7 +622,7 @@ function dlUrl(id)             { return `https://drive.google.com/uc?export=down
 function videoEmbedUrl(id)     { return `https://drive.google.com/file/d/${id}/preview`; }
 function driveFolderUrl(id)    { return `https://drive.google.com/drive/folders/${id}`; }
 
-function jsonp(url, ms=20000) {
+function jsonp(url, ms=10000) {
   return new Promise((resolve, reject) => {
     const cb = '__gcb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
     const s  = document.createElement('script');
@@ -709,6 +709,70 @@ function showError(msg) {
 }
 
 // ═══════════════════════════════════════════
+// DRIVE CACHE (localStorage + CF KV)
+// ═══════════════════════════════════════════
+const PM_CACHE_TTL = 20 * 60 * 60 * 1000; // 20 horas
+
+function _cacheKey() { return 'pm_dr_' + (CFG.eventId || CFG.folderId); }
+function _cfKey()    { return 'crd_pm_' + (CFG.eventId || CFG.folderId); }
+
+async function loadDriveCache() {
+  const key = _cacheKey();
+  // 1. localStorage (instantáneo)
+  try {
+    const raw = localStorage.getItem(key);
+    if(raw) {
+      const { data, ts } = JSON.parse(raw);
+      if(Date.now() - ts < PM_CACHE_TTL) return data;
+      localStorage.removeItem(key);
+    }
+  } catch(e) {}
+  // 2. CF KV (~300ms, cross-device)
+  try {
+    const res = await fetch(CONFIG.CF_URL + '/' + _cfKey() + '?t=' + Date.now());
+    if(res.ok) {
+      const data = await res.json();
+      if(data && data.photoRows && data.ts && Date.now() - data.ts < PM_CACHE_TTL) {
+        try { localStorage.setItem(key, JSON.stringify({ data, ts: data.ts })); } catch(e) {}
+        return data;
+      }
+    }
+  } catch(e) {}
+  return null;
+}
+
+function saveDriveCache(photoRows, videoRows) {
+  const data = { photoRows, videoRows, ts: Date.now() };
+  // localStorage
+  try { localStorage.setItem(_cacheKey(), JSON.stringify({ data, ts: data.ts })); } catch(e) {}
+  // CF KV (async, no bloquea)
+  fetch(CONFIG.CF_URL + '/' + _cfKey(), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'crd2025' },
+    body: JSON.stringify(data)
+  }).catch(() => {});
+}
+
+function applyStructure(photoRows, videoRows) {
+  if(!CFG.portadaId && photoRows.length > 0 && photoRows[0].items.length > 0) {
+    document.getElementById('hero-bg').style.backgroundImage = `url('${thumbUrl(photoRows[0].items[0].id, 1400)}')`;
+  }
+  const totalPhotos = photoRows.reduce((s,r) => s+r.items.length, 0);
+  const totalVideos = videoRows.reduce((s,r) => s+r.items.length, 0);
+  updateHeroStats(totalPhotos, totalVideos);
+  if(videoRows.length > 0 && videoRows[0].items.length > 0) {
+    const v = videoRows[0].items[0];
+    firstVideoEmbed = videoEmbedUrl(v.id);
+    firstVideoDl    = dlUrl(v.id);
+    firstVideoTitle = v.name.replace(/\.[^.]+$/,'');
+    const pb = document.getElementById('btn-hero-play');
+    pb.style.display = 'inline-flex';
+    pb.onclick = () => openVm(firstVideoEmbed, firstVideoTitle, firstVideoDl);
+  }
+  renderRows(photoRows, videoRows);
+}
+
+// ═══════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════
 async function init() {
@@ -734,12 +798,10 @@ async function init() {
   applyConfig();
 
   if(!CFG.folderId) { showError('Sin carpeta especificada. Contactá al fotógrafo.'); stopFrases(); return; }
-  if(!GAS_URL)      { showError('Sin conexión con el servidor. Contactá al fotógrafo.'); stopFrases(); return; }
 
   rootFolderId = CFG.folderId;
 
-  const drivePromise = gasRetry({ action:'getDriveFolder', folder:CFG.folderId });
-
+  // ── Aplicar settings (logo, social) en paralelo ──
   fetchSett.then(raw => {
     if(!raw) return;
     try {
@@ -760,8 +822,20 @@ async function init() {
     } catch(e) {}
   });
 
+  // ── Caché primero — si existe no hay llamadas GAS ──
+  const cached = await loadDriveCache();
+  if(cached) {
+    applyStructure(cached.photoRows, cached.videoRows);
+    stopFrases();
+    hideLoading();
+    return;
+  }
+
+  // ── Sin caché: cargar desde GAS ──
+  if(!GAS_URL) { showError('Sin conexión con el servidor. Contactá al fotógrafo.'); stopFrases(); return; }
+
   try {
-    const root = await drivePromise;
+    const root = await gasRetry({ action:'getDriveFolder', folder:CFG.folderId });
     if(root.error) { showError('Error al cargar: ' + root.error); stopFrases(); return; }
     await buildStructure(root);
   } catch(err) {
@@ -895,27 +969,9 @@ async function buildStructure(rootItems) {
     }
   }
 
-  // Auto hero bg from first photo if no portada
-  if(!CFG.portadaId && photoRows.length > 0 && photoRows[0].items.length > 0) {
-    document.getElementById('hero-bg').style.backgroundImage = `url('${thumbUrl(photoRows[0].items[0].id, 1400)}')`;
-  }
-
-  const totalPhotos = photoRows.reduce((s,r) => s+r.items.length, 0);
-  const totalVideos = videoRows.reduce((s,r) => s+r.items.length, 0);
-  updateHeroStats(totalPhotos, totalVideos);
-
-  // Wire hero "Ver primer video" button
-  if(videoRows.length > 0 && videoRows[0].items.length > 0) {
-    const v = videoRows[0].items[0];
-    firstVideoEmbed = videoEmbedUrl(v.id);
-    firstVideoDl    = dlUrl(v.id);
-    firstVideoTitle = v.name.replace(/\.[^.]+$/,'');
-    const pb = document.getElementById('btn-hero-play');
-    pb.style.display = 'inline-flex';
-    pb.onclick = () => openVm(firstVideoEmbed, firstVideoTitle, firstVideoDl);
-  }
-
-  renderRows(photoRows, videoRows);
+  // Guardar en caché y renderizar
+  saveDriveCache(photoRows, videoRows);
+  applyStructure(photoRows, videoRows);
 }
 
 // ═══════════════════════════════════════════

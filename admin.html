@@ -382,7 +382,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.27</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.28</div>
     </div>
   </aside>
 
@@ -6924,7 +6924,8 @@ function renderEntregasList() {
           +'<button onclick="navigator.clipboard.writeText(\''+safeUrl+'\').then(()=>toast(\'Link copiado\'))" class="btn-sm" style="font-size:10px">Copiar link</button>'
           +'<a href="'+url+'" target="_blank" class="btn-sm" style="font-size:10px">Abrir</a>'
           +'<button onclick="editarEntrega('+realIdx+')" class="btn-sm" style="font-size:10px">Editar</button>'
-          +'<button onclick="guardarMsgPremiere('+realIdx+')" class="btn-sm" style="font-size:10px;color:var(--gold);border-color:rgba(201,168,76,.35)">✦ Msg Premiere</button>'
+          +'<button onclick="guardarMsgPremiere('+realIdx+')" class="btn-sm" style="font-size:10px;color:var(--gold);border-color:rgba(201,168,76,.35)">✦ Msg</button>'
+          +'<button onclick="limpiarCachePremiere(\''+ev.slug+'\')" class="btn-sm" style="font-size:10px;color:var(--cyan);border-color:rgba(0,212,232,.3)" title="Limpiar caché Drive de premiere">⟳ Caché</button>'
           +'<button onclick="eliminarEntrega('+realIdx+')" class="btn-sm" style="font-size:10px;color:var(--red);border-color:rgba(224,85,85,.3)">Eliminar</button>'
         +'</div>'
       +'</div>'
@@ -7050,6 +7051,18 @@ function editarEntrega(idx) {
   updateEntregaPreview();
   document.querySelector('#page-entregas .settings-section').scrollIntoView({ behavior:'smooth' });
   toast('Entrega cargada — modificá y guardá');
+}
+
+async function limpiarCachePremiere(slug) {
+  if(!slug) return;
+  try {
+    await fetch(CONFIG.CF_URL + '/crd_pm_' + slug, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': CONFIG.CF_AUTH },
+      body: 'null'
+    });
+    toast('Caché premiere eliminado — próxima visita recarga desde Drive ✓');
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
 }
 
 async function guardarMsgPremiere(idx) {
