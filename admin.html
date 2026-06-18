@@ -382,7 +382,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.26</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.27</div>
     </div>
   </aside>
 
@@ -6924,6 +6924,7 @@ function renderEntregasList() {
           +'<button onclick="navigator.clipboard.writeText(\''+safeUrl+'\').then(()=>toast(\'Link copiado\'))" class="btn-sm" style="font-size:10px">Copiar link</button>'
           +'<a href="'+url+'" target="_blank" class="btn-sm" style="font-size:10px">Abrir</a>'
           +'<button onclick="editarEntrega('+realIdx+')" class="btn-sm" style="font-size:10px">Editar</button>'
+          +'<button onclick="guardarMsgPremiere('+realIdx+')" class="btn-sm" style="font-size:10px;color:var(--gold);border-color:rgba(201,168,76,.35)">✦ Msg Premiere</button>'
           +'<button onclick="eliminarEntrega('+realIdx+')" class="btn-sm" style="font-size:10px;color:var(--red);border-color:rgba(224,85,85,.3)">Eliminar</button>'
         +'</div>'
       +'</div>'
@@ -7049,6 +7050,31 @@ function editarEntrega(idx) {
   updateEntregaPreview();
   document.querySelector('#page-entregas .settings-section').scrollIntoView({ behavior:'smooth' });
   toast('Entrega cargada — modificá y guardá');
+}
+
+async function guardarMsgPremiere(idx) {
+  const entregas = getEntregas();
+  const ev = entregas[idx];
+  if(!ev) return;
+  const msg = prompt('Mensaje de bienvenida Premiere para ' + ev.nombres + ':\n(Dejá vacío para quitar el mensaje)', ev.welcomeMsg || '');
+  if(msg === null) return;
+  entregas[idx].welcomeMsg = msg.trim();
+  // Guardar en localStorage
+  const str = JSON.stringify(entregas);
+  localStorage.setItem('crd_entregas', str);
+  // Sync directo a CF KV
+  try {
+    const res = await fetch(CONFIG.CF_URL + '/crd_entregas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': CONFIG.CF_AUTH },
+      body: str
+    });
+    if(res.ok) { toast('Mensaje Premiere guardado ✓'); }
+    else        { toast('Error al sincronizar — intentá de nuevo', 'error'); }
+  } catch(e) {
+    toast('Error de red: ' + e.message, 'error');
+  }
+  renderEntregasList();
 }
 
 function eliminarEntrega(idx) {
