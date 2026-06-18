@@ -799,21 +799,48 @@ async function init() {
 
   // ── 1. Datos pre-indexados por el admin en CF KV (< 1s) ──
   const slug = CFG.eventId || CFG.folderId;
+  const _dbg = p.get('debug') === '1';
+  const _dbgLog = [];
+
   const [indexRes, msgRes] = await Promise.all([
-    fetch(CONFIG.CF_URL + '/' + _cfIndexKey() + '?t=' + Date.now()).catch(()=>null),
-    fetch(CONFIG.CF_URL + '/crd_pm_msg_' + slug + '?t=' + Date.now()).catch(()=>null)
+    fetch(CONFIG.CF_URL + '/' + _cfIndexKey() + '?t=' + Date.now()).catch(e=>{ _dbgLog.push('indexFetch ERR: '+e.message); return null; }),
+    fetch(CONFIG.CF_URL + '/crd_pm_msg_' + slug + '?t=' + Date.now()).catch(e=>{ _dbgLog.push('msgFetch ERR: '+e.message); return null; })
   ]);
+
   // Mensaje en key separada tiene máxima prioridad
-  try { if(msgRes && msgRes.ok) { const m = await msgRes.json(); if(m && m.msg) CFG.welcomeMsg = m.msg; } } catch(e) {}
+  let msgFromKey = '';
+  try {
+    if(msgRes && msgRes.ok) {
+      const m = await msgRes.json();
+      if(m && m.msg) { CFG.welcomeMsg = m.msg; msgFromKey = m.msg; }
+      _dbgLog.push('msgKey OK: ' + (m?.msg ? m.msg.substring(0,30) : 'vacío'));
+    } else {
+      _dbgLog.push('msgKey status: ' + (msgRes?.status || 'null'));
+    }
+  } catch(e) { _dbgLog.push('msgKey parse ERR: '+e.message); }
+
   try {
     if(indexRes && indexRes.ok) {
       const data = await indexRes.json();
+      _dbgLog.push('index OK, photoRows: ' + (data?.photoRows?.length || 0));
+      _dbgLog.push('index.welcomeMsg: ' + (data?.welcomeMsg?.substring(0,30) || 'no tiene'));
+      _dbgLog.push('CFG.welcomeMsg final: ' + (CFG.welcomeMsg?.substring(0,30) || 'vacío'));
+      if(_dbg) {
+        showError('<b>DEBUG</b><br>' + _dbgLog.map(l=>'• '+l).join('<br>'));
+        return;
+      }
       if(data && data.photoRows) {
         applyStructure(data.photoRows, data.videoRows || []);
         stopFrases(); hideLoading(); return;
       }
+    } else {
+      _dbgLog.push('index status: ' + (indexRes?.status || 'null'));
+      if(_dbg) { showError('<b>DEBUG</b><br>' + _dbgLog.map(l=>'• '+l).join('<br>')); return; }
     }
-  } catch(e) {}
+  } catch(e) {
+    _dbgLog.push('index parse ERR: '+e.message);
+    if(_dbg) { showError('<b>DEBUG</b><br>' + _dbgLog.map(l=>'• '+l).join('<br>')); return; }
+  }
 
   // ── 2. Fallback: cargar desde GAS (admin no indexó aún) ──
   if(!GAS_URL) { showError('Sin conexión con el servidor. Contactá al fotógrafo.'); stopFrases(); return; }
