@@ -382,7 +382,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.29</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.30</div>
     </div>
   </aside>
 
@@ -6853,8 +6853,8 @@ function guardarEntrega() {
     entregas.unshift(ev);
   }
   setEntregas(entregas);
-  // Limpiar caché premiere para forzar recarga desde Drive
-  if(ev.slug) fetch(CONFIG.CF_URL + '/crd_pm_' + ev.slug, { method:'POST', headers:{'Content-Type':'application/json','Authorization':CONFIG.CF_AUTH}, body:'null' }).catch(()=>{});
+  // Indexar estructura Drive en CF KV para que premiere cargue instantáneo
+  preIndexPremiere(ev);
   const url     = buildEntregaUrl(ev);
   const premUrl = buildPremiereUrl(ev);
   navigator.clipboard.writeText(premUrl).then(() => toast('Link Premiere copiado ✓'));
@@ -7054,16 +7054,81 @@ function editarEntrega(idx) {
   toast('Entrega cargada — modificá y guardá');
 }
 
-async function limpiarCachePremiere(slug) {
-  if(!slug) return;
-  try {
-    await fetch(CONFIG.CF_URL + '/crd_pm_' + slug, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': CONFIG.CF_AUTH },
-      body: 'null'
+async function preIndexPremiere(ev) {
+  if(!ev || !ev.folderId || !ev.slug) return;
+  let gasUrl = '';
+  try { const c = JSON.parse(localStorage.getItem('crd_contratos_cfg')); if(c && c.url) gasUrl = c.url; } catch(e) {}
+  if(!gasUrl) return;
+
+  function _gasCall(params) {
+    const q = Object.entries(params).map(([k,v]) => k+'='+encodeURIComponent(v)).join('&');
+    return new Promise((res, rej) => {
+      const cb = '__pmidx_' + Date.now();
+      const s  = document.createElement('script');
+      let done = false;
+      const t  = setTimeout(() => { if(!done) { done=true; rej(new Error('timeout')); } }, 15000);
+      window[cb] = d => { clearTimeout(t); done=true; if(s.parentNode) s.remove(); res(d); };
+      s.onerror  = () => { clearTimeout(t); done=true; if(s.parentNode) s.remove(); rej(new Error('red')); };
+      s.src = gasUrl + '?' + q + '&callback=' + cb;
+      document.head.appendChild(s);
     });
-    toast('Caché premiere eliminado — próxima visita recarga desde Drive ✓');
-  } catch(e) { toast('Error: ' + e.message, 'error'); }
+  }
+
+  const sortN = arr => arr.slice().sort((a,b) => a.name.localeCompare(b.name, undefined, {numeric:true, sensitivity:'base'}));
+
+  try {
+    const root = await _gasCall({ action:'getDriveFolder', folder:ev.folderId });
+    if(!root || root.error) return;
+
+    const roots = root.filter(item => {
+      if(item.type !== 'folder') return false;
+      const nl = item.name.toLowerCase();
+      return nl.includes('foto') || nl.includes('photo') || nl.includes('image') ||
+             nl.includes('video') || nl.includes('clip') || nl.includes('film');
+    });
+
+    const subResults = await Promise.all(roots.map(r => _gasCall({ action:'getDriveFolder', folder:r.id }).catch(()=>[])));
+    const photoRows = [], videoRows = [];
+
+    for(let ri=0; ri<roots.length; ri++) {
+      const item = roots[ri], sub = subResults[ri]||[];
+      const nl = item.name.toLowerCase();
+      const isPhoto = nl.includes('foto')||nl.includes('photo')||nl.includes('image');
+      const isVideo = nl.includes('video')||nl.includes('clip')||nl.includes('film');
+
+      if(isPhoto) {
+        const subs = sub.filter(i=>i.type==='folder'), imgs = sub.filter(i=>i.type==='image');
+        if(subs.length > 0) {
+          const sfr = await Promise.all(subs.map(sf => _gasCall({ action:'getDriveFolder', folder:sf.id }).catch(()=>[])));
+          for(let si=0; si<subs.length; si++) {
+            const photos = sortN((sfr[si]||[]).filter(i=>i.type==='image'));
+            if(photos.length) photoRows.push({ label:subs[si].name, folderId:subs[si].id, items:photos });
+          }
+          if(imgs.length) photoRows.push({ label:'General', folderId:item.id, items:sortN(imgs) });
+        } else { if(imgs.length) photoRows.push({ label:item.name, folderId:item.id, items:sortN(imgs) }); }
+      } else if(isVideo) {
+        const subs = sub.filter(i=>i.type==='folder'), vids = sub.filter(i=>i.type==='video');
+        if(subs.length > 0) {
+          const sfr = await Promise.all(subs.map(sf => _gasCall({ action:'getDriveFolder', folder:sf.id }).catch(()=>[])));
+          for(let si=0; si<subs.length; si++) {
+            const videos = (sfr[si]||[]).filter(i=>i.type==='video');
+            if(videos.length) videoRows.push({ label:subs[si].name, folderId:subs[si].id, items:videos });
+          }
+          if(vids.length) videoRows.push({ label:item.name, folderId:item.id, items:vids });
+        } else { if(vids.length) videoRows.push({ label:item.name, folderId:item.id, items:vids }); }
+      }
+    }
+
+    const total = photoRows.reduce((s,r)=>s+r.items.length,0) + videoRows.reduce((s,r)=>s+r.items.length,0);
+    await fetch(CONFIG.CF_URL + '/crd_pm_' + ev.slug, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':CONFIG.CF_AUTH},
+      body: JSON.stringify({ photoRows, videoRows, ts:Date.now(), nombres:ev.nombres })
+    });
+    console.log('[Premiere] Indexado ✓ ' + total + ' archivos para ' + ev.nombres);
+  } catch(e) {
+    console.log('[Premiere] preIndex falló (no crítico):', e.message);
+  }
 }
 
 async function guardarMsgPremiere(idx) {

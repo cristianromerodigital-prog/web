@@ -709,47 +709,15 @@ function showError(msg) {
 }
 
 // ═══════════════════════════════════════════
-// DRIVE CACHE (localStorage + CF KV)
+// DRIVE INDEX (CF KV — indexado por el admin al guardar)
 // ═══════════════════════════════════════════
-const PM_CACHE_TTL = 20 * 60 * 60 * 1000; // 20 horas
+function _cfIndexKey() { return 'crd_pm_' + (CFG.eventId || CFG.folderId); }
 
-function _cacheKey() { return 'pm_dr_' + (CFG.eventId || CFG.folderId); }
-function _cfKey()    { return 'crd_pm_' + (CFG.eventId || CFG.folderId); }
-
-async function loadDriveCache() {
-  const key = _cacheKey();
-  // 1. localStorage (instantáneo)
-  try {
-    const raw = localStorage.getItem(key);
-    if(raw) {
-      const { data, ts } = JSON.parse(raw);
-      if(Date.now() - ts < PM_CACHE_TTL) return data;
-      localStorage.removeItem(key);
-    }
-  } catch(e) {}
-  // 2. CF KV (~300ms, cross-device)
-  try {
-    const res = await fetch(CONFIG.CF_URL + '/' + _cfKey() + '?t=' + Date.now());
-    if(res.ok) {
-      const data = await res.json();
-      if(data && data.photoRows && data.ts && Date.now() - data.ts < PM_CACHE_TTL) {
-        try { localStorage.setItem(key, JSON.stringify({ data, ts: data.ts })); } catch(e) {}
-        return data;
-      }
-    }
-  } catch(e) {}
-  return null;
-}
-
-function saveDriveCache(photoRows, videoRows) {
-  const data = { photoRows, videoRows, ts: Date.now() };
-  // localStorage
-  try { localStorage.setItem(_cacheKey(), JSON.stringify({ data, ts: data.ts })); } catch(e) {}
-  // CF KV (async, no bloquea)
-  fetch(CONFIG.CF_URL + '/' + _cfKey(), {
+function saveIndexToCF(photoRows, videoRows) {
+  fetch(CONFIG.CF_URL + '/' + _cfIndexKey(), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': 'crd2025' },
-    body: JSON.stringify(data)
+    body: JSON.stringify({ photoRows, videoRows, ts: Date.now() })
   }).catch(() => {});
 }
 
@@ -822,16 +790,19 @@ async function init() {
     } catch(e) {}
   });
 
-  // ── Caché primero — si existe no hay llamadas GAS ──
-  const cached = await loadDriveCache();
-  if(cached) {
-    applyStructure(cached.photoRows, cached.videoRows);
-    stopFrases();
-    hideLoading();
-    return;
-  }
+  // ── 1. Datos pre-indexados por el admin en CF KV (< 1s) ──
+  try {
+    const res = await fetch(CONFIG.CF_URL + '/' + _cfIndexKey() + '?t=' + Date.now());
+    if(res.ok) {
+      const data = await res.json();
+      if(data && data.photoRows) {
+        applyStructure(data.photoRows, data.videoRows || []);
+        stopFrases(); hideLoading(); return;
+      }
+    }
+  } catch(e) {}
 
-  // ── Sin caché: cargar desde GAS ──
+  // ── 2. Fallback: cargar desde GAS (admin no indexó aún) ──
   if(!GAS_URL) { showError('Sin conexión con el servidor. Contactá al fotógrafo.'); stopFrases(); return; }
 
   try {
@@ -969,8 +940,8 @@ async function buildStructure(rootItems) {
     }
   }
 
-  // Guardar en caché y renderizar
-  saveDriveCache(photoRows, videoRows);
+  // Guardar en CF KV para próximas visitas y renderizar
+  saveIndexToCF(photoRows, videoRows);
   applyStructure(photoRows, videoRows);
 }
 
