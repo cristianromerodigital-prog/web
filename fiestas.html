@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='143';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='144';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -112,12 +112,12 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
 .tv-queue-item.empty { height:80px; }
 .tv-queue-item.empty img { opacity:0; }
 #tv-right { width:clamp(180px,19vw,260px); flex-shrink:0; overflow:hidden; }
-#tv-feed-inner { display:flex; flex-direction:column; gap:10px; padding:12px 10px; overflow:hidden; height:100%; }
+#tv-feed-inner { display:flex; flex-direction:column; padding:12px 10px; overflow:hidden; height:100%; }
+.tv-feed-wrapper { overflow:hidden; max-height:160px; margin-bottom:10px; transition:max-height .45s ease, margin-bottom .45s ease; }
+.tv-feed-wrapper.collapsing { max-height:0; margin-bottom:0; }
 .tv-feed-item { padding:12px 14px; border-radius:2px; font-size:clamp(11px,1.1vw,14px); line-height:1.6; color:#1a1a1a; font-weight:600; box-shadow:3px 4px 12px rgba(0,0,0,.5); animation:tv-postit-in .5s cubic-bezier(.16,1,.3,1) forwards; opacity:0; }
-.tv-feed-item.tv-feed-out { animation:tv-postit-out .45s ease forwards !important; }
 .tv-feed-nombre { font-size:clamp(9px,.9vw,11px); font-weight:700; letter-spacing:.05em; color:rgba(0,0,0,.45); margin-bottom:5px; }
 @keyframes tv-postit-in { from{opacity:0;transform:translateY(18px) rotate(var(--r))} to{opacity:1;transform:translateY(0) rotate(var(--r))} }
-@keyframes tv-postit-out { from{opacity:1;transform:translateY(0) rotate(var(--r))} to{opacity:0;transform:translateY(-18px) rotate(var(--r))} }
 #tv-ranking-bar { height:68px; border-top:1px solid rgba(255,255,255,.06); display:flex; align-items:center; padding:0 28px; flex-shrink:0; gap:0; }
 .tv-rank-label { font-size:9px; letter-spacing:.45em; text-transform:uppercase; color:rgba(255,255,255,.22); margin-right:28px; white-space:nowrap; }
 #tv-ranking-inner { display:flex; align-items:center; gap:28px; }
@@ -531,18 +531,18 @@ function renderTVFeed() {
   _feedColorIdx = 0;
   const initial = Math.min(8, allItems.length);
   for (let i = 0; i < initial; i++) {
-    const item = makeFeedItem(allItems[_feedPointer], _feedColorIdx);
-    item.style.animationDelay = (i * .1) + 's';
-    el.appendChild(item);
+    const wrapper = makeFeedItem(allItems[_feedPointer], _feedColorIdx);
+    wrapper.querySelector('.tv-feed-item').style.animationDelay = (i * .1) + 's';
+    el.appendChild(wrapper);
     _feedPointer = (_feedPointer + 1) % allItems.length;
     _feedColorIdx++;
   }
   if (allItems.length < 2) return;
   _feedTimer = setInterval(() => {
-    const visible = el.querySelectorAll('.tv-feed-item:not(.tv-feed-out)');
-    if (!visible.length) return;
-    const first = visible[0];
-    first.classList.add('tv-feed-out');
+    const wrappers = el.querySelectorAll('.tv-feed-wrapper:not(.collapsing)');
+    if (!wrappers.length) return;
+    const first = wrappers[0];
+    first.classList.add('collapsing');
     const newItem = makeFeedItem(allItems[_feedPointer], _feedColorIdx);
     _feedPointer = (_feedPointer + 1) % allItems.length;
     _feedColorIdx++;
@@ -552,6 +552,8 @@ function renderTVFeed() {
 }
 
 function makeFeedItem(f, colorIdx) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'tv-feed-wrapper';
   const div = document.createElement('div');
   div.className = 'tv-feed-item';
   div.style.cssText = `background:${_FEED_COLORS[colorIdx % _FEED_COLORS.length]};--r:${_FEED_ROTS[colorIdx % _FEED_ROTS.length]}`;
@@ -562,7 +564,8 @@ function makeFeedItem(f, colorIdx) {
     div.appendChild(label);
   }
   div.appendChild(document.createTextNode(f.texto));
-  return div;
+  wrapper.appendChild(div);
+  return wrapper;
 }
 
 function showCurrentTV() {
