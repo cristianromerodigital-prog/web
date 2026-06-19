@@ -379,7 +379,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.35</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.36</div>
     </div>
   </aside>
 
@@ -2688,7 +2688,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 const CONFIG = {
   CF_URL:             'https://web.cristian-romero-digital.workers.dev',
   CRCLUB_URL:         'https://crclub-worker.cristian-romero-digital.workers.dev',
-  CF_AUTH:            'crd2025',
+  CF_AUTH:            '',
   CLOUDINARY_CLOUD:   'dqpu3yurj',
   CLOUDINARY_PRESET:  'crd_portfolio',
   LOCALE:             'es-AR',
@@ -3159,6 +3159,10 @@ async function doLogin() {
       document.getElementById('login-pass').value = '';
     } else {
       localStorage.setItem('crd_admin_jwt', data.token);
+      if (data.cf_auth) {
+        CONFIG.CF_AUTH = data.cf_auth;
+        sessionStorage.setItem('crd_cf_auth', data.cf_auth);
+      }
       document.getElementById('login-screen').style.display='none';
       document.getElementById('app').classList.add('visible');
       init();
@@ -3187,6 +3191,8 @@ async function doLogin() {
 
 function doLogout() {
   localStorage.removeItem('crd_admin_jwt');
+  sessionStorage.removeItem('crd_cf_auth');
+  CONFIG.CF_AUTH = '';
   document.getElementById('app').classList.remove('visible');
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('login-pass').value='';
@@ -3200,6 +3206,8 @@ function doLogout() {
     try {
       const payload = JSON.parse(atob(jwt.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
       if (payload.exp && payload.exp > Math.floor(Date.now() / 1000)) {
+        const cfAuth = sessionStorage.getItem('crd_cf_auth');
+        if (cfAuth) CONFIG.CF_AUTH = cfAuth;
         document.getElementById('login-screen').style.display='none';
         document.getElementById('app').classList.add('visible');
         document.addEventListener('DOMContentLoaded', init);
