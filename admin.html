@@ -292,9 +292,6 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     </div>
     <button class="login-btn" onclick="doLogin()">Ingresar</button>
     <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
-    <div style="margin-top:20px;text-align:center">
-      <button onclick="resetCredentials()" style="font-size:10px;color:rgba(255,255,255,0.25);background:none;border:none;cursor:pointer;letter-spacing:1px;text-decoration:underline">Restablecer credenciales</button>
-    </div>
   </div>
 </div>
 
@@ -382,7 +379,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.34</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.35</div>
     </div>
   </aside>
 
@@ -2692,8 +2689,6 @@ const CONFIG = {
   CF_URL:             'https://web.cristian-romero-digital.workers.dev',
   CRCLUB_URL:         'https://crclub-worker.cristian-romero-digital.workers.dev',
   CF_AUTH:            'crd2025',
-  DEFAULT_USER:       'admin',
-  DEFAULT_PASS:       'crd2025',
   CLOUDINARY_CLOUD:   'dqpu3yurj',
   CLOUDINARY_PRESET:  'crd_portfolio',
   LOCALE:             'es-AR',
@@ -2704,13 +2699,18 @@ const CONFIG = {
 
 // ── CR CLUB ──
 
+function getAdminJWT() {
+  return localStorage.getItem('crd_admin_jwt') || '';
+}
+
 async function crclubApi(path, method = 'GET', body = null) {
   const opts = {
     method,
-    headers: { 'Authorization': `Bearer ${CONFIG.CF_AUTH}`, 'Content-Type': 'application/json' }
+    headers: { 'Authorization': `Bearer ${getAdminJWT()}`, 'Content-Type': 'application/json' }
   };
   if (body) opts.body = JSON.stringify(body);
   const r = await fetch(CONFIG.CRCLUB_URL + path, opts);
+  if (r.status === 401) { doLogout(); return {}; }
   return r.json();
 }
 
@@ -2993,7 +2993,7 @@ async function crclubLoadRewards() {
   tbody.innerHTML = '<tr><td colspan="6" style="padding:20px;text-align:center;color:var(--gray2);font-size:12px">Cargando...</td></tr>';
   try {
     const d = await fetch(CONFIG.CRCLUB_URL + '/crclub/admin/rewards', {
-      headers: { Authorization: 'Bearer ' + CONFIG.CF_AUTH }
+      headers: { Authorization: 'Bearer ' + getAdminJWT() }
     }).then(r => r.json());
     const rewards = d.rewards || [];
     document.getElementById('crclub-rewards-count').textContent = rewards.length + ' recompensa' + (rewards.length !== 1 ? 's' : '');
@@ -3074,7 +3074,7 @@ async function crclubSaveReward() {
       : CONFIG.CRCLUB_URL + '/crclub/admin/rewards';
     const r = await fetch(url, {
       method: id ? 'PUT' : 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + CONFIG.CF_AUTH },
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getAdminJWT() },
       body: JSON.stringify(payload)
     }).then(r => r.json());
     if (r.ok) {
@@ -3102,7 +3102,7 @@ async function crclubDeleteReward(id, name) {
   try {
     const r = await fetch(CONFIG.CRCLUB_URL + '/crclub/admin/rewards/' + id, {
       method: 'DELETE',
-      headers: { Authorization: 'Bearer ' + CONFIG.CF_AUTH }
+      headers: { Authorization: 'Bearer ' + getAdminJWT() }
     }).then(r => r.json());
     if (r.ok) crclubLoadRewards();
     else alert('Error: ' + (r.error || 'No se pudo eliminar'));
@@ -3110,7 +3110,7 @@ async function crclubDeleteReward(id, name) {
 }
 
 // ── CLOUDFLARE SYNC ──
-const CF_SYNC_KEYS = ["crd_portfolio","crd_testimonials","crd_posts","crd_settings","crd_content","crd_site_photos","crd_hero_video_url","crd_invites","crd_messages","crd_inv_base","crd_admin_creds","crd_presupuesto","crd_presupuesto_boda","crd_editable","crd_opcionales","crd_entregas","crd_pedidos","crd_contratos_cfg","crd_site_logo"];
+const CF_SYNC_KEYS = ["crd_portfolio","crd_testimonials","crd_posts","crd_settings","crd_content","crd_site_photos","crd_hero_video_url","crd_invites","crd_messages","crd_inv_base","crd_presupuesto","crd_presupuesto_boda","crd_editable","crd_opcionales","crd_entregas","crd_pedidos","crd_contratos_cfg","crd_site_logo"];
 
 async function syncToCloud(key, value) {
   if (!CF_SYNC_KEYS.includes(key)) return;
@@ -3141,29 +3141,35 @@ const S = {
 };
 
 // ── AUTH ──
-const CREDS_KEY = 'crd_admin_creds';
-function getCreds() {
-  try {
-    const stored = S.get(CREDS_KEY);
-    if (stored && stored.user && stored.pass) return stored;
-  } catch(e) {}
-  return { user: CONFIG.DEFAULT_USER, pass: CONFIG.DEFAULT_PASS };
-}
-
-function doLogin() {
+async function doLogin() {
   const u = document.getElementById('login-user').value.trim();
   const p = document.getElementById('login-pass').value;
-  const creds = getCreds();
-  if (u === creds.user && p === creds.pass) {
-    S.set('crd_session', Date.now());
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('app').classList.add('visible');
-    init();
-  } else {
-    const err=document.getElementById('login-error'); if(err){err.style.display='block'; err.textContent='Usuario o contraseña incorrectos.';}
-    document.getElementById('login-pass').value='';
+  const btn = document.querySelector('.login-btn');
+  const err = document.getElementById('login-error');
+  if (btn) btn.disabled = true;
+  try {
+    const res = await fetch(CONFIG.CRCLUB_URL + '/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user: u, pass: p })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.token) {
+      if (err) { err.style.display='block'; err.textContent = data.error || 'Usuario o contraseña incorrectos.'; }
+      document.getElementById('login-pass').value = '';
+    } else {
+      localStorage.setItem('crd_admin_jwt', data.token);
+      document.getElementById('login-screen').style.display='none';
+      document.getElementById('app').classList.add('visible');
+      init();
+    }
+  } catch(e) {
+    if (err) { err.style.display='block'; err.textContent='Error de conexión. Intentá de nuevo.'; }
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
+
 // login listeners — wrapped so DOM is ready
 (function() {
   function attachLoginListeners() {
@@ -3179,36 +3185,26 @@ function doLogin() {
   }
 })();
 
-function resetCredentials() {
-  if (confirm(`¿Restablecer usuario y contraseña a los valores por defecto?\n\nUsuario: ${CONFIG.DEFAULT_USER}\nContraseña: ${CONFIG.DEFAULT_PASS}`)) {
-    localStorage.removeItem('crd_admin_creds');
-    localStorage.removeItem('crd_session');
-    syncToCloud('crd_admin_creds', 'null');
-    document.getElementById('login-user').value = CONFIG.DEFAULT_USER;
-    document.getElementById('login-pass').value = '';
-    document.getElementById('login-error').style.display = 'none';
-    alert(`Credenciales restablecidas.\nUsuario: ${CONFIG.DEFAULT_USER}\nContraseña: ${CONFIG.DEFAULT_PASS}`);
-  }
-}
-
 function doLogout() {
-  S.set('crd_session', null);
+  localStorage.removeItem('crd_admin_jwt');
   document.getElementById('app').classList.remove('visible');
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('login-pass').value='';
   document.getElementById('login-error').style.display='none';
 }
 
-// Check session — load creds from cloud first if missing
-(async () => {
-  if (!S.get('crd_admin_creds')) {
-    const cloud = await fetchFromCloud('crd_admin_creds');
-    if (cloud && cloud.user && cloud.pass) S.set('crd_admin_creds', cloud);
-  }
-  if (S.get('crd_session') && (Date.now() - S.get('crd_session')) < 8*60*60*1000) {
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('app').classList.add('visible');
-    document.addEventListener('DOMContentLoaded', init);
+// Check session via JWT expiry
+(function() {
+  const jwt = localStorage.getItem('crd_admin_jwt');
+  if (jwt) {
+    try {
+      const payload = JSON.parse(atob(jwt.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+      if (payload.exp && payload.exp > Math.floor(Date.now() / 1000)) {
+        document.getElementById('login-screen').style.display='none';
+        document.getElementById('app').classList.add('visible');
+        document.addEventListener('DOMContentLoaded', init);
+      }
+    } catch(e) { localStorage.removeItem('crd_admin_jwt'); }
   }
 })();
 
@@ -3223,13 +3219,12 @@ function toast(msg, type='success') {
 
 // ── CLIENTES ──
 const CLIENTES_WORKER = 'https://crclub-worker.cristian-romero-digital.workers.dev';
-const CLIENTES_TOKEN  = 'crd2025';
 let _clientes = [];
 let _clienteActual = null;
 let _clientesCargados = false;
 
 async function _fetchClientes() {
-  const r = await fetch(CLIENTES_WORKER + '/solicitudes', { headers: { 'Authorization': 'Bearer ' + CLIENTES_TOKEN } });
+  const r = await fetch(CLIENTES_WORKER + '/solicitudes', { headers: { 'Authorization': 'Bearer ' + getAdminJWT() } });
   const d = await r.json();
   _clientes = d.solicitudes || [];
   _clientesCargados = true;
@@ -3406,7 +3401,7 @@ async function cmSaveEntregaFolder() {
   try {
     const r = await fetch(CLIENTES_WORKER + '/entrega_configs/' + _clienteActual.id, {
       method: 'PATCH',
-      headers: { 'Authorization': 'Bearer ' + CLIENTES_TOKEN, 'Content-Type': 'application/json' },
+      headers: { 'Authorization': 'Bearer ' + getAdminJWT(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ folder_id: folder })
     });
     const d = await r.json();
@@ -3428,7 +3423,7 @@ async function cmCrearCarpetas() {
   try {
     const r = await fetch(CLIENTES_WORKER + '/solicitudes/' + _clienteActual.id + '/carpetas', {
       method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + CLIENTES_TOKEN, 'Content-Type': 'application/json' },
+      headers: { 'Authorization': 'Bearer ' + getAdminJWT(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ codigoContrato: codigo })
     });
     const d = await r.json();
@@ -3478,7 +3473,7 @@ async function cmEliminar() {
   try {
     const r = await fetch(CLIENTES_WORKER + '/solicitudes/' + _clienteActual.id, {
       method: 'DELETE',
-      headers: { 'Authorization': 'Bearer ' + CLIENTES_TOKEN }
+      headers: { 'Authorization': 'Bearer ' + getAdminJWT() }
     });
     const d = await r.json();
     if (d.ok) {
@@ -4258,7 +4253,7 @@ function loadSettings() {
   loadLogoPreview();
   loadLogoLightPreview();
   // Cargar fondos CR Club desde KV
-  fetch(CONFIG.CRCLUB_URL + '/crclub/config', { headers: { 'Authorization': 'Bearer ' + CONFIG.CF_AUTH } })
+  fetch(CONFIG.CRCLUB_URL + '/crclub/config')
     .then(r => r.json()).then(cfg => {
       if (!cfg) return;
       const loginUrl = cfg.bgUrlLogin || cfg.bgUrl || '';
@@ -4276,8 +4271,14 @@ function saveSettings() {
   if (newpass && newpass !== confpass) { toast('Las contraseñas no coinciden','error'); return; }
   if (newpass && newpass.length < 6) { toast('La contraseña debe tener al menos 6 caracteres','error'); return; }
   if (newpass) {
-    const creds = getCreds();
-    S.set(CREDS_KEY, {...creds, pass:newpass});
+    fetch(CONFIG.CRCLUB_URL + '/admin/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getAdminJWT() },
+      body: JSON.stringify({ pass: newpass })
+    }).then(r => r.json()).then(d => {
+      if (d.ok) toast('Contraseña actualizada');
+      else toast(d.error || 'Error al cambiar contraseña', 'error');
+    }).catch(() => toast('Error de conexión', 'error'));
     document.getElementById('set-newpass').value='';
     document.getElementById('set-confpass').value='';
   }
@@ -4647,7 +4648,7 @@ function syncLogoToCrclub(src) {
   if(!src) return;
   fetch(CONFIG.CRCLUB_URL + '/crclub/admin/config', {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + CONFIG.CF_AUTH },
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getAdminJWT() },
     body: JSON.stringify({ logoUrl: src })
   }).then(r => { if(!r.ok) console.warn('crclub logo sync status:', r.status); })
     .catch(e => console.warn('crclub logo sync failed:', e));
@@ -7323,17 +7324,6 @@ function pickPortadaDrive() {
   });
 }
 
-// Check session on load
-window.addEventListener('DOMContentLoaded', () => {
-  try {
-    const sess = S.get('crd_session');
-    if (sess && (Date.now() - sess) < 8*60*60*1000) {
-      document.getElementById('login-screen').style.display='none';
-      document.getElementById('app').classList.add('visible');
-      init();
-    }
-  } catch(e) { console.log('Session check error:', e); }
-});
 
 // ══════════════════════════════════════════════════════════════
 // CONTRATOS — Sistema de generación automática via Apps Script
@@ -8173,10 +8163,9 @@ function ctCancelEdit() {
 
 // ── FIESTAS ──
 const FIESTAS_WORKER = 'https://crclub-worker.cristian-romero-digital.workers.dev';
-const FIESTAS_TOKEN  = 'crd2025';
 
 async function fiestasFetch(path, opts = {}) {
-  opts.headers = Object.assign({ Authorization: 'Bearer ' + FIESTAS_TOKEN }, opts.headers || {});
+  opts.headers = Object.assign({ Authorization: 'Bearer ' + getAdminJWT() }, opts.headers || {});
   return fetch(FIESTAS_WORKER + path, opts);
 }
 
@@ -8428,17 +8417,6 @@ async function loadFiestaRanking() {
   }
 }
 
-// Check session on load
-window.addEventListener('DOMContentLoaded', () => {
-  try {
-    const sess = S.get('crd_session');
-    if (sess && (Date.now() - sess) < 8*60*60*1000) {
-      document.getElementById('login-screen').style.display='none';
-      document.getElementById('app').classList.add('visible');
-      init();
-    }
-  } catch(e) { console.log('Session check error:', e); }
-});
 </script>
 </body>
 </html>
