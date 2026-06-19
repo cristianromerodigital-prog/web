@@ -606,6 +606,26 @@ const CODE_INFO = {
 
 const PRED_INIT = [];
 
+function getCookie(name) {
+  const m = document.cookie.match('(?:^|; )' + name + '=([^;]*)');
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
+function setCookie(name, value, days) {
+  const exp = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = name + '=' + encodeURIComponent(value) + '; expires=' + exp + '; path=/; SameSite=Lax';
+}
+
+function getOrCreateDeviceToken() {
+  let token = getCookie('mundial_dt');
+  if (!token) {
+    token = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
+    setCookie('mundial_dt', token, 365);
+  }
+  return token;
+}
+
 function getMundialUser() {
   return {
     id: localStorage.getItem('mundial_user_id'),
@@ -616,6 +636,25 @@ function getMundialUser() {
 function setMundialUser(id, nickname) {
   localStorage.setItem('mundial_user_id', id);
   localStorage.setItem('mundial_nickname', nickname);
+  const dt = getOrCreateDeviceToken();
+  fetch(PRED_CONFIG.API + '/mundial/users/register-device', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId: id, nickname, deviceToken: dt })
+  }).catch(() => {});
+}
+
+async function autoRestoreFromDevice() {
+  const user = getMundialUser();
+  if (user.id) return;
+  const dt = getCookie('mundial_dt');
+  if (!dt) return;
+  try {
+    const res = await fetch(PRED_CONFIG.API + '/mundial/users/by-device?token=' + encodeURIComponent(dt));
+    if (!res.ok) return;
+    const data = await res.json();
+    localStorage.setItem('mundial_user_id', data.id);
+    localStorage.setItem('mundial_nickname', data.nickname);
+  } catch (e) {}
 }
 
 function escapeHtml(str) {
@@ -899,7 +938,9 @@ PRED_INIT.push(loadLeaderboard);
 
 // PRED FUNCTIONS
 
-PRED_INIT.forEach(fn => fn());
+autoRestoreFromDevice().then(() => {
+  PRED_INIT.forEach(fn => fn());
+});
 </script>
 
 </body>
