@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='146';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='147';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -243,6 +243,10 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
       <div class="tv-scan-label">ESCANEÁ Y<br>PARTÍ TU MOMENTO</div>
       <img id="tv-qr-img" alt="QR">
       <img id="tv-logo" alt="CR">
+      <div id="tv-brand" style="display:none;text-align:center;line-height:1.3">
+        <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(12px,1.2vw,16px);color:rgba(255,255,255,.85);letter-spacing:.08em">Cristian Romero</div>
+        <div style="font-size:clamp(8px,.8vw,10px);letter-spacing:.45em;text-transform:uppercase;color:rgba(255,255,255,.4)">Producciones</div>
+      </div>
     </div>
     <div id="tv-main">
       <img id="tv-current-img" src="" alt="">
@@ -406,6 +410,7 @@ function applyBranding() {
   if (logo) {
     const tvLogo = document.getElementById('tv-logo');
     tvLogo.src = logo; tvLogo.style.display = 'block';
+    document.getElementById('tv-brand').style.display = 'block';
     document.getElementById('logo-float-img').src = logo;
     document.getElementById('logo-float').style.display = 'flex';
   }
