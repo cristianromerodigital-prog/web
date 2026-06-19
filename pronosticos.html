@@ -360,6 +360,14 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
       <button class="nav-cta" id="nickname-submit">Empezar a jugar</button>
     </div>
     <p id="nickname-error" class="pred-error" style="display:none"></p>
+    <p style="margin-top:10px;font-size:12px;color:var(--gray2)">¿Ya tenías un apodo? <button id="recover-btn" style="background:none;border:none;color:var(--gold2);font-size:12px;cursor:pointer;text-decoration:underline;padding:0">Recuperar cuenta</button></p>
+    <div id="recover-form" style="display:none;margin-top:10px">
+      <div class="pred-nickname-row">
+        <input type="text" id="recover-input" maxlength="20" placeholder="Tu apodo anterior">
+        <button class="nav-cta" id="recover-submit">Recuperar</button>
+      </div>
+      <p id="recover-error" class="pred-error" style="display:none"></p>
+    </div>
   </div>
   <div id="nickname-playing" class="pred-card" style="display:none">
     <p>Jugando como <strong id="nickname-display" style="color:var(--gold2)"></strong></p>
@@ -646,6 +654,37 @@ document.getElementById('nickname-submit').addEventListener('click', async () =>
     }
     if (!res.ok) {
       errEl.textContent = 'Error al crear el usuario, intentá de nuevo';
+      errEl.style.display = 'block';
+      return;
+    }
+    setMundialUser(data.id, data.nickname);
+    showPlayingAs();
+    loadUpcoming();
+    loadResults();
+    loadLeaderboard();
+  } catch (e) {
+    errEl.textContent = 'Error de conexión, intentá de nuevo';
+    errEl.style.display = 'block';
+  }
+});
+
+document.getElementById('recover-btn').addEventListener('click', () => {
+  const f = document.getElementById('recover-form');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  if (f.style.display === 'block') document.getElementById('recover-input').focus();
+});
+
+document.getElementById('recover-submit').addEventListener('click', async () => {
+  const input = document.getElementById('recover-input');
+  const errEl = document.getElementById('recover-error');
+  const nickname = input.value.trim();
+  errEl.style.display = 'none';
+  if (!nickname) { errEl.textContent = 'Ingresá tu apodo'; errEl.style.display = 'block'; return; }
+  try {
+    const res = await fetch(PRED_CONFIG.API + '/mundial/users/by-nickname?nickname=' + encodeURIComponent(nickname));
+    const data = await res.json();
+    if (!res.ok) {
+      errEl.textContent = 'Apodo no encontrado. Verificá que esté bien escrito.';
       errEl.style.display = 'block';
       return;
     }
