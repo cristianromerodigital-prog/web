@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='140';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='141';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -356,6 +356,9 @@ let lbIndex = 0;
 let slideshowIndex = 0;
 let slideshowTimer = null;
 let refreshTimer = null;
+let _feedPage = 0;
+let _feedTimer = null;
+let _feedCount = 0;
 let isUploading = false;
 const IS_TV = window.innerWidth > 1024 && window.innerHeight > 600 && !('ontouchstart' in window);
 
@@ -507,18 +510,42 @@ async function loadDashboardTV() {
   } catch(e) {}
 }
 
+const _FEED_COLORS = ['#ffd740','#69f0ae','#ff80ab','#80d8ff','#b39ddb','#ffccbc','#f0f4c3','#b2dfdb','#ffe082','#f48fb1'];
+const _FEED_ROTS   = ['-1.2deg','.8deg','-0.5deg','1.1deg','-.7deg','.5deg','-1deg','.9deg'];
+const _FEED_SIZE   = 5;
+
 function renderTVFeed() {
+  const allItems = [...frases].reverse();
+  if (allItems.length !== _feedCount) {
+    _feedCount = allItems.length;
+    _feedPage = 0;
+    if (_feedTimer) { clearInterval(_feedTimer); _feedTimer = null; }
+    if (allItems.length > _FEED_SIZE) {
+      _feedTimer = setInterval(() => {
+        _feedPage = (_feedPage + 1) % Math.ceil(_feedCount / _FEED_SIZE);
+        showFeedPage(allItems);
+      }, 8000);
+    }
+  }
+  showFeedPage(allItems);
+}
+
+function showFeedPage(allItems) {
   const el = document.getElementById('tv-feed-inner');
-  if (!el) return;
-  const COLORS = ['#ffd740','#69f0ae','#ff80ab','#80d8ff','#b39ddb','#ffccbc','#f0f4c3','#b2dfdb','#ffe082','#f48fb1'];
-  const ROTATIONS = ['-1.2deg','.8deg','-0.5deg','1.1deg','-.7deg','.5deg','-1deg','.9deg'];
-  const items = [...frases].reverse().slice(0, 6);
-  if (!items.length) { el.innerHTML = ''; return; }
-  el.innerHTML = items.map((f, i) => {
-    const color = COLORS[i % COLORS.length];
-    const rot = ROTATIONS[i % ROTATIONS.length];
-    return `<div class="tv-feed-item" style="background:${color};--r:${rot};animation-delay:${i * .08}s">${f.texto}</div>`;
-  }).join('');
+  if (!el || !allItems.length) return;
+  const start = _feedPage * _FEED_SIZE;
+  const page  = [];
+  for (let i = 0; i < _FEED_SIZE; i++) page.push(allItems[(start + i) % allItems.length]);
+  el.style.opacity = '0';
+  el.style.transition = 'opacity .45s';
+  setTimeout(() => {
+    el.innerHTML = page.map((f, i) => {
+      const color = _FEED_COLORS[(start + i) % _FEED_COLORS.length];
+      const rot   = _FEED_ROTS[i % _FEED_ROTS.length];
+      return `<div class="tv-feed-item" style="background:${color};--r:${rot};animation-delay:${i * .07}s">${f.texto}</div>`;
+    }).join('');
+    el.style.opacity = '1';
+  }, 460);
 }
 
 function showCurrentTV() {
