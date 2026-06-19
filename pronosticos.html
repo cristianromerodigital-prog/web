@@ -645,9 +645,16 @@ function setMundialUser(id, nickname) {
 
 async function autoRestoreFromDevice() {
   const user = getMundialUser();
-  if (user.id) return;
-  const dt = getCookie('mundial_dt');
-  if (!dt) return;
+  const dt = getOrCreateDeviceToken();
+  if (user.id) {
+    // Usuario ya en localStorage: registrar device token si aún no está vinculado
+    fetch(PRED_CONFIG.API + '/mundial/users/register-device', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id, nickname: user.nickname, deviceToken: dt })
+    }).catch(() => {});
+    return;
+  }
+  // Sin usuario en localStorage: intentar recuperar por cookie
   try {
     const res = await fetch(PRED_CONFIG.API + '/mundial/users/by-device?token=' + encodeURIComponent(dt));
     if (!res.ok) return;
