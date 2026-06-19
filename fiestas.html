@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='134';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='135';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -100,23 +100,16 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
 .tv-scan-label { font-size:clamp(8px,.85vw,11px); letter-spacing:.28em; text-transform:uppercase; color:rgba(255,255,255,.38); text-align:center; line-height:1.9; }
 #tv-qr-img { width:clamp(100px,10vw,148px); height:clamp(100px,10vw,148px); border-radius:10px; background:#fff; padding:5px; display:block; }
 #tv-logo { width:42px; height:42px; border-radius:50%; object-fit:contain; display:none; filter:invert(1); mix-blend-mode:color-dodge; margin-top:6px; }
-#tv-center { flex:1; overflow:hidden; padding:12px 10px; min-width:0; position:relative; }
-#tv-photo-grid { columns:3; column-gap:8px; max-height:100%; overflow:hidden; }
-@media (min-width:1600px) { #tv-photo-grid { columns:4; } }
-.tv-photo-item { break-inside:avoid; margin-bottom:8px; position:relative; overflow:hidden; border-radius:6px; }
-.tv-photo-item img { width:100%; display:block; }
-.tv-photo-likes-badge { position:absolute; bottom:6px; right:6px; display:flex; align-items:center; gap:3px; background:rgba(0,0,0,.62); backdrop-filter:blur(4px); border-radius:20px; padding:4px 8px; font-size:11px; font-weight:600; color:#fff; }
-.tv-photo-crown { position:absolute; top:6px; left:6px; font-size:18px; filter:drop-shadow(0 2px 4px rgba(0,0,0,.6)); pointer-events:none; }
+#tv-main { flex:1; position:relative; overflow:hidden; min-width:0; display:flex; align-items:center; justify-content:center; background:#000; }
+#tv-current-img { width:100%; height:100%; object-fit:contain; display:block; transition:opacity .5s ease; }
+#tv-current-img.fade-out { opacity:0; }
 #tv-no-fotos { display:none; position:absolute; inset:0; flex-direction:column; align-items:center; justify-content:center; gap:16px; }
 #tv-no-fotos .nf-title { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:clamp(32px,5vw,64px); color:rgba(255,255,255,.65); }
 #tv-no-fotos .nf-sub { font-size:11px; letter-spacing:.4em; text-transform:uppercase; color:rgba(255,255,255,.22); }
-#tv-right { width:clamp(200px,21vw,278px); flex-shrink:0; border-left:1px solid rgba(255,255,255,.05); display:flex; flex-direction:column; overflow:hidden; }
-#tv-feed-inner { display:flex; flex-direction:column; gap:8px; padding:14px 12px; overflow:hidden; }
-.tv-feed-item { display:flex; align-items:flex-start; gap:10px; background:rgba(255,255,255,.04); border-radius:10px; padding:10px 12px; animation:tv-feed-in .5s cubic-bezier(.16,1,.3,1) forwards; opacity:0; }
-@keyframes tv-feed-in { from{opacity:0;transform:translateX(18px)} to{opacity:1;transform:none} }
-.tv-feed-avatar { width:34px; height:34px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff; }
-.tv-feed-body { flex:1; min-width:0; }
-.tv-feed-text { font-size:11px; color:rgba(255,255,255,.65); line-height:1.45; word-break:break-word; }
+#tv-queue { width:clamp(160px,17vw,240px); flex-shrink:0; display:flex; flex-direction:column; gap:8px; padding:12px 12px 12px 0; }
+.tv-queue-item { flex:1; overflow:hidden; border-radius:8px; position:relative; background:rgba(255,255,255,.04); }
+.tv-queue-item img { width:100%; height:100%; object-fit:cover; display:block; transition:opacity .4s; }
+.tv-queue-item.empty img { opacity:0; }
 #tv-ranking-bar { height:68px; border-top:1px solid rgba(255,255,255,.06); display:flex; align-items:center; padding:0 28px; flex-shrink:0; gap:0; }
 .tv-rank-label { font-size:9px; letter-spacing:.45em; text-transform:uppercase; color:rgba(255,255,255,.22); margin-right:28px; white-space:nowrap; }
 #tv-ranking-inner { display:flex; align-items:center; gap:28px; }
@@ -243,15 +236,17 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
       <img id="tv-qr-img" alt="QR">
       <img id="tv-logo" alt="CR">
     </div>
-    <div id="tv-center">
-      <div id="tv-photo-grid"></div>
+    <div id="tv-main">
+      <img id="tv-current-img" src="" alt="">
       <div id="tv-no-fotos">
         <div class="nf-title" id="tv-no-fotos-nombre"></div>
         <div class="nf-sub">Esperando las primeras fotos...</div>
       </div>
     </div>
-    <div id="tv-right">
-      <div id="tv-feed-inner"></div>
+    <div id="tv-queue">
+      <div class="tv-queue-item empty" id="tv-q0"><img src="" alt=""></div>
+      <div class="tv-queue-item empty" id="tv-q1"><img src="" alt=""></div>
+      <div class="tv-queue-item empty" id="tv-q2"><img src="" alt=""></div>
     </div>
   </div>
   <div id="tv-ranking-bar">
@@ -350,6 +345,8 @@ let evento = null;
 let fotos = [];
 let frases = [];
 let lbIndex = 0;
+let slideshowIndex = 0;
+let slideshowTimer = null;
 let refreshTimer = null;
 let isUploading = false;
 const IS_TV = window.innerWidth > 1024 && window.innerHeight > 600 && !('ontouchstart' in window);
@@ -481,53 +478,51 @@ function setupTV() {
 
 async function loadDashboardTV() {
   try {
-    const [fotosRes, frasesRes] = await Promise.all([
-      fetch(`${WORKER_URL}/eventos/${EVENT_ID}/fotos`),
-      fetch(`${WORKER_URL}/eventos/${EVENT_ID}/frases`)
-    ]);
-    const fotosData = await fotosRes.json();
-    const frasesData = await frasesRes.json();
-    if (fotosData.files) fotos = fotosData.files;
-    if (frasesData.frases) frases = frasesData.frases;
-    renderTVGrid();
-    renderTVFeed();
-    renderTVRanking();
+    const res = await fetch(`${WORKER_URL}/eventos/${EVENT_ID}/fotos`);
+    const data = await res.json();
+    const prevCount = fotos.length;
+    if (data.files) fotos = data.files;
+    const noFotos = document.getElementById('tv-no-fotos');
+    if (fotos.length > 0) {
+      noFotos.style.display = 'none';
+      if (prevCount === 0) { slideshowIndex = 0; showCurrentTV(); startTVSlideshow(); }
+      renderTVRanking();
+    } else {
+      noFotos.style.display = 'flex';
+    }
   } catch(e) {}
 }
 
-function renderTVGrid() {
-  const grid = document.getElementById('tv-photo-grid');
-  const noFotos = document.getElementById('tv-no-fotos');
-  if (!fotos.length) { grid.innerHTML = ''; noFotos.style.display = 'flex'; return; }
-  noFotos.style.display = 'none';
-  const show = fotos.slice(0, 12);
-  const maxLikes = Math.max(0, ...fotos.map(f => f.likes || 0));
-  grid.innerHTML = show.map(f => {
-    const likes = f.likes || 0;
-    const isWinner = maxLikes > 0 && likes === maxLikes;
-    return `<div class="tv-photo-item">
-      ${isWinner ? '<div class="tv-photo-crown">🏆</div>' : ''}
-      <img src="${f.url}" alt="" loading="lazy">
-      ${likes > 0 ? `<div class="tv-photo-likes-badge"><svg viewBox="0 0 24 24" width="11" height="11" fill="#ff4d6d" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> ${likes}</div>` : ''}
-    </div>`;
-  }).join('');
+function showCurrentTV() {
+  if (!fotos.length) return;
+  const img = document.getElementById('tv-current-img');
+  img.classList.add('fade-out');
+  setTimeout(() => {
+    img.src = fotos[slideshowIndex].url;
+    img.classList.remove('fade-out');
+  }, 280);
+  for (let i = 0; i < 3; i++) {
+    const nextIdx = (slideshowIndex + 1 + i) % fotos.length;
+    const item = document.getElementById(`tv-q${i}`);
+    if (!item) continue;
+    const qImg = item.querySelector('img');
+    if (fotos.length > 1) {
+      qImg.src = fotos[nextIdx].url;
+      item.classList.remove('empty');
+    } else {
+      item.classList.add('empty');
+    }
+  }
 }
 
-function renderTVFeed() {
-  const el = document.getElementById('tv-feed-inner');
-  const COLORS = ['#e91e8c','#7c3aed','#0ea5e9','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#3b82f6'];
-  const items = [...frases].reverse().slice(0, 7);
-  if (!items.length) { el.innerHTML = ''; return; }
-  el.innerHTML = items.map((f, i) => {
-    const letter = (f.texto || '?').trim()[0].toUpperCase();
-    const color = COLORS[i % COLORS.length];
-    return `<div class="tv-feed-item" style="animation-delay:${i * .07}s">
-      <div class="tv-feed-avatar" style="background:${color}">${letter}</div>
-      <div class="tv-feed-body">
-        <div class="tv-feed-text">${f.texto}</div>
-      </div>
-    </div>`;
-  }).join('');
+function startTVSlideshow() {
+  if (slideshowTimer) clearInterval(slideshowTimer);
+  slideshowTimer = setInterval(() => {
+    if (fotos.length > 1) {
+      slideshowIndex = (slideshowIndex + 1) % fotos.length;
+      showCurrentTV();
+    }
+  }, 6000);
 }
 
 function renderTVRanking() {
