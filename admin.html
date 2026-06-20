@@ -379,7 +379,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.36</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.37</div>
     </div>
   </aside>
 
@@ -8197,6 +8197,19 @@ function ctCancelEdit() {
 // ── FIESTAS ──
 const FIESTAS_WORKER = 'https://crclub-worker.cristian-romero-digital.workers.dev';
 
+function slugifyFiesta(nombre, fecha) {
+  const base = (nombre || '')
+    .toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .slice(0, 40);
+  const year = (fecha || '').slice(0, 4);
+  return (year ? `${base}-${year}` : base).slice(0, 50);
+}
+
 async function fiestasFetch(path, opts = {}) {
   opts.headers = Object.assign({ Authorization: 'Bearer ' + getAdminJWT() }, opts.headers || {});
   return fetch(FIESTAS_WORKER + path, opts);
@@ -8242,10 +8255,12 @@ function renderFiestasList(eventos) {
       </div>
       <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
         <button class="btn-sm" onclick="fiestaEdit('${ev.id}')">Editar</button>
-        <button class="btn-sm" onclick="fiestaShowQr('${ev.id}','${(ev.nombre||'').replace(/'/g,"\\'")}')">QR</button>
+        <button class="btn-sm" onclick="fiestaShowQr('${ev.id}','${(ev.nombre||'').replace(/'/g,"\\'")}','${ev.fecha||''}')">QR</button>
         <button class="btn-sm" onclick="fiestaVerMensajes('${ev.id}','${(ev.nombre||'').replace(/'/g,"\\'")}')">Mensajes</button>
         <button class="btn-sm" onclick="fiestaVerFotos('${ev.id}','${(ev.nombre||'').replace(/'/g,"\\'")}')">Fotos</button>
-        <a href="fiestas.html?e=${ev.id}" target="_blank" class="btn-sm">Visualizador</a>
+        <a href="fiestas.html?e=${slugifyFiesta(ev.nombre, ev.fecha)}" target="_blank" class="btn-sm">Visualizador</a>
+        <button class="btn-sm" onclick="fiestaCopiarLink('${(ev.nombre||'').replace(/'/g,"\\'")}','${ev.fecha||''}')">Copiar link</button>
+        <button class="btn-sm" onclick="fiestaDuplicar('${ev.id}','${(ev.nombre||'').replace(/'/g,"\\'")}')">Duplicar</button>
         <button class="btn-sm" onclick="fiestaEliminar('${ev.id}','${(ev.nombre||'').replace(/'/g,"\\'")}' )" style="background:rgba(220,50,50,.08);border-color:rgba(220,50,50,.3);color:#ff6b6b">Eliminar</button>
       </div>
     </div>`;
@@ -8387,8 +8402,17 @@ async function fiestaAgregarMensaje() {
   } catch(e) { toast('Error de conexión', 'error'); }
 }
 
-function fiestaShowQr(id, nombre) {
-  const url = window.location.origin + window.location.pathname.replace('admin.html','') + 'fiestas.html?e=' + id;
+function fiestaCopiarLink(nombre, fecha) {
+  const slug = slugifyFiesta(nombre, fecha);
+  const url = window.location.origin + window.location.pathname.replace('admin.html','') + 'fiestas.html?e=' + slug;
+  navigator.clipboard.writeText(url)
+    .then(() => toast('Link copiado'))
+    .catch(() => toast('No se pudo copiar'));
+}
+
+function fiestaShowQr(id, nombre, fecha) {
+  const slug = slugifyFiesta(nombre, fecha) || id;
+  const url = window.location.origin + window.location.pathname.replace('admin.html','') + 'fiestas.html?e=' + slug;
   document.getElementById('qr-nombre-display').textContent = nombre;
   document.getElementById('qr-url-display').textContent = url;
   document.getElementById('qr-open-link').href = url;
@@ -8404,6 +8428,25 @@ function fiestaShowQr(id, nombre) {
     genQr();
   }
   document.getElementById('fiesta-qr-modal').style.display = 'block';
+}
+
+async function fiestaDuplicar(id, nombre) {
+  try {
+    const r = await fiestasFetch('/eventos/admin');
+    const d = await r.json();
+    const ev = (d.eventos || []).find(e => e.id === id);
+    if (!ev) { showToast('Evento no encontrado'); return; }
+    document.getElementById('fi-nombre').value = ev.nombre ? 'Copia de ' + ev.nombre : '';
+    document.getElementById('fi-fecha').value = ev.fecha || '';
+    document.getElementById('fi-folder').value = ev.folder_id || '';
+    document.getElementById('fi-portada').value = ev.portada || '';
+    document.getElementById('fi-moderacion').checked = !!ev.moderacion;
+    document.getElementById('fi-cierre').value = '';
+    const section = document.getElementById('fi-nombre').closest('.settings-section');
+    if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('fi-nombre').focus();
+    showToast('Datos pre-cargados. Modificá el nombre y guardá.');
+  } catch(e) { showToast('Error al cargar evento'); }
 }
 
 function downloadQr() {
