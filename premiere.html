@@ -829,7 +829,8 @@ async function init() {
         showError('<b>DEBUG</b><br>' + _dbgLog.map(l=>'• '+l).join('<br>'));
         return;
       }
-      if(data && data.photoRows) {
+      if(!CFG.welcomeMsg && data && data.welcomeMsg) { CFG.welcomeMsg = data.welcomeMsg; }
+      if(data && data.photoRows && data.photoRows.length > 0) {
         applyStructure(data.photoRows, data.videoRows || []);
         stopFrases(); hideLoading(); return;
       }
