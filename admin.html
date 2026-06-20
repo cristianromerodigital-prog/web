@@ -379,7 +379,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.37</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.38</div>
     </div>
   </aside>
 
@@ -8206,8 +8206,7 @@ function slugifyFiesta(nombre, fecha) {
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
     .slice(0, 40);
-  const year = (fecha || '').slice(0, 4);
-  return (year ? `${base}-${year}` : base).slice(0, 50);
+  return (fecha ? `${base}-${fecha}` : base).slice(0, 55);
 }
 
 async function fiestasFetch(path, opts = {}) {
