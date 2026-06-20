@@ -218,9 +218,6 @@ body.select-mode .card:hover .card-overlay { opacity:0; }
 /* ── VIDEO MODAL ── */
 #video-modal { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,.95); display:none; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(12px); }
 #video-modal.open { display:flex; }
-#video-modal:fullscreen,#video-modal:-webkit-full-screen { display:flex; padding:16px; background:#000; }
-#video-modal:fullscreen .vm-inner,#video-modal:-webkit-full-screen .vm-inner { width:100%; max-width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; }
-#video-modal:fullscreen .vm-ratio,#video-modal:-webkit-full-screen .vm-ratio { flex:1; aspect-ratio:unset; border-radius:0; }
 .vm-inner { width:90vw; max-width:1100px; position:relative; }
 .vm-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; gap:16px; }
 .vm-title { font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:300; font-size:30px; color:var(--white); line-height:1.1; }
@@ -1177,34 +1174,14 @@ function openVm(embedUrl, title, dlHref) {
   const iframe = document.getElementById('vm-iframe');
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
-  const req = modal.requestFullscreen || modal.webkitRequestFullscreen;
-  if(req) {
-    console.log('[PM] requestFullscreen llamado');
-    req.call(modal)
-      .then(() => {
-        console.log('[PM] fullscreen OK, seteando src:', embedUrl);
-        iframe.src = embedUrl;
-      })
-      .catch(err => {
-        console.warn('[PM] fullscreen FAILED:', err.message, '— seteando src igual');
-        iframe.src = embedUrl;
-      });
-  } else {
-    console.log('[PM] sin fullscreen API, seteando src directo');
-    iframe.src = embedUrl;
-  }
+  iframe.src = embedUrl;
 }
 function closeVm() {
   const modal = document.getElementById('video-modal');
   modal.classList.remove('open');
   document.getElementById('vm-iframe').src = '';
   document.body.style.overflow = '';
-  if(document.fullscreenElement || document.webkitFullscreenElement) {
-    (document.exitFullscreen || document.webkitExitFullscreen).call(document).catch(() => {});
-  }
 }
-document.addEventListener('fullscreenchange', () => { if(!document.fullscreenElement) closeVm(); });
-document.addEventListener('webkitfullscreenchange', () => { if(!document.webkitFullscreenElement) closeVm(); });
 
 // ═══════════════════════════════════════════
 // SELECT MODE
