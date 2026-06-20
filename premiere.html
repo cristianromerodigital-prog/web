@@ -622,7 +622,7 @@ let rootFolderId  = CFG.folderId;
 function thumbUrl(id, w=400)  { return `https://drive.google.com/thumbnail?id=${id}&sz=w${w}`; }
 function fullUrl(id)           { return `https://lh3.googleusercontent.com/d/${id}`; }
 function dlUrl(id)             { return `https://drive.google.com/uc?export=download&id=${id}`; }
-function videoEmbedUrl(id)     { return `https://drive.google.com/file/d/${id}/preview`; }
+function videoEmbedUrl(id)     { return `https://drive.google.com/file/d/${id}/preview?autoplay=1`; }
 function driveFolderUrl(id)    { return `https://drive.google.com/drive/folders/${id}`; }
 
 function jsonp(url, ms=10000) {
