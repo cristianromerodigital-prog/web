@@ -1179,10 +1179,18 @@ function openVm(embedUrl, title, dlHref) {
   document.body.style.overflow = 'hidden';
   const req = modal.requestFullscreen || modal.webkitRequestFullscreen;
   if(req) {
+    console.log('[PM] requestFullscreen llamado');
     req.call(modal)
-      .then(() => { iframe.src = embedUrl; })
-      .catch(() =>  { iframe.src = embedUrl; });
+      .then(() => {
+        console.log('[PM] fullscreen OK, seteando src:', embedUrl);
+        iframe.src = embedUrl;
+      })
+      .catch(err => {
+        console.warn('[PM] fullscreen FAILED:', err.message, '— seteando src igual');
+        iframe.src = embedUrl;
+      });
   } else {
+    console.log('[PM] sin fullscreen API, seteando src directo');
     iframe.src = embedUrl;
   }
 }
