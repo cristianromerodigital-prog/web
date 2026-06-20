@@ -218,6 +218,9 @@ body.select-mode .card:hover .card-overlay { opacity:0; }
 /* ── VIDEO MODAL ── */
 #video-modal { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,.95); display:none; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(12px); }
 #video-modal.open { display:flex; }
+#video-modal:fullscreen,#video-modal:-webkit-full-screen { display:flex; padding:16px; background:#000; }
+#video-modal:fullscreen .vm-inner,#video-modal:-webkit-full-screen .vm-inner { width:100%; max-width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; }
+#video-modal:fullscreen .vm-ratio,#video-modal:-webkit-full-screen .vm-ratio { flex:1; aspect-ratio:unset; border-radius:0; }
 .vm-inner { width:90vw; max-width:1100px; position:relative; }
 .vm-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; gap:16px; }
 .vm-title { font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:300; font-size:30px; color:var(--white); line-height:1.1; }
@@ -1166,19 +1169,28 @@ function closeLb() {
 // VIDEO MODAL
 // ═══════════════════════════════════════════
 function openVm(embedUrl, title, dlHref) {
-  document.getElementById('vm-title').textContent  = title;
-  document.getElementById('vm-iframe').src          = embedUrl;
+  document.getElementById('vm-title').textContent = title;
+  document.getElementById('vm-iframe').src = embedUrl;
   const dl = document.getElementById('vm-dl-link');
   if(CFG.allowDownload && dlHref) { dl.href = dlHref; dl.style.display='inline-flex'; }
   else dl.style.display = 'none';
-  document.getElementById('video-modal').classList.add('open');
+  const modal = document.getElementById('video-modal');
+  modal.classList.add('open');
   document.body.style.overflow = 'hidden';
+  const req = modal.requestFullscreen || modal.webkitRequestFullscreen;
+  if(req) req.call(modal).catch(() => {});
 }
 function closeVm() {
-  document.getElementById('video-modal').classList.remove('open');
+  const modal = document.getElementById('video-modal');
+  modal.classList.remove('open');
   document.getElementById('vm-iframe').src = '';
   document.body.style.overflow = '';
+  if(document.fullscreenElement || document.webkitFullscreenElement) {
+    (document.exitFullscreen || document.webkitExitFullscreen).call(document).catch(() => {});
+  }
 }
+document.addEventListener('fullscreenchange', () => { if(!document.fullscreenElement) closeVm(); });
+document.addEventListener('webkitfullscreenchange', () => { if(!document.webkitFullscreenElement) closeVm(); });
 
 // ═══════════════════════════════════════════
 // SELECT MODE
