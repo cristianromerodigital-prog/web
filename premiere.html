@@ -1170,15 +1170,21 @@ function closeLb() {
 // ═══════════════════════════════════════════
 function openVm(embedUrl, title, dlHref) {
   document.getElementById('vm-title').textContent = title;
-  document.getElementById('vm-iframe').src = embedUrl;
   const dl = document.getElementById('vm-dl-link');
   if(CFG.allowDownload && dlHref) { dl.href = dlHref; dl.style.display='inline-flex'; }
   else dl.style.display = 'none';
   const modal = document.getElementById('video-modal');
+  const iframe = document.getElementById('vm-iframe');
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
   const req = modal.requestFullscreen || modal.webkitRequestFullscreen;
-  if(req) req.call(modal).catch(() => {});
+  if(req) {
+    req.call(modal)
+      .then(() => { iframe.src = embedUrl; })
+      .catch(() =>  { iframe.src = embedUrl; });
+  } else {
+    iframe.src = embedUrl;
+  }
 }
 function closeVm() {
   const modal = document.getElementById('video-modal');
