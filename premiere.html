@@ -1011,12 +1011,10 @@ function renderRows(photoRows, videoRows) {
       divider.className = 'row-divider';
       content.appendChild(divider);
     }
-    // Primera sección de video recibe id="videos"
-    videoRows.forEach((row, i) => {
-      const s = buildVideoRow(row);
-      if(i === 0) s.id = 'videos';
-      content.appendChild(s);
-    });
+    const allVideos = videoRows.flatMap(r => r.items);
+    const s = buildVideoRow({ label: 'Videos', items: allVideos });
+    s.id = 'videos';
+    content.appendChild(s);
   }
 }
 
@@ -1090,9 +1088,14 @@ function buildVideoRow(row) {
   row.items.forEach(video => {
     const card = document.createElement('div');
     card.className = 'video-card';
+    const thumb = thumbUrl(video.id, 720);
     card.innerHTML = `
       <div class="video-thumb-wrap">
-        <img class="video-thumb" src="${thumbUrl(video.id, 720)}" alt="${video.name}" loading="lazy">
+        <img class="video-thumb" src="${thumb}" alt="${video.name}" loading="lazy"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="video-thumb-fallback" style="display:none;position:absolute;inset:0;background:#111;align-items:center;justify-content:center;flex-direction:column;gap:10px">
+          <div style="width:56px;height:56px;border-radius:50%;border:2px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:22px;color:rgba(255,255,255,.6)">▶</div>
+        </div>
         <div class="video-play-overlay"><div class="video-play-circle">▶</div></div>
       </div>
       <div class="video-info">
