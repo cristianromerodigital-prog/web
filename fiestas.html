@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='175';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='176';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -385,11 +385,12 @@ async function checkNSFW(file) {
       try {
         if (!faceModel) faceModel = await blazeface.load();
         const faces = await faceModel.estimateFaces(img, false);
-        if (faces.length > 0 && sexy <= 0.65 && porn <= 0.60) {
-          console.log(`[VISION] skip — con cara (malla/escote) caras:${faces.length}, Porn:${porn.toFixed(2)})`);
+        const realFaces = faces.filter(f => f.probability > 0.90);
+        if (realFaces.length > 0) {
+          console.log(`[VISION] skip — cara real detectada (caras:${realFaces.length}, Porn:${porn.toFixed(2)}, Sexy:${sexy.toFixed(2)})`);
           return { ok: true, uncertain: false };
         } else {
-          console.log(`[VISION] enviando a Google Vision — sexy/porn alto o sin cara (Porn:${porn.toFixed(2)}, Sexy:${sexy.toFixed(2)}, caras:${faces.length})`);
+          console.log(`[VISION] enviando a Google Vision — sin cara real (Porn:${porn.toFixed(2)}, Sexy:${sexy.toFixed(2)}, detecciones:${faces.length})`);
           return { ok: true, uncertain: true };
         }
       } catch(fe) {
