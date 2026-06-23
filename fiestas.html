@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='184';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='185';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -349,9 +349,7 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
   <button id="lb-next" onclick="lbNext()">›</button>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/nsfwjs@2.4.2/dist/nsfwjs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface@0.0.7/dist/blazeface.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.min.js"></script>
 <script>
 const WORKER_URL = 'https://crclub-worker.cristian-romero-digital.workers.dev';
 const params = new URLSearchParams(window.location.search);
@@ -359,84 +357,84 @@ const EVENT_ID = params.get('e') || '';
 
 let settings = (() => { try { return JSON.parse(localStorage.getItem('crd_settings')) || {}; } catch(e) { return {}; } })();
 
-// ── NUDENET ──────────────────────────────────────────────────────────────────
-const NUDENET_MODEL_URL = 'https://cdn.jsdelivr.net/gh/vladmandic/nudenet@main/models/default-f16/model.json';
+// ── NUDENET v3 (ONNX Runtime Web) ────────────────────────────────────────────
+const NUDENET_MODEL_URL = 'nudenet/320n.onnx';
 const NUDENET_LABELS = [
-  'exposed anus','exposed armpits','belly','exposed belly',
-  'buttocks','exposed buttocks','female face','male face',
-  'feet','exposed feet','breast','exposed breast',
-  'vagina','exposed vagina','male breast','exposed male breast'
+  'exposed_anus','exposed_armpits','covered_belly','exposed_belly',
+  'covered_buttocks','exposed_buttocks','face_f','face_m',
+  'covered_feet','exposed_feet','covered_breast_f','exposed_breast_f',
+  'covered_genitalia_f','exposed_genitalia_f','covered_penis','exposed_penis'
 ];
-const NUDENET_BLOCK = new Set([0,5,11,13,15]); // anus, buttocks, breast, vagina, male genitals expuestos
-const NUDENET_THRESHOLD = 0.38;
+const NUDENET_BLOCK = new Set([0,5,11,13,15]); // anus, buttocks, breast_f, genitalia_f, penis
+const NUDENET_THRESHOLD = 0.35;
+const NUDENET_SIZE = 320;
 
-let nudenetModel = null;
+let nudenetSession = null;
 
-// Precarga en background al cargar la página
-setTimeout(() => {
-  tf.loadGraphModel(NUDENET_MODEL_URL).then(m => {
-    nudenetModel = m;
+// Precarga en background
+setTimeout(async () => {
+  try {
+    ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/';
+    nudenetSession = await ort.InferenceSession.create(NUDENET_MODEL_URL, { executionProviders: ['wasm'] });
     console.log('[NUDENET] modelo listo');
-  }).catch(() => {});
-}, 3000);
+  } catch(e) { console.warn('[NUDENET] precarga falló:', e.message); }
+}, 2000);
 
 async function checkNSFW(file) {
   try {
-    if (!nudenetModel) {
-      console.log('[NUDENET] cargando modelo (primera vez ~73MB)...');
-      nudenetModel = await tf.loadGraphModel(NUDENET_MODEL_URL);
-      console.log('[NUDENET] modelo cargado');
+    if (!nudenetSession) {
+      console.log('[NUDENET] cargando modelo (~12MB)...');
+      ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/';
+      nudenetSession = await ort.InferenceSession.create(NUDENET_MODEL_URL, { executionProviders: ['wasm'] });
     }
+
+    // Preprocesar imagen → canvas 320x320 → float32 normalizado [0,1] en formato CHW
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = NUDENET_SIZE;
+    const ctx = canvas.getContext('2d');
     const img = new Image();
     const url = URL.createObjectURL(file);
     await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = url; });
     URL.revokeObjectURL(url);
+    ctx.drawImage(img, 0, 0, NUDENET_SIZE, NUDENET_SIZE);
+    const pixels = ctx.getImageData(0, 0, NUDENET_SIZE, NUDENET_SIZE).data;
 
-    const tensor = tf.tidy(() =>
-      tf.browser.fromPixels(img)
-        .resizeBilinear([640, 640])
-        .toFloat()
-        .expandDims(0)
-    );
-    console.log('[NUDENET DEBUG] tensor shape:', tensor.shape);
-
-    // Obtener los nombres reales de los outputs del modelo
-    const outputNames = nudenetModel.outputNodes || nudenetModel.outputs?.map(o => o.name) || [];
-    console.log('[NUDENET DEBUG] output nodes:', outputNames);
-
-    let result;
-    try {
-      result = await nudenetModel.executeAsync(tensor, ['output1','output2','output3']);
-    } catch(e1) {
-      console.log('[NUDENET DEBUG] fallo con output1/2/3, intentando sin especificar...');
-      result = await nudenetModel.executeAsync(tensor);
+    // HWC → CHW, normalizar /255
+    const float32 = new Float32Array(3 * NUDENET_SIZE * NUDENET_SIZE);
+    for (let i = 0; i < NUDENET_SIZE * NUDENET_SIZE; i++) {
+      float32[i]                           = pixels[i*4]   / 255;
+      float32[i + NUDENET_SIZE*NUDENET_SIZE]   = pixels[i*4+1] / 255;
+      float32[i + NUDENET_SIZE*NUDENET_SIZE*2] = pixels[i*4+2] / 255;
     }
-    tensor.dispose();
 
-    console.log('[NUDENET DEBUG] resultado tipo:', Array.isArray(result) ? `array[${result.length}]` : typeof result);
-    if (Array.isArray(result)) result.forEach((t, i) => console.log(`[NUDENET DEBUG] result[${i}] shape:`, t.shape));
+    const tensor = new ort.Tensor('float32', float32, [1, 3, NUDENET_SIZE, NUDENET_SIZE]);
+    const inputName = nudenetSession.inputNames[0];
+    const results = await nudenetSession.run({ [inputName]: tensor });
+    const output = results[nudenetSession.outputNames[0]].data; // [1, 20, 8400]
 
-    const [boxesTensor, scoresTensor, classesTensor] = Array.isArray(result) ? result : [result];
-
-    const scores = await scoresTensor.data();
-    const classes = await classesTensor.data();
-    boxesTensor.dispose(); scoresTensor.dispose(); classesTensor.dispose();
-
-    let blocked = false;
+    // YOLOv8: output shape [1, num_classes+4, 8400]
+    const numDet = 8400;
+    const numClasses = NUDENET_LABELS.length;
     const found = [];
-    for (let i = 0; i < scores.length; i++) {
-      if (scores[i] >= NUDENET_THRESHOLD) {
-        const id = Math.round(classes[i]);
-        const label = NUDENET_LABELS[id] || `class${id}`;
-        found.push(`${label}:${scores[i].toFixed(2)}`);
-        if (NUDENET_BLOCK.has(id)) blocked = true;
+    let blocked = false;
+
+    for (let d = 0; d < numDet; d++) {
+      let maxScore = 0, maxClass = -1;
+      for (let c = 0; c < numClasses; c++) {
+        const score = output[d + (c + 4) * numDet];
+        if (score > maxScore) { maxScore = score; maxClass = c; }
+      }
+      if (maxScore >= NUDENET_THRESHOLD) {
+        const label = NUDENET_LABELS[maxClass];
+        found.push(`${label}:${maxScore.toFixed(2)}`);
+        if (NUDENET_BLOCK.has(maxClass)) blocked = true;
       }
     }
     console.log('[NUDENET]', found.length ? found.join(' | ') : 'nada detectado');
-    return { ok: !blocked, uncertain: false };
+    return { ok: !blocked };
   } catch(e) {
-    console.error('[NUDENET ERROR]', e);
-    return { ok: true, uncertain: false };
+    console.error('[NUDENET ERROR]', e.message);
+    return { ok: true };
   }
 }
 
@@ -950,7 +948,7 @@ async function handleFileSelect(e) {
   progressEl.textContent = 'Analizando imagen...';
   progressEl.style.display = 'block';
 
-  const { ok, uncertain } = await checkNSFW(file);
+  const { ok } = await checkNSFW(file);
   if (!ok) {
     progressEl.textContent = '⚠ Foto no permitida en esta galería';
     progressEl.style.background = 'rgba(180,30,30,.95)';
