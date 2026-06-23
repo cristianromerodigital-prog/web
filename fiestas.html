@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='169';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='170';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -837,6 +837,20 @@ async function submitFrase() {
   }
 }
 
+function showBlockedMsg(msg) {
+  const el = document.getElementById('upload-progress');
+  el.textContent = '⚠ ' + msg;
+  el.style.background = 'rgba(180,30,30,.95)';
+  el.style.color = '#fff';
+  el.style.display = 'block';
+  setTimeout(() => {
+    el.style.display = 'none';
+    el.style.background = '';
+    el.style.color = '';
+    el.textContent = 'Subiendo foto...';
+  }, 4000);
+}
+
 // ── UPLOAD ──
 async function handleFileSelect(e) {
   const file = e.target.files[0];
@@ -880,13 +894,12 @@ async function handleFileSelect(e) {
       showToast(msg);
       setTimeout(loadFotos, 3000);
     } else {
-      showToast(data.error || 'Error al subir. Intenta de nuevo.');
+      showBlockedMsg(data.error || 'Error al subir. Intenta de nuevo.');
     }
   } catch(err) {
-    showToast('Error de conexión. Intenta de nuevo.');
+    showBlockedMsg('Error de conexión. Intenta de nuevo.');
   } finally {
     isUploading = false;
-    document.getElementById('upload-progress').style.display = 'none';
     e.target.value = '';
   }
 }
