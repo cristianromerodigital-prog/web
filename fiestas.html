@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='179';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='180';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -385,19 +385,7 @@ async function checkNSFW(file) {
       try {
         if (!faceModel) faceModel = await blazeface.load();
         const faces = await faceModel.estimateFaces(img, false);
-        const realFaces = faces.filter(f => {
-          if (f.probability < 0.88) return false;
-          const lm = f.landmarks; // [ojo_der, ojo_izq, nariz, boca, oreja_der, oreja_izq]
-          if (!lm || lm.length < 4) return false;
-          const [eyeR, eyeL, nose, mouth] = lm;
-          // Ojos deben estar más arriba que la boca
-          const eyeY = (eyeR[1] + eyeL[1]) / 2;
-          if (mouth[1] <= eyeY) return false;
-          // Ojos deben estar aproximadamente al mismo nivel (diferencia < 20% de la altura de cara)
-          const faceH = f.bottomRight[1] - f.topLeft[1];
-          if (Math.abs(eyeR[1] - eyeL[1]) > faceH * 0.20) return false;
-          return true;
-        });
+        const realFaces = faces.filter(f => f.probability > 0.95);
         if (realFaces.length > 0) {
           console.log(`[VISION] skip — cara real detectada (caras:${realFaces.length}, Porn:${porn.toFixed(2)}, Sexy:${sexy.toFixed(2)})`);
           return { ok: true, uncertain: false };
