@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='174';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='175';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -374,22 +374,22 @@ async function checkNSFW(file) {
     const get = cls => (predictions.find(p => p.className === cls) || {}).probability || 0;
     const porn = get('Porn'), sexy = get('Sexy'), hentai = get('Hentai'), neutral = get('Neutral');
 
-    // Bloqueo client-side — contenido claramente explícito
-    if (porn > 0.80 || (porn > 0.60 && sexy > 0.30) || (porn > 0.35 && hentai > 0.15) || hentai > 0.70) {
-      console.log('[VISION] skip — bloqueada client-side');
+    // Bloqueo sin cara: hentai alto o seno/culo evidente sin persona visible
+    if ((porn > 0.35 && hentai > 0.15) || hentai > 0.70) {
+      console.log('[VISION] skip — bloqueada client-side (hentai)');
       return { ok: false, uncertain: false };
     }
 
-    // Zona gris: señal moderada → decidir por caras
+    // Cualquier señal sexual → chequear cara
     if (porn > 0.30 || sexy > 0.25 || hentai > 0.12) {
       try {
         if (!faceModel) faceModel = await blazeface.load();
         const faces = await faceModel.estimateFaces(img, false);
-        if (faces.length > 0) {
-          console.log(`[VISION] skip — zona gris con cara (malla/escote) caras:${faces.length}, Porn:${porn.toFixed(2)})`);
+        if (faces.length > 0 && sexy <= 0.65 && porn <= 0.60) {
+          console.log(`[VISION] skip — con cara (malla/escote) caras:${faces.length}, Porn:${porn.toFixed(2)})`);
           return { ok: true, uncertain: false };
         } else {
-          console.log(`[VISION] enviando a Google Vision — zona gris sin cara (Porn:${porn.toFixed(2)}, Sexy:${sexy.toFixed(2)})`);
+          console.log(`[VISION] enviando a Google Vision — sexy/porn alto o sin cara (Porn:${porn.toFixed(2)}, Sexy:${sexy.toFixed(2)}, caras:${faces.length})`);
           return { ok: true, uncertain: true };
         }
       } catch(fe) {
