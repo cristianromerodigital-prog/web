@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='160';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='162';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -367,11 +367,13 @@ async function checkNSFW(file) {
     await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = url; });
     const predictions = await nsfwModel.classify(img);
     URL.revokeObjectURL(url);
-const get = cls => (predictions.find(p => p.className === cls) || {}).probability || 0;
+    console.log('[NSFW]', predictions.map(p => `${p.className}:${p.probability.toFixed(3)}`).join(' | '));
+    const get = cls => (predictions.find(p => p.className === cls) || {}).probability || 0;
     if (get('Porn') > 0.80 || get('Sexy') > 0.9 || get('Hentai') > 0.7) return false;
     return true;
   } catch(e) {
-    return true; // si falla el modelo, no bloquear
+    console.error('[NSFW ERROR]', e);
+    return true;
   }
 }
 fetch('https://web.cristian-romero-digital.workers.dev/crd_settings',{headers:{Authorization:'crd2025'}}).then(r=>r.json()).then(function(d){ settings=Object.assign({},settings,{logo_url:d.logoUrl||'',whatsapp:d.waSuffix||'',website:d.entregaWebUrl||'',instagram:d.instagram||'',entregaIgUrl:d.entregaIgUrl||''}); applyBranding(); }).catch(function(){});
