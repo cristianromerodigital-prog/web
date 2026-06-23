@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='186';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='187';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -415,10 +415,13 @@ async function checkNSFW(file) {
     const shape = outTensor.dims;
     console.log('[NUDENET DEBUG] output shape:', shape.join('x'));
 
-    // YOLOv8 puede ser [1, 20, 8400] o [1, 8400, 20]
-    const numClasses = NUDENET_LABELS.length;
-    const isNHW = shape[1] === numClasses + 4; // [1, 20, 8400]
+    // Detectar formato: [1, features, detections] o [1, detections, features]
+    const isNHW = shape[1] < shape[2]; // channels-first: pocos features, muchos anchors
     const numDet = isNHW ? shape[2] : shape[1];
+    const numFeatures = isNHW ? shape[1] : shape[2];
+    const numClasses = Math.min(numFeatures - 4, NUDENET_LABELS.length);
+    console.log(`[NUDENET DEBUG] isNHW:${isNHW} numDet:${numDet} numFeatures:${numFeatures} numClasses:${numClasses}`);
+
     const found = [];
     let blocked = false;
 
@@ -427,11 +430,11 @@ async function checkNSFW(file) {
       for (let c = 0; c < numClasses; c++) {
         const score = isNHW
           ? output[(c + 4) * numDet + d]
-          : output[d * (numClasses + 4) + c + 4];
+          : output[d * numFeatures + c + 4];
         if (score > maxScore) { maxScore = score; maxClass = c; }
       }
       if (maxScore >= NUDENET_THRESHOLD) {
-        const label = NUDENET_LABELS[maxClass];
+        const label = NUDENET_LABELS[maxClass] || `class${maxClass}`;
         found.push(`${label}:${maxScore.toFixed(2)}`);
         if (NUDENET_BLOCK.has(maxClass)) blocked = true;
       }
