@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='163';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='164';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -370,7 +370,7 @@ async function checkNSFW(file) {
     console.log('[NSFW]', predictions.map(p => `${p.className}:${p.probability.toFixed(3)}`).join(' | '));
     const get = cls => (predictions.find(p => p.className === cls) || {}).probability || 0;
     const porn = get('Porn'), sexy = get('Sexy'), hentai = get('Hentai');
-    if (porn > 0.80 || (porn > 0.60 && sexy > 0.30) || hentai > 0.7) return false;
+    if (porn > 0.80 || (porn > 0.40 && sexy > 0.30) || hentai > 0.7) return false;
     return true;
   } catch(e) {
     console.error('[NSFW ERROR]', e);
