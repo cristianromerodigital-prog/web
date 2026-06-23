@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='187';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='188';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -366,7 +366,7 @@ const NUDENET_LABELS = [
   'covered_genitalia_f','exposed_genitalia_f','covered_penis','exposed_penis'
 ];
 const NUDENET_BLOCK = new Set([0,5,11,13,15]); // anus, buttocks, breast_f, genitalia_f, penis
-const NUDENET_THRESHOLD = 0.35;
+const NUDENET_THRESHOLD = 0.01; // DEBUG: bajar para ver scores reales
 const NUDENET_SIZE = 320;
 
 let nudenetSession = null;
@@ -439,7 +439,16 @@ async function checkNSFW(file) {
         if (NUDENET_BLOCK.has(maxClass)) blocked = true;
       }
     }
-    console.log('[NUDENET]', found.length ? found.join(' | ') : 'nada detectado');
+    // Debug: mostrar max score por clase
+    const classMax = new Array(numClasses).fill(0);
+    for (let d = 0; d < numDet; d++) {
+      for (let c = 0; c < numClasses; c++) {
+        const score = isNHW ? output[(c+4)*numDet+d] : output[d*numFeatures+c+4];
+        if (score > classMax[c]) classMax[c] = score;
+      }
+    }
+    console.log('[NUDENET MAX]', classMax.map((s,i) => `${NUDENET_LABELS[i]||i}:${s.toFixed(3)}`).join(' | '));
+    console.log('[NUDENET]', found.length ? found.slice(0,10).join(' | ') : 'nada detectado');
     return { ok: !blocked };
   } catch(e) {
     console.error('[NUDENET ERROR]', e.message);
