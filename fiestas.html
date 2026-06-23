@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='148';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='149';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -273,7 +273,7 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
 
 <div id="upload-label">subí tu foto</div>
 <button id="btn-upload" title="Subir foto" onclick="openActionModal()">
-  <input type="file" id="file-input" accept="image/*" capture="environment" style="display:none">
+  <input type="file" id="file-input" accept="image/*" style="display:none">
   +
 </button>
 <div id="upload-progress">Subiendo foto...</div>
@@ -349,12 +349,31 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
   <button id="lb-next" onclick="lbNext()">›</button>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/nsfwjs@2.4.2/dist/nsfwjs.min.js"></script>
 <script>
 const WORKER_URL = 'https://crclub-worker.cristian-romero-digital.workers.dev';
 const params = new URLSearchParams(window.location.search);
 const EVENT_ID = params.get('e') || '';
 
 let settings = (() => { try { return JSON.parse(localStorage.getItem('crd_settings')) || {}; } catch(e) { return {}; } })();
+
+let nsfwModel = null;
+async function checkNSFW(file) {
+  try {
+    if (!nsfwModel) nsfwModel = await nsfwjs.load();
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = url; });
+    const predictions = await nsfwModel.classify(img);
+    URL.revokeObjectURL(url);
+    const get = cls => (predictions.find(p => p.className === cls) || {}).probability || 0;
+    if (get('Porn') > 0.6 || get('Sexy') > 0.8 || get('Hentai') > 0.6) return false;
+    return true;
+  } catch(e) {
+    return true; // si falla el modelo, no bloquear
+  }
+}
 fetch('https://web.cristian-romero-digital.workers.dev/crd_settings',{headers:{Authorization:'crd2025'}}).then(r=>r.json()).then(function(d){ settings=Object.assign({},settings,{logo_url:d.logoUrl||'',whatsapp:d.waSuffix||'',website:d.entregaWebUrl||'',instagram:d.instagram||'',entregaIgUrl:d.entregaIgUrl||''}); applyBranding(); }).catch(function(){});
 
 let evento = null;
@@ -822,8 +841,21 @@ async function handleFileSelect(e) {
   if (file.size > 15 * 1024 * 1024) { showToast('La imagen es demasiado grande (máx 15MB)'); return; }
 
   isUploading = true;
-  document.getElementById('upload-progress').style.display = 'block';
+  const progressEl = document.getElementById('upload-progress');
+  progressEl.textContent = 'Analizando imagen...';
+  progressEl.style.display = 'block';
 
+  const ok = true; // TEMP: filtro desactivado
+  if (!ok) {
+    showToast('Esta imagen no puede subirse a la galería.');
+    isUploading = false;
+    progressEl.style.display = 'none';
+    progressEl.textContent = 'Subiendo foto...';
+    e.target.value = '';
+    return;
+  }
+
+  progressEl.textContent = 'Subiendo foto...';
   const fd = new FormData();
   fd.append('file', file);
 
