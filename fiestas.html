@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='180';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='181';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -359,10 +359,70 @@ const EVENT_ID = params.get('e') || '';
 
 let settings = (() => { try { return JSON.parse(localStorage.getItem('crd_settings')) || {}; } catch(e) { return {}; } })();
 
+// ── NUDENET ──────────────────────────────────────────────────────────────────
+const NUDENET_MODEL_URL = 'https://cdn.jsdelivr.net/gh/vladmandic/nudenet@main/models/default-f16/model.json';
+const NUDENET_LABELS = [
+  'exposed anus','exposed armpits','belly','exposed belly',
+  'buttocks','exposed buttocks','female face','male face',
+  'feet','exposed feet','breast','exposed breast',
+  'vagina','exposed vagina','male breast','exposed male breast'
+];
+const NUDENET_BLOCK = new Set([0,5,11,13,15]); // anus, buttocks, breast, vagina, male genitals expuestos
+const NUDENET_THRESHOLD = 0.38;
+
+let nudenetModel = null;
+
+// Precarga en background al cargar la página
+setTimeout(() => {
+  tf.loadGraphModel(NUDENET_MODEL_URL).then(m => {
+    nudenetModel = m;
+    console.log('[NUDENET] modelo listo');
+  }).catch(() => {});
+}, 3000);
+
+async function checkNSFW(file) {
+  try {
+    if (!nudenetModel) {
+      console.log('[NUDENET] cargando modelo (primera vez ~73MB)...');
+      nudenetModel = await tf.loadGraphModel(NUDENET_MODEL_URL);
+      console.log('[NUDENET] modelo cargado');
+    }
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = url; });
+    URL.revokeObjectURL(url);
+
+    const tensor = tf.tidy(() => tf.browser.fromPixels(img).toFloat().expandDims(0));
+    const [boxesTensor, scoresTensor, classesTensor] = await nudenetModel.executeAsync(tensor, ['output1','output2','output3']);
+    tensor.dispose();
+
+    const scores = await scoresTensor.data();
+    const classes = await classesTensor.data();
+    boxesTensor.dispose(); scoresTensor.dispose(); classesTensor.dispose();
+
+    let blocked = false;
+    const found = [];
+    for (let i = 0; i < scores.length; i++) {
+      if (scores[i] >= NUDENET_THRESHOLD) {
+        const id = Math.round(classes[i]);
+        const label = NUDENET_LABELS[id] || `class${id}`;
+        found.push(`${label}:${scores[i].toFixed(2)}`);
+        if (NUDENET_BLOCK.has(id)) blocked = true;
+      }
+    }
+    console.log('[NUDENET]', found.length ? found.join(' | ') : 'nada detectado');
+    return { ok: !blocked, uncertain: false };
+  } catch(e) {
+    console.error('[NUDENET ERROR]', e);
+    return { ok: true, uncertain: false };
+  }
+}
+
+/* ── CÓDIGO ANTERIOR (nsfwjs + BlazeFace + Google Vision) — comentado ────────
 let nsfwModel = null;
 let faceModel = null;
 
-async function checkNSFW(file) {
+async function checkNSFW_OLD(file) {
   try {
     if (!nsfwModel) nsfwModel = await nsfwjs.load('https://cdn.jsdelivr.net/gh/infinitered/nsfwjs/models/inception_v3/', { size: 299 });
     const img = new Image();
@@ -370,43 +430,19 @@ async function checkNSFW(file) {
     await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = url; });
     const predictions = await nsfwModel.classify(img);
     URL.revokeObjectURL(url);
-    console.log('[NSFW]', predictions.map(p => `${p.className}:${p.probability.toFixed(3)}`).join(' | '));
     const get = cls => (predictions.find(p => p.className === cls) || {}).probability || 0;
     const porn = get('Porn'), sexy = get('Sexy'), hentai = get('Hentai'), neutral = get('Neutral');
-
-    // Bloqueo sin cara: hentai alto o seno/culo evidente sin persona visible
-    if ((porn > 0.35 && hentai > 0.15) || hentai > 0.70) {
-      console.log('[VISION] skip — bloqueada client-side (hentai)');
-      return { ok: false, uncertain: false };
-    }
-
-    // Cualquier señal sexual → chequear cara
+    if ((porn > 0.35 && hentai > 0.15) || hentai > 0.70) return { ok: false, uncertain: false };
     if (porn > 0.10 || sexy > 0.15 || hentai > 0.08) {
-      try {
-        if (!faceModel) faceModel = await blazeface.load();
-        const faces = await faceModel.estimateFaces(img, false);
-        const realFaces = faces.filter(f => f.probability > 0.95);
-        if (realFaces.length > 0) {
-          console.log(`[VISION] skip — cara real detectada (caras:${realFaces.length}, Porn:${porn.toFixed(2)}, Sexy:${sexy.toFixed(2)})`);
-          return { ok: true, uncertain: false };
-        } else {
-          console.log(`[VISION] enviando a Google Vision — sin cara real (Porn:${porn.toFixed(2)}, Sexy:${sexy.toFixed(2)}, detecciones:${faces.length})`);
-          return { ok: true, uncertain: true };
-        }
-      } catch(fe) {
-        console.log(`[VISION] enviando a Google Vision — BlazeFace falló`);
-        return { ok: true, uncertain: true };
-      }
+      if (!faceModel) faceModel = await blazeface.load();
+      const faces = await faceModel.estimateFaces(img, false);
+      const realFaces = faces.filter(f => f.probability > 0.95);
+      return { ok: true, uncertain: realFaces.length === 0 };
     }
-
-    // Claramente segura
-    console.log(`[VISION] skip — segura (Neutral:${neutral.toFixed(2)})`);
     return { ok: true, uncertain: false };
-  } catch(e) {
-    console.error('[NSFW ERROR]', e);
-    return { ok: true, uncertain: true };
-  }
+  } catch(e) { return { ok: true, uncertain: true }; }
 }
+──────────────────────────────────────────────────────────────────────────── */
 fetch('https://web.cristian-romero-digital.workers.dev/crd_settings',{headers:{Authorization:'crd2025'}}).then(r=>r.json()).then(function(d){ settings=Object.assign({},settings,{logo_url:d.logoUrl||'',whatsapp:d.waSuffix||'',website:d.entregaWebUrl||'',instagram:d.instagram||'',entregaIgUrl:d.entregaIgUrl||''}); applyBranding(); }).catch(function(){});
 
 let evento = null;
@@ -911,7 +947,6 @@ async function handleFileSelect(e) {
   progressEl.textContent = 'Subiendo foto...';
   const fd = new FormData();
   fd.append('file', file);
-  if (uncertain) fd.append('uncertain', '1');
 
   try {
     const res = await fetch(`${WORKER_URL}/eventos/${EVENT_ID}/fotos`, { method: 'POST', body: fd });
