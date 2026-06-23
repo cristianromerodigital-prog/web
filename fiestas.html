@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='172';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='173';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -374,14 +374,14 @@ async function checkNSFW(file) {
     const get = cls => (predictions.find(p => p.className === cls) || {}).probability || 0;
     const porn = get('Porn'), sexy = get('Sexy'), hentai = get('Hentai'), neutral = get('Neutral');
 
-    // Bloqueo client-side — solo contenido MUY obvio
-    if (porn > 0.80 || (porn > 0.60 && sexy > 0.30) || sexy > 0.65 || hentai > 0.70) {
+    // Bloqueo client-side — lo que ya funcionaba antes
+    if (porn > 0.80 || (porn > 0.60 && sexy > 0.30) || (porn > 0.35 && hentai > 0.15) || hentai > 0.70) {
       console.log('[VISION] skip — bloqueada client-side');
       return { ok: false, uncertain: false };
     }
 
-    // Foto claramente segura: sin señales explícitas + cara visible
-    const hasSexualSignal = porn > 0.20 || sexy > 0.15 || hentai > 0.10;
+    // Va a Vision si hay señal moderada (calzoncillos, pene ángulos raros, etc.)
+    const hasSexualSignal = porn > 0.30 || sexy > 0.25 || hentai > 0.12;
     if (!hasSexualSignal) {
       try {
         if (!faceModel) faceModel = await blazeface.load();
