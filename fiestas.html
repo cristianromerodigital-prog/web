@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='193';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='194';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -349,7 +349,6 @@ body.custom-cursor *, body.custom-cursor *::before, body.custom-cursor *::after 
   <button id="lb-next" onclick="lbNext()">›</button>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/nsfwjs@2.4.2/dist/nsfwjs.min.js"></script>
 <script>
 const WORKER_URL = 'https://crclub-worker.cristian-romero-digital.workers.dev';
 const params = new URLSearchParams(window.location.search);
@@ -357,35 +356,8 @@ const EVENT_ID = params.get('e') || '';
 
 let settings = (() => { try { return JSON.parse(localStorage.getItem('crd_settings')) || {}; } catch(e) { return {}; } })();
 
-let nsfwModel = null;
-
-setTimeout(() => {
-  nsfwjs.load('https://cdn.jsdelivr.net/gh/infinitered/nsfwjs/models/inception_v3/', { size: 299 })
-    .then(m => { nsfwModel = m; console.log('[NSFW] modelo listo'); })
-    .catch(() => {});
-}, 2000);
-
-async function checkNSFW(file) {
-  try {
-    if (!nsfwModel) nsfwModel = await nsfwjs.load('https://cdn.jsdelivr.net/gh/infinitered/nsfwjs/models/inception_v3/', { size: 299 });
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = url; });
-    URL.revokeObjectURL(url);
-    const predictions = await nsfwModel.classify(img);
-    const get = cls => (predictions.find(p => p.className === cls) || {}).probability || 0;
-    const porn = get('Porn'), sexy = get('Sexy'), hentai = get('Hentai');
-    console.log('[NSFW]', predictions.map(p => `${p.className}:${p.probability.toFixed(3)}`).join(' | '));
-    if (porn > 0.80 || (porn > 0.60 && sexy > 0.30) || (porn > 0.35 && hentai > 0.15) || hentai > 0.70) {
-      return { ok: false, uncertain: false };
-    }
-    // Señal moderada → Vision decide
-    const uncertain = porn > 0.05 || sexy > 0.10 || hentai > 0.05;
-    return { ok: true, uncertain };
-  } catch(e) {
-    console.error('[NSFW ERROR]', e);
-    return { ok: true };
-  }
+function checkNSFW() {
+  return { ok: true, uncertain: true };
 }
 fetch('https://web.cristian-romero-digital.workers.dev/crd_settings',{headers:{Authorization:'crd2025'}}).then(r=>r.json()).then(function(d){ settings=Object.assign({},settings,{logo_url:d.logoUrl||'',whatsapp:d.waSuffix||'',website:d.entregaWebUrl||'',instagram:d.instagram||'',entregaIgUrl:d.entregaIgUrl||''}); applyBranding(); }).catch(function(){});
 
@@ -872,7 +844,7 @@ async function handleFileSelect(e) {
   progressEl.textContent = 'Analizando imagen...';
   progressEl.style.display = 'block';
 
-  const { ok, uncertain } = await checkNSFW(file);
+  const { ok } = checkNSFW();
   if (!ok) {
     progressEl.textContent = '⚠ Foto no permitida en esta galería';
     progressEl.style.background = 'rgba(180,30,30,.95)';
@@ -891,7 +863,6 @@ async function handleFileSelect(e) {
   progressEl.textContent = 'Subiendo foto...';
   const fd = new FormData();
   fd.append('file', file);
-  if (uncertain) fd.append('uncertain', '1');
 
   try {
     const res = await fetch(`${WORKER_URL}/eventos/${EVENT_ID}/fotos`, { method: 'POST', body: fd });
