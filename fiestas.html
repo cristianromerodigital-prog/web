@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<script>!function(){var v='190';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
+<script>!function(){var v='191';if(location.search.indexOf('v='+v)<0){var u=new URL(location.href);u.searchParams.set('v',v);location.replace(u.toString());}}();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fotos del Evento — Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -377,9 +377,11 @@ async function checkNSFW(file) {
     const porn = get('Porn'), sexy = get('Sexy'), hentai = get('Hentai');
     console.log('[NSFW]', predictions.map(p => `${p.className}:${p.probability.toFixed(3)}`).join(' | '));
     if (porn > 0.80 || (porn > 0.60 && sexy > 0.30) || (porn > 0.35 && hentai > 0.15) || hentai > 0.70) {
-      return { ok: false };
+      return { ok: false, uncertain: false };
     }
-    return { ok: true };
+    // Señal moderada → Vision decide
+    const uncertain = porn > 0.05 || sexy > 0.10 || hentai > 0.05;
+    return { ok: true, uncertain };
   } catch(e) {
     console.error('[NSFW ERROR]', e);
     return { ok: true };
@@ -870,7 +872,7 @@ async function handleFileSelect(e) {
   progressEl.textContent = 'Analizando imagen...';
   progressEl.style.display = 'block';
 
-  const { ok } = await checkNSFW(file);
+  const { ok, uncertain } = await checkNSFW(file);
   if (!ok) {
     progressEl.textContent = '⚠ Foto no permitida en esta galería';
     progressEl.style.background = 'rgba(180,30,30,.95)';
@@ -889,6 +891,7 @@ async function handleFileSelect(e) {
   progressEl.textContent = 'Subiendo foto...';
   const fd = new FormData();
   fd.append('file', file);
+  if (uncertain) fd.append('uncertain', '1');
 
   try {
     const res = await fetch(`${WORKER_URL}/eventos/${EVENT_ID}/fotos`, { method: 'POST', body: fd });
