@@ -72,7 +72,7 @@ function doPost(e) {
     }
     if (data.action === 'subirContratoPDF') {
       return ContentService
-        .createTextOutput(JSON.stringify(subirContratoPDF(data.base64, data.nombre, data.driveClienteId || '')))
+        .createTextOutput(JSON.stringify(subirContratoPDF(data.base64, data.nombre, data.driveClienteId || '', data.clienteNombre || '')))
         .setMimeType(ContentService.MimeType.JSON);
     }
     if (data.action === 'syncCalendar') {
