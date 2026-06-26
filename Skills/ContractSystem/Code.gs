@@ -70,6 +70,11 @@ function doPost(e) {
       marcarSolicitudUsada(data.id);
       return ContentService.createTextOutput('{"ok":true}').setMimeType(ContentService.MimeType.JSON);
     }
+    if (data.action === 'subirContratoPDF') {
+      return ContentService
+        .createTextOutput(JSON.stringify(subirContratoPDF(data.base64, data.nombre, data.driveClienteId || '')))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
     if (data.action === 'syncCalendar') {
       return ContentService
         .createTextOutput(JSON.stringify(syncCalendar(data.events || [])))

@@ -203,6 +203,26 @@ function registrarContrato(data) {
   ]);
 }
 
+// ──── Upload PDF de contrato a Drive ────
+
+function subirContratoPDF(base64, nombre, driveClienteId) {
+  var bytes = Utilities.base64Decode(base64);
+  var blob  = Utilities.newBlob(bytes, 'application/pdf', nombre || 'contrato.pdf');
+
+  var folder;
+  if (driveClienteId) {
+    try { folder = DriveApp.getFolderById(driveClienteId); } catch(e) {}
+  }
+  if (!folder) {
+    var rootId = PropertiesService.getScriptProperties().getProperty('DRIVE_ROOT_ID');
+    try { folder = rootId ? DriveApp.getFolderById(rootId) : DriveApp.getRootFolder(); } catch(e) { folder = DriveApp.getRootFolder(); }
+  }
+
+  var file = folder.createFile(blob);
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return { ok: true, url: file.getUrl(), fileId: file.getId() };
+}
+
 // ──── Sincronización Google Calendar ────
 
 function syncCalendar(events) {
