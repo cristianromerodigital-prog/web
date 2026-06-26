@@ -1243,6 +1243,11 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           </div>
         </div>
         <div class="settings-section">
+          <div class="settings-section-title">Formulario de Solicitud — Fondo</div>
+          <p style="font-size:11px;color:var(--gray);margin-bottom:16px;letter-spacing:.5px">URL de la imagen de fondo que se muestra en formulario.html.</p>
+          <div class="form-group"><label class="form-label">URL imagen de fondo</label><input class="form-input" id="set-formulario-fondo" placeholder="https://...imagen.jpg"></div>
+        </div>
+        <div class="settings-section">
           <div class="settings-section-title">Entregas — Botones Sociales</div>
           <p style="font-size:11px;color:var(--gray);margin-bottom:16px;letter-spacing:.5px">URLs que aparecen como botones flotantes en las páginas de entrega al cliente.</p>
           <div class="settings-row">
@@ -2129,6 +2134,18 @@ tr:hover td{background:rgba(255,255,255,0.02);}
            CLIENTES
            ═══════════════════════════════════════════════════════════════ -->
       <div class="page" id="page-clientes">
+        <!-- SOLICITUDES -->
+        <div class="settings-section" style="margin-bottom:32px">
+          <div class="settings-section-title" style="display:flex;justify-content:space-between;align-items:center">
+            <span>Solicitudes de clientes <span id="ct-sol-badge" style="display:none;background:var(--gold);color:var(--black);font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:8px"></span></span>
+            <button class="btn-sm btn-sec" onclick="ctRefreshSolicitudes()" style="font-size:9px;letter-spacing:1.5px">↻ Actualizar</button>
+          </div>
+          <div style="margin-top:6px;font-size:10px;color:var(--gray)">
+            Link del formulario para clientes: <a id="ct-form-url" href="#" target="_blank" style="color:var(--cyan);word-break:break-all;text-decoration:none"></a>
+          </div>
+          <div id="ct-sol-list" style="margin-top:14px"><div style="color:var(--gray);font-size:12px">Cargando...</div></div>
+        </div>
+
         <!-- Nuevo contrato -->
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px">
           <div class="ct-tipo-btn" data-tipo="BODA" onclick="showPage('contratos');ctSelTipo('BODA')">
@@ -3250,6 +3267,25 @@ const CLIENTES_WORKER = 'https://crclub-worker.cristian-romero-digital.workers.d
 let _clientes = [];
 let _clienteActual = null;
 let _clientesCargados = false;
+let _clientesPoller = null;
+
+function _startClientesPoller() {
+  _stopClientesPoller();
+  _clientesPoller = setInterval(async function() {
+    if (currentPage !== 'clientes') { _stopClientesPoller(); return; }
+    try {
+      const prevIds = _clientes.map(function(c){ return c.id; }).join(',');
+      await _fetchClientes();
+      const newIds = _clientes.map(function(c){ return c.id; }).join(',');
+      if (newIds !== prevIds) renderClientes(_clientes);
+    } catch(e) {}
+    ctRefreshSolicitudes();
+  }, 20000);
+}
+
+function _stopClientesPoller() {
+  if (_clientesPoller) { clearInterval(_clientesPoller); _clientesPoller = null; }
+}
 
 async function _fetchClientes() {
   const r = await fetch(CLIENTES_WORKER + '/solicitudes', { headers: { 'Authorization': 'Bearer ' + getAdminJWT() } });
@@ -3536,7 +3572,7 @@ function showPage(id) {
   if (id === 'content') { loadContentPage(); setTimeout(loadDestinations, 100); }
   if (id === 'invites') renderInvitesPage();
   if (id === 'fiestas') loadFiestasPage();
-  if (id === 'clientes') loadClientesPage();
+  if (id === 'clientes') { loadClientesPage(); ctInitSolicitudes(); _startClientesPoller(); } else { _stopClientesPoller(); }
   if (id === 'contratos') initContratosPage();
   if (id === 'presupuesto') {
     Promise.all([
@@ -4273,6 +4309,7 @@ function loadSettings() {
   document.getElementById('set-price-book-boda').value = s.priceBookBoda || '';
   document.getElementById('set-wa').value = s.waSuffix || '';
   document.getElementById('set-instagram').value = s.instagram || '';
+  if (document.getElementById('set-formulario-fondo')) document.getElementById('set-formulario-fondo').value = s.formularioFondo || '';
   document.getElementById('set-entrega-ig').value  = s.entregaIgUrl  || '';
   document.getElementById('set-entrega-web').value = s.entregaWebUrl || '';
   document.getElementById('set-emailjs-key').value      = s.emailjsKey            || '';
@@ -4327,6 +4364,7 @@ function saveSettings() {
     priceBookBoda:     document.getElementById('set-price-book-boda').value.trim(),
     waSuffix:          document.getElementById('set-wa').value.trim(),
     instagram:         document.getElementById('set-instagram').value.trim(),
+    formularioFondo:   (document.getElementById('set-formulario-fondo') || {}).value?.trim() || existing.formularioFondo || '',
     entregaIgUrl:      document.getElementById('set-entrega-ig').value.trim(),
     entregaWebUrl:     document.getElementById('set-entrega-web').value.trim(),
     emailjsKey:              (document.getElementById('set-emailjs-key')      || {}).value?.trim() || existing.emailjsKey || '',
@@ -7887,9 +7925,8 @@ function ctClearDraft() {
 function ctInitSolicitudes() {
   const url = ctGetUrl();
   if (!url) return;
-  const formUrl = url.replace('/exec', '/exec') + '?action=form';
   const el = document.getElementById('ct-form-url');
-  if (el) el.textContent = url + '?action=form';
+  if (el) { const u = location.origin + '/formulario.html'; el.textContent = u; el.href = u; }
   ctRefreshSolicitudes();
 }
 
