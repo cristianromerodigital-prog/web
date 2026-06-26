@@ -390,7 +390,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.51</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.52</div>
     </div>
   </aside>
 
@@ -7790,7 +7790,7 @@ let ctTipo = null;
 let ctSvcData = [];
 const CT_CFG_KEY = 'crd_contratos_cfg';
 
-function initContratosPage() {
+async function initContratosPage() {
   const saved = S.get(CT_CFG_KEY);
   if (saved) {
     if (saved.url)           document.getElementById('ct-apps-url').value = saved.url;
@@ -7799,13 +7799,21 @@ function initContratosPage() {
   }
   document.getElementById('ct-dia-firma').valueAsDate = new Date();
   if (ctSvcData.length === 0 && ctGetUrl()) ctCargarServicios();
-  // Historial: abrir y cargar automáticamente
   const histBody  = document.getElementById('ct-hist-body');
   const histArrow = document.getElementById('ct-hist-arrow');
   if (histBody) { histBody.style.display = 'block'; if (histArrow) histArrow.textContent = '▲'; }
   if (ctGetUrl()) ctLoadHistorial();
-  // Borrador
   ctRestoreDraft();
+  // Sync desde KV para persistencia cross-browser
+  const cloud = await fetchFromCloud(CT_CFG_KEY);
+  if (cloud && cloud.url) {
+    const hadUrl = !!(saved && saved.url);
+    S.set(CT_CFG_KEY, cloud);
+    document.getElementById('ct-apps-url').value = cloud.url;
+    if (cloud.driveRootId) document.getElementById('ct-drive-root-id').value = cloud.driveRootId;
+    if (cloud.presupuestosId) document.getElementById('ct-presupuestos-id').value = cloud.presupuestosId;
+    if (!hadUrl) { ctCargarServicios(); ctLoadHistorial(); }
+  }
 }
 
 function _ctBuildPage_UNUSED() {
