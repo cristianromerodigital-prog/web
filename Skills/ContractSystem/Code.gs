@@ -19,6 +19,11 @@ function doGet(e) {
     const folderId = (e && e.parameter && e.parameter.folder) || '';
     result = folderId ? getDriveFolderFiles(folderId) : [];
   }
+  if (action === 'syncCalendar') {
+    const eventsJson = (e && e.parameter && e.parameter.events) || '[]';
+    try { result = syncCalendar(JSON.parse(eventsJson)); }
+    catch(err) { result = { ok: false, error: err.message }; }
+  }
 
   // Si hay resultado JSON (con o sin JSONP)
   if (result !== null) {

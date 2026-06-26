@@ -390,7 +390,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.50</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.51</div>
     </div>
   </aside>
 
@@ -8081,8 +8081,7 @@ function ctCargarServicios() {
   const grid = document.getElementById('ct-svc-grid');
   if (!grid) return;
   grid.innerHTML = '<div style="color:var(--gray);font-size:12px;grid-column:1/-1">Cargando...</div>';
-  fetch(url, { method:'POST', redirect:'follow', body: JSON.stringify({action:'getServicios'}) })
-    .then(r => r.json())
+  _jsonp(url + '?action=getServicios')
     .then(data => ctRenderServicios(data))
     .catch(err => {
       console.error('[ctCargarServicios]', err);
@@ -9310,7 +9309,7 @@ function calSyncEvento(ev) {
     fecha: ev.fecha, hora: ev.hora || '09:00',
     tipo: ev.tipo, nombre: ev.nombre, lugar: ev.lugar || ''
   };
-  fetch(url, { method: 'POST', redirect: 'follow', body: JSON.stringify({ action: 'syncCalendar', events: [payload] }) })
+  _jsonp(url + '?action=syncCalendar&events=' + encodeURIComponent(JSON.stringify([payload])))
     .catch(function(){});
 }
 
@@ -9326,7 +9325,7 @@ async function calSyncGAS() {
       fecha: ev.fecha, hora: ev.hora || '09:00',
       tipo: ev.tipo, nombre: ev.nombre, lugar: ev.lugar || ''
     }; });
-    const res = await fetch(url, { method: 'POST', redirect: 'follow', body: JSON.stringify({ action: 'syncCalendar', events: eventos }) }).then(function(r){ return r.json(); });
+    const res = await _jsonp(url + '?action=syncCalendar&events=' + encodeURIComponent(JSON.stringify(eventos)));
     if (res.ok) toast('Sincronizado: ' + res.synced + ' eventos en Google Calendar ✓');
     else toast(res.error || 'Error al sincronizar', 'error');
   } catch(e) { toast('Error: ' + e.message, 'error'); }
