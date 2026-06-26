@@ -1783,7 +1783,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
             <div class="settings-section" style="margin-bottom:16px">
               <div class="settings-section-title">Datos del evento</div>
               <div style="margin-top:12px">
-                <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;font-size:12px;color:var(--gray2)"><input type="checkbox" id="ct-b-tiene-civil" onchange="ctToggleEvento('civil',this.checked)" style="accent-color:var(--gold)"> Incluir Ceremonia Civil</label>
+                <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;font-size:12px;color:var(--gray2)"><input type="checkbox" id="ct-b-tiene-civil" onchange="ctToggleEvento('civil',this.checked,this)" style="accent-color:var(--gold)"> Incluir Ceremonia Civil</label>
                 <div id="ct-sub-civil" style="display:none;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);padding:12px;margin-bottom:12px">
                   <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:10px">Ceremonia Civil</div>
                   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
@@ -1792,7 +1792,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                     <div class="form-group"><label class="form-label">Dirección</label><input class="form-input" id="ct-b-civil-dir"></div>
                   </div>
                 </div>
-                <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;font-size:12px;color:var(--gray2)"><input type="checkbox" id="ct-b-tiene-reli" onchange="ctToggleEvento('reli',this.checked)" style="accent-color:var(--gold)"> Incluir Ceremonia Religiosa</label>
+                <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;font-size:12px;color:var(--gray2)"><input type="checkbox" id="ct-b-tiene-reli" onchange="ctToggleEvento('reli',this.checked,this)" style="accent-color:var(--gold)"> Incluir Ceremonia Religiosa</label>
                 <div id="ct-sub-reli" style="display:none;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);padding:12px;margin-bottom:12px">
                   <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:10px">Ceremonia Religiosa</div>
                   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
@@ -7890,7 +7890,7 @@ function _ctBuildPage_UNUSED() {
         <div class="settings-section" style="margin-bottom:16px">
           <div class="settings-section-title">Datos del evento</div>
           <div style="margin-top:12px">
-            <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;font-size:12px;color:var(--gray2)"><input type="checkbox" id="ct-b-tiene-civil" onchange="ctToggleEvento('civil',this.checked)" style="accent-color:var(--gold)"> Incluir Ceremonia Civil</label>
+            <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;font-size:12px;color:var(--gray2)"><input type="checkbox" id="ct-b-tiene-civil" onchange="ctToggleEvento('civil',this.checked,this)" style="accent-color:var(--gold)"> Incluir Ceremonia Civil</label>
             <div id="ct-sub-civil" style="display:none;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);padding:12px;margin-bottom:12px">
               <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:10px">Ceremonia Civil</div>
               <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
@@ -7899,7 +7899,7 @@ function _ctBuildPage_UNUSED() {
                 <div class="form-group"><label class="form-label">Dirección</label><input class="form-input" id="ct-b-civil-dir"></div>
               </div>
             </div>
-            <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;font-size:12px;color:var(--gray2)"><input type="checkbox" id="ct-b-tiene-reli" onchange="ctToggleEvento('reli',this.checked)" style="accent-color:var(--gold)"> Incluir Ceremonia Religiosa</label>
+            <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;font-size:12px;color:var(--gray2)"><input type="checkbox" id="ct-b-tiene-reli" onchange="ctToggleEvento('reli',this.checked,this)" style="accent-color:var(--gold)"> Incluir Ceremonia Religiosa</label>
             <div id="ct-sub-reli" style="display:none;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);padding:12px;margin-bottom:12px">
               <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:10px">Ceremonia Religiosa</div>
               <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
@@ -8138,8 +8138,9 @@ function ctSelTipo(tipo) {
   });
 }
 
-function ctToggleEvento(tipo, visible) {
-  const el = document.getElementById('ct-sub-' + tipo);
+function ctToggleEvento(tipo, visible, cb) {
+  const scope = cb ? cb.closest('[id$="-fields"]') : null;
+  const el = scope ? scope.querySelector('[id="ct-sub-' + tipo + '"]') : document.getElementById('ct-sub-' + tipo);
   if (el) el.style.display = visible ? 'block' : 'none';
 }
 
