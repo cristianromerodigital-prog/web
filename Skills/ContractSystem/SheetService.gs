@@ -1,0 +1,242 @@
+// ═══════════════════════════════════════════
+// SheetService.gs — Lectura/escritura en Sheets
+// ═══════════════════════════════════════════
+
+// ──── Drive: lista archivos/carpetas de una carpeta ────
+
+function getDriveFolderFiles(folderId) {
+  try {
+    const folder = DriveApp.getFolderById(folderId);
+    const result = [];
+
+    // Subcarpetas primero
+    const subs = folder.getFolders();
+    while (subs.hasNext()) {
+      const sf = subs.next();
+      result.push({ id: sf.getId(), name: sf.getName(), type: 'folder' });
+    }
+
+    // Archivos de imagen y video
+    const files = folder.getFiles();
+    while (files.hasNext()) {
+      const f    = files.next();
+      const mime = f.getMimeType();
+      const isImg   = mime.startsWith('image/');
+      const isVideo = mime.startsWith('video/');
+      if (!isImg && !isVideo) continue;
+      result.push({
+        id:   f.getId(),
+        name: f.getName(),
+        type: isVideo ? 'video' : 'image',
+        size: f.getSize()
+      });
+    }
+
+    // Carpetas primero, luego por nombre
+    result.sort((a, b) => {
+      if (a.type === 'folder' && b.type !== 'folder') return -1;
+      if (a.type !== 'folder' && b.type === 'folder') return  1;
+      return a.name.localeCompare(b.name, 'es', { numeric: true });
+    });
+    return result;
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+// ──── Servicios (lee desde Presupuestos 2026) ────
+
+function getServicios() {
+  const ss    = SpreadsheetApp.openById(CFG.PRESUPUESTOS_ID);
+  const sheet = ss.getSheetByName('Servicios');
+  const data  = sheet.getDataRange().getValues();
+
+  const servicios = [];
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    if (!row[0] || !row[1]) continue; // fila vacía
+
+    const descripcion = String(row[1]).replace(/\s*\$\s*[\d.,]+/g, '').trim();
+    const rawPesos    = row[3];
+    const pesos       = typeof rawPesos === 'number'
+      ? Math.round(rawPesos)
+      : Number(String(rawPesos).replace(/\./g, '').replace(',', '.')) || 0;
+
+    servicios.push({
+      id:          String(row[0]).trim(),
+      descripcion: descripcion,
+      pesos:       pesos,
+      raw:         String(row[1]).trim() // descripción original con precio
+    });
+  }
+  return servicios;
+}
+
+// ──── Cláusulas ────
+
+function getClausulas(tipo) {
+  const data = getSysSheet().getSheetByName('CLAUSULAS').getDataRange().getValues();
+
+  return data
+    .slice(1)
+    .filter(r => r[5] === true && r[1] === tipo)
+    .sort((a, b) => Number(a[2]) - Number(b[2]))
+    .map(r => ({ id: r[0], titulo: r[3], cuerpo: r[4] }));
+}
+
+// ──── Solicitudes de clientes ────
+
+function guardarSolicitud(data) {
+  const sheet = getSysSheet().getSheetByName('SOLICITUDES');
+  if (!sheet) throw new Error('Hoja SOLICITUDES no existe. Ejecutá setupSistema().');
+  const id     = 'SOL-' + Date.now();
+  const fecha  = Utilities.formatDate(new Date(), 'America/Argentina/Buenos_Aires', 'dd/MM/yyyy HH:mm');
+  const nombre = data.tipo === 'BODA' ? (data.novia && data.novia.nombre || '') : (data.cliente && data.cliente.nombre || '');
+  sheet.appendRow([id, data.tipo, fecha, 'PENDIENTE', nombre, JSON.stringify(data)]);
+  return { ok: true, id };
+}
+
+function getSolicitudes() {
+  const sheet = getSysSheet().getSheetByName('SOLICITUDES');
+  if (!sheet) return [];
+  const rows = sheet.getDataRange().getValues();
+  return rows.slice(1).filter(r => r[0] && r[3] === 'PENDIENTE').map(r => ({
+    id: r[0], tipo: r[1], fecha: r[2], cliente: r[4],
+    data: JSON.parse(r[5] || '{}')
+  }));
+}
+
+function marcarSolicitudUsada(id) {
+  const sheet = getSysSheet().getSheetByName('SOLICITUDES');
+  if (!sheet) return;
+  const rows = sheet.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0] === id) { sheet.getRange(i + 1, 4).setValue('USADA'); return; }
+  }
+}
+
+// ──── Historial de contratos ────
+
+function getContratos() {
+  const sheet = getSysSheet().getSheetByName('CONTRATOS');
+  if (!sheet) return [];
+  const data = sheet.getDataRange().getValues();
+  return data.slice(1).filter(r => r[0]).map(r => ({
+    numero:      r[0],
+    tipo:        r[1],
+    fecha:       r[2],
+    cliente:     r[3],
+    cliente2:    r[4] || '',
+    fechaEvento: r[5],
+    precio:      r[7],
+    docUrl:      r[10] || '',
+    pdfUrl:      r[11] || '',
+    formData:    JSON.parse(r[13] || '{}')
+  }));
+}
+
+function deleteContrato(numero) {
+  const sheet = getSysSheet().getSheetByName('CONTRATOS');
+  if (!sheet) return { ok: false, error: 'Hoja CONTRATOS no encontrada' };
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(numero)) {
+      try {
+        const docId = String(data[i][10]).match(/\/d\/([^/]+)/)?.[1];
+        const pdfId = String(data[i][11]).match(/\/d\/([^/]+)/)?.[1];
+        if (docId) DriveApp.getFileById(docId).setTrashed(true);
+        if (pdfId) DriveApp.getFileById(pdfId).setTrashed(true);
+      } catch(e) {}
+      sheet.deleteRow(i + 1);
+      return { ok: true };
+    }
+  }
+  return { ok: false, error: 'Contrato no encontrado' };
+}
+
+// ──── Registro de contratos ────
+
+function actualizarFilaContrato(numero, resultado, data) {
+  const sheet = getSysSheet().getSheetByName('CONTRATOS');
+  if (!sheet) return;
+  const rows = sheet.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]) === String(numero)) {
+      try {
+        const oldDocId = String(rows[i][10]).match(/\/d\/([^/]+)/)?.[1];
+        const oldPdfId = String(rows[i][11]).match(/\/d\/([^/]+)/)?.[1];
+        if (oldDocId) DriveApp.getFileById(oldDocId).setTrashed(true);
+        if (oldPdfId) DriveApp.getFileById(oldPdfId).setTrashed(true);
+      } catch(e) {}
+      const ahora = Utilities.formatDate(new Date(), 'America/Argentina/Buenos_Aires', 'dd/MM/yyyy HH:mm');
+      sheet.getRange(i + 1, 3).setValue(ahora);
+      sheet.getRange(i + 1, 8).setValue(data.precioTotal);
+      sheet.getRange(i + 1, 10).setValue('ACTUALIZADO');
+      sheet.getRange(i + 1, 11).setValue(resultado.docUrl);
+      sheet.getRange(i + 1, 12).setValue(resultado.pdfUrl || '');
+      sheet.getRange(i + 1, 14).setValue(JSON.stringify(data));
+      return;
+    }
+  }
+}
+
+function registrarContrato(data) {
+  const sheet = getSysSheet().getSheetByName('CONTRATOS');
+  if (!sheet) throw new Error('Hoja CONTRATOS no existe. Ejecutá setupSistema() en el editor de Apps Script.');
+  const ahora = Utilities.formatDate(new Date(), 'America/Argentina/Buenos_Aires', 'dd/MM/yyyy HH:mm');
+
+  sheet.appendRow([
+    data.numero,
+    data.tipo,
+    ahora,
+    data.clientePrincipal,
+    data.cliente2 || '',
+    data.fechaEvento,
+    data.lugar,
+    data.precioTotal,
+    data.cuotas || '',
+    'GENERADO',
+    data.docUrl,
+    data.pdfUrl || '',
+    '',
+    JSON.stringify(data.formData || {})
+  ]);
+}
+
+// ──── Sincronización Google Calendar ────
+
+function syncCalendar(events) {
+  var cal = CalendarApp.getDefaultCalendar();
+  var synced = 0;
+
+  events.forEach(function(ev) {
+    if (!ev.fecha) return;
+    try {
+      var partes = ev.fecha.split('-');
+      var horaParts = (ev.hora || '09:00').split(':');
+      var inicio = new Date(
+        parseInt(partes[0]),
+        parseInt(partes[1]) - 1,
+        parseInt(partes[2]),
+        parseInt(horaParts[0]) || 9,
+        parseInt(horaParts[1]) || 0
+      );
+      var fin = new Date(inicio.getTime() + 2 * 60 * 60 * 1000);
+      var descripcion = ev.nombre + (ev.lugar ? '\n📍 ' + ev.lugar : '');
+
+      // Evitar duplicados: buscar por título en el mismo día
+      var existentes = cal.getEventsForDay(inicio, { search: ev.titulo });
+      if (existentes.length === 0) {
+        cal.createEvent(ev.titulo, inicio, fin, {
+          description: descripcion,
+          location: ev.lugar || ''
+        });
+        synced++;
+      }
+    } catch(e) {
+      Logger.log('Error sync evento: ' + JSON.stringify(ev) + ' — ' + e.message);
+    }
+  });
+
+  return { ok: true, synced: synced, total: events.length };
+}
