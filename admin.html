@@ -390,7 +390,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.52</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.53</div>
     </div>
   </aside>
 
@@ -8148,8 +8148,7 @@ function ctSelTipo(tipo) {
 }
 
 function ctToggleEvento(tipo, visible, cb) {
-  const scope = cb ? cb.closest('[id$="-fields"]') : null;
-  const el = scope ? scope.querySelector('[id="ct-sub-' + tipo + '"]') : document.getElementById('ct-sub-' + tipo);
+  const el = cb ? cb.closest('label').nextElementSibling : document.getElementById('ct-sub-' + tipo);
   if (el) el.style.display = visible ? 'block' : 'none';
 }
 
