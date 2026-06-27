@@ -390,7 +390,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.58</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.59</div>
     </div>
   </aside>
 
@@ -1148,6 +1148,17 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                 <div class="form-group">
                   <label class="form-label">EmailJS Template ID</label>
                   <input class="form-input" id="inv-s-emailjs-template" placeholder="template_xxxxxxx">
+                </div>
+              </div>
+
+              <div class="inv-modal-section" style="border-top:1px solid rgba(255,255,255,0.08);padding-top:20px">
+                <div class="inv-modal-section-title" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="toggleTriviaEditor()">
+                  Trivia — ¿Cuánto me conocés?
+                  <span id="trivia-toggle-icon" style="font-size:10px;opacity:0.6;font-weight:400">▼ expandir</span>
+                </div>
+                <div id="trivia-editor" style="display:none;margin-top:12px">
+                  <div id="trivia-lista"></div>
+                  <button type="button" onclick="triviaAgregar()" style="width:100%;margin-top:10px;background:none;border:1px dashed rgba(255,255,255,0.25);color:var(--gray2);padding:10px;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:inherit">+ Agregar pregunta</button>
                 </div>
               </div>
 
@@ -7315,6 +7326,14 @@ const _dbSelected = new Map();
 let _dbCarouselTarget = null;
 let _invCarousel1 = [];
 let _invCarousel2 = [];
+let _invTrivia = [];
+const TRIVIA_DEFAULT = [
+  {id:1,activa:true,pregunta:'¿En qué año nació?',opciones:['Opción A','Opción B','Opción C'],correcta:0},
+  {id:2,activa:true,pregunta:'¿Cuál es su color favorito?',opciones:['Rosa','Violeta','Azul'],correcta:0},
+  {id:3,activa:true,pregunta:'¿Cuál es su comida favorita?',opciones:['Pizza','Sushi','Pasta'],correcta:0},
+  {id:4,activa:true,pregunta:'¿Dónde festeja su evento?',opciones:['Salón A','Salón B','Salón C'],correcta:0},
+  {id:5,activa:true,pregunta:'¿Cuál es su canción favorita?',opciones:['Canción A','Canción B','Canción C'],correcta:0}
+];
 
 function openDriveBrowser(callback) {
   if(callback) pendingPhotoCallback = callback;
@@ -7324,6 +7343,54 @@ function openDriveBrowser(callback) {
   const last = localStorage.getItem('crd_last_drive_folder');
   if(last && !_dbCurrent) { document.getElementById('db-folder-input').value = last; dbLoadFolder(last); }
 }
+// ── TRIVIA EDITOR ─────────────────────────────────────────────
+function toggleTriviaEditor() {
+  const ed = document.getElementById('trivia-editor');
+  const ic = document.getElementById('trivia-toggle-icon');
+  if(!ed) return;
+  const open = ed.style.display !== 'none';
+  ed.style.display = open ? 'none' : '';
+  ic.textContent = open ? '▼ expandir' : '▲ contraer';
+  if(!open) renderTriviaLista();
+}
+function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function renderTriviaLista() {
+  const wrap = document.getElementById('trivia-lista');
+  if(!wrap) return;
+  if(!_invTrivia.length) _invTrivia = TRIVIA_DEFAULT.map(p => ({...p,opciones:[...p.opciones]}));
+  wrap.innerHTML = _invTrivia.map((p,i) => `
+    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);padding:12px;margin-bottom:8px;border-radius:2px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer;flex:1">
+          <input type="checkbox" ${p.activa?'checked':''} onchange="triviaToggle(${i},this.checked)" style="accent-color:var(--gold)">
+          <span style="color:${p.activa?'var(--white)':'var(--gray)'}">Activa</span>
+        </label>
+        <button onclick="triviaSubir(${i})" style="background:none;border:none;color:var(--gray);cursor:pointer;font-size:12px;padding:2px 6px">↑</button>
+        <button onclick="triviaBajar(${i})" style="background:none;border:none;color:var(--gray);cursor:pointer;font-size:12px;padding:2px 6px">↓</button>
+        <button onclick="triviaEliminar(${i})" style="background:none;border:none;color:#e55;cursor:pointer;font-size:11px;padding:2px 6px">✕</button>
+      </div>
+      <input class="form-input" value="${escHtml(p.pregunta)}" oninput="_invTrivia[${i}].pregunta=this.value" placeholder="Pregunta..." style="margin-bottom:6px;font-size:12px">
+      ${p.opciones.map((op,j)=>`
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          <input type="radio" name="trivia-correcta-${i}" ${p.correcta===j?'checked':''} onchange="triviaSetCorrecta(${i},${j})" style="accent-color:var(--gold);flex-shrink:0">
+          <input class="form-input" value="${escHtml(op)}" oninput="_invTrivia[${i}].opciones[${j}]=this.value" placeholder="Opción ${j+1}" style="font-size:12px">
+        </div>`).join('')}
+      <small style="color:var(--gray);font-size:9px;letter-spacing:1px">El radio marcado es la respuesta correcta</small>
+    </div>`).join('');
+}
+function triviaToggle(i,v) { _invTrivia[i].activa=v; renderTriviaLista(); }
+function triviaSetCorrecta(i,j) { _invTrivia[i].correcta=j; }
+function triviaSubir(i) { if(i===0)return; [_invTrivia[i-1],_invTrivia[i]]=[_invTrivia[i],_invTrivia[i-1]]; renderTriviaLista(); }
+function triviaBajar(i) { if(i>=_invTrivia.length-1)return; [_invTrivia[i],_invTrivia[i+1]]=[_invTrivia[i+1],_invTrivia[i]]; renderTriviaLista(); }
+function triviaEliminar(i) { if(!confirm('¿Eliminar esta pregunta?'))return; _invTrivia.splice(i,1); renderTriviaLista(); }
+function triviaAgregar() {
+  if(!_invTrivia.length) _invTrivia = TRIVIA_DEFAULT.map(p=>({...p,opciones:[...p.opciones]}));
+  _invTrivia.push({id:Date.now(),activa:true,pregunta:'',opciones:['','',''],correcta:0});
+  const ed = document.getElementById('trivia-editor');
+  if(ed) ed.style.display='';
+  renderTriviaLista();
+}
+
 function closeDriveBrowser() {
   _dbSelected.clear();
   document.getElementById('drive-browser-modal').style.display = 'none';
