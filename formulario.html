@@ -210,10 +210,10 @@
 <script>
 const CONFIG = {
   CF_URL:   'https://web.cristian-romero-digital.workers.dev',
-  APPS_URL: 'https://script.google.com/macros/s/AKfycbwSO6jVmpqq3TLI_bX2rwSkBGJxxSTqtiM4ogOp_5_tjdMZsbAlsVaCxPW9OXxkkH2_/exec',
   LOCALE:   'es-AR'
 };
-const APPS_URL = CONFIG.APPS_URL; // alias para compatibilidad
+let APPS_URL = null;
+fetch(CONFIG.CF_URL + '/crd_contratos_cfg').then(r=>r.json()).then(c=>{ if(c&&c.url) APPS_URL=c.url; }).catch(()=>{});
 
 let tipo = null;
 
@@ -332,28 +332,26 @@ function enviar() {
   document.getElementById('btn-submit').disabled = true;
   document.getElementById('spinner').style.display = 'block';
 
-  var gasFetch = fetch(APPS_URL, {
-    method: 'POST',
-    redirect: 'follow',
-    body: JSON.stringify({ action: 'guardarSolicitud', formData: data })
-  }).then(function(r){ return r.json(); });
+  var gasFetch = APPS_URL
+    ? fetch(APPS_URL, { method:'POST', redirect:'follow', body:JSON.stringify({action:'guardarSolicitud',formData:data}) }).then(function(r){return r.json();}).catch(function(){return null;})
+    : Promise.resolve(null);
 
   var workerFetch = fetch('https://crclub-worker.cristian-romero-digital.workers.dev/solicitudes', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
-  }).catch(function(){ return null; });
+  }).then(function(r){ return r.json(); });
 
   Promise.allSettled([gasFetch, workerFetch])
     .then(function(results) {
       document.getElementById('spinner').style.display = 'none';
-      var gasResult = results[0];
-      if (gasResult.status === 'fulfilled' && gasResult.value && gasResult.value.ok) {
+      var workerResult = results[1];
+      if (workerResult.status === 'fulfilled' && workerResult.value && workerResult.value.ok) {
         document.getElementById('form-area').style.display = 'none';
         document.getElementById('success').style.display = 'block';
       } else {
-        var errMsg = (gasResult.status === 'fulfilled' && gasResult.value && gasResult.value.error)
-          ? gasResult.value.error : 'Error desconocido';
+        var errMsg = (workerResult.status === 'fulfilled' && workerResult.value && workerResult.value.error)
+          ? workerResult.value.error : 'Error al guardar la solicitud';
         throw new Error(errMsg);
       }
     })
