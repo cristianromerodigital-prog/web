@@ -390,7 +390,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.56</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.57</div>
     </div>
   </aside>
 
@@ -973,7 +973,168 @@ tr:hover td{background:rgba(255,255,255,0.02);}
             </div><!-- /inv-campos-clasico -->
 
             <div id="inv-campos-social" style="display:none">
-            <!-- Los campos sociales se agregan en Task 4 -->
+
+              <!-- Color tema -->
+              <div class="inv-modal-section">
+                <div class="inv-modal-section-title">Datos Básicos</div>
+                <div class="inv-form-2col">
+                  <div class="form-group">
+                    <label class="form-label">Nombre(s) del evento</label>
+                    <input class="form-input" id="inv-s-novios" placeholder="Valentina / Jazz &amp; Roberto">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Título</label>
+                    <input class="form-input" id="inv-s-titulo" placeholder="MIS 15 / ¡Nos casamos!">
+                  </div>
+                </div>
+                <div class="inv-form-2col">
+                  <div class="form-group">
+                    <label class="form-label">Fecha para mostrar</label>
+                    <input class="form-input" id="inv-s-fecha-display" placeholder="10 DE JULIO 2027">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Fecha (countdown)</label>
+                    <input class="form-input" type="date" id="inv-s-fecha-iso">
+                  </div>
+                </div>
+              </div>
+
+              <div class="inv-modal-section">
+                <div class="inv-modal-section-title">Diseño</div>
+                <div class="form-group">
+                  <label class="form-label">Color de tema <i class="tip" data-tip="Paleta de color para los bloques de fondo de la invitación social.">?</i></label>
+                  <div style="display:flex;align-items:center;gap:12px">
+                    <select class="form-input" id="inv-color-tema" style="flex:1" onchange="previewColorTema(this.value)">
+                      <option value="mauve">Mauve</option>
+                      <option value="lavanda">Lavanda</option>
+                      <option value="durazno">Durazno</option>
+                      <option value="menta">Menta</option>
+                      <option value="azul-bebe">Azul bebé</option>
+                      <option value="champagne">Champagne</option>
+                      <option value="coral">Coral</option>
+                      <option value="lila">Lila</option>
+                      <option value="salvia">Salvia</option>
+                      <option value="celeste">Celeste</option>
+                      <option value="rosa-empolvado">Rosa empolvado</option>
+                    </select>
+                    <div id="inv-color-tema-preview" style="width:36px;height:36px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);background:#8b5e6e;flex-shrink:0;transition:background 0.2s"></div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Emoji del hero <i class="tip" data-tip="Un emoji que flota animado en el hero. Ej: 🌸 💫 🎉 💜">?</i></label>
+                  <input class="form-input" id="inv-hero-emoji" placeholder="🌸" maxlength="4">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Foto / Video de portada (URL)</label>
+                  <input class="form-input" id="inv-s-media-url" placeholder="https://...">
+                  <div style="display:flex;gap:8px;margin-top:6px">
+                    <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="radio" name="inv-s-media-type" value="image" checked> Imagen</label>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="radio" name="inv-s-media-type" value="video"> Video</label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Audio YouTube (ID del video)</label>
+                  <input class="form-input" id="inv-s-youtube-audio" placeholder="dQw4w9WgXcQ">
+                  <small style="color:var(--gray);font-size:10px;margin-top:4px;display:block">Solo el ID (lo que va después de v= en la URL de YouTube).</small>
+                </div>
+              </div>
+
+              <div class="inv-modal-section">
+                <div class="inv-modal-section-title">Evento</div>
+                <div class="inv-form-2col">
+                  <div class="form-group">
+                    <label class="form-label">Hora del evento</label>
+                    <input class="form-input" id="inv-s-recepcion-hora" placeholder="20:00">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Lugar</label>
+                    <input class="form-input" id="inv-s-lugar-nombre" placeholder="Jano's Puerto Madero">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Dirección</label>
+                  <input class="form-input" id="inv-s-lugar-dir" placeholder="Puerto Madero, Buenos Aires">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Link Google Maps</label>
+                  <input class="form-input" id="inv-s-lugar-maps" placeholder="https://maps.google.com/...">
+                </div>
+              </div>
+
+              <div class="inv-modal-section">
+                <div class="inv-modal-section-title">Dress Code y Contenido</div>
+                <div class="inv-form-2col">
+                  <div class="form-group">
+                    <label class="form-label">Dress Code</label>
+                    <input class="form-input" id="inv-s-dresscode" placeholder="Formal">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Nota dress code</label>
+                    <input class="form-input" id="inv-s-dresscode-nota" placeholder="El color ROSA se reserva para la quinceañera">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Frase emotiva</label>
+                  <textarea class="form-textarea" id="inv-frase-emotiva" placeholder="Hay momentos que no se pueden borrar, personas que no se pueden olvidar..."></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Link álbum de fotos <i class="tip" data-tip="URL del álbum compartido (QR Fiestas o Drive). Si se deja vacío, la sección no aparece.">?</i></label>
+                  <input class="form-input" id="inv-album-url" placeholder="https://fiestas.kuerre.com.ar/...">
+                </div>
+              </div>
+
+              <div class="inv-modal-section">
+                <div class="inv-modal-section-title">Regalo</div>
+                <div class="form-group">
+                  <label class="form-label">Texto personalizado (opcional)</label>
+                  <textarea class="form-textarea" id="inv-s-regalo-texto" placeholder="Nada es más importante que tu presencia..."></textarea>
+                </div>
+                <div class="inv-form-2col">
+                  <div class="form-group">
+                    <label class="form-label">Alias MP</label>
+                    <input class="form-input" id="inv-s-alias" placeholder="mi.alias">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Banco</label>
+                    <input class="form-input" id="inv-s-alias-banco" placeholder="Mercado Pago">
+                  </div>
+                </div>
+                <div class="inv-form-2col">
+                  <div class="form-group">
+                    <label class="form-label">Titular</label>
+                    <input class="form-input" id="inv-s-alias-titular" placeholder="Nombre Apellido">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">CBU (opcional)</label>
+                    <input class="form-input" id="inv-s-cbu" placeholder="0000000000000000000000">
+                  </div>
+                </div>
+              </div>
+
+              <div class="inv-modal-section">
+                <div class="inv-modal-section-title">Confirmación de Asistencia (RSVP)</div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+                  <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+                    <input type="checkbox" id="inv-s-rsvp-activo" style="accent-color:var(--gold);width:16px;height:16px" checked>
+                    Activar sección de confirmación
+                  </label>
+                </div>
+                <div class="inv-form-2col">
+                  <div class="form-group">
+                    <label class="form-label">Confirmar antes del</label>
+                    <input class="form-input" type="date" id="inv-s-rsvp-limite">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">URL Google Sheets (GAS)</label>
+                    <input class="form-input" id="inv-s-gsheet-url" placeholder="https://script.google.com/...">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">EmailJS Template ID</label>
+                  <input class="form-input" id="inv-s-emailjs-template" placeholder="template_xxxxxxx">
+                </div>
+              </div>
+
             </div><!-- /inv-campos-social -->
 
           </div><!-- /modal-body -->
@@ -6036,6 +6197,16 @@ function saveInvBaseUrl(val) { const v = val.trim(); localStorage.setItem('crd_i
 function saveInvSocialBaseUrl(val) { localStorage.setItem('crd_inv_social_base', val.trim()); }
 function getInvSocialBaseUrl() { return (localStorage.getItem('crd_inv_social_base') || '').trim() || getInvBaseUrl().replace('invite.html','invite-social.html'); }
 
+const TEMA_COLORS_ADMIN = {
+  'mauve':'#8b5e6e','lavanda':'#7c6fa0','durazno':'#c4896a','menta':'#5a8f7b',
+  'azul-bebe':'#6a8fb4','champagne':'#b89a72','coral':'#c4706a','lila':'#9878b8',
+  'salvia':'#6e8f6a','celeste':'#5a9ab4','rosa-empolvado':'#b87890'
+};
+function previewColorTema(val) {
+  const el = document.getElementById('inv-color-tema-preview');
+  if (el) el.style.background = TEMA_COLORS_ADMIN[val] || '#8b5e6e';
+}
+
 function setInvModelo(modelo) {
   document.getElementById('inv-modelo').value = modelo;
   const btnC = document.getElementById('inv-modelo-clasico');
@@ -6198,6 +6369,33 @@ function openInviteModal(id) {
     invPreviewMedia(c.media_url, c.media_type);
     invSetMode(c.tipo === 'save_the_date' ? 'save_the_date' : 'invitacion');
     setInvModelo(c.modelo || 'clasico');
+    // Campos social
+    document.getElementById('inv-s-novios').value = c.novios || '';
+    document.getElementById('inv-s-titulo').value = c.titulo || '';
+    document.getElementById('inv-s-fecha-display').value = c.fecha_display || '';
+    document.getElementById('inv-s-fecha-iso').value = c.fecha_iso || '';
+    document.getElementById('inv-s-media-url').value = c.media_url || '';
+    document.querySelectorAll('input[name="inv-s-media-type"]').forEach(r => r.checked = r.value === (c.media_type || 'image'));
+    document.getElementById('inv-s-youtube-audio').value = c.youtube_audio || '';
+    document.getElementById('inv-s-recepcion-hora').value = c.recepcion_hora || '';
+    document.getElementById('inv-s-lugar-nombre').value = c.lugar_nombre || '';
+    document.getElementById('inv-s-lugar-dir').value = c.lugar_direccion || '';
+    document.getElementById('inv-s-lugar-maps').value = c.lugar_maps || '';
+    document.getElementById('inv-s-dresscode').value = c.dresscode || '';
+    document.getElementById('inv-s-dresscode-nota').value = c.dresscode_nota || '';
+    document.getElementById('inv-frase-emotiva').value = c.frase_emotiva || '';
+    document.getElementById('inv-album-url').value = c.album_url || '';
+    document.getElementById('inv-s-regalo-texto').value = c.regalo_texto || '';
+    document.getElementById('inv-s-alias').value = c.alias_mp || '';
+    document.getElementById('inv-s-alias-banco').value = c.alias_banco || '';
+    document.getElementById('inv-s-alias-titular').value = c.alias_titular || '';
+    document.getElementById('inv-s-cbu').value = c.cbu || '';
+    document.getElementById('inv-s-rsvp-activo').checked = c.rsvp_activo !== false;
+    document.getElementById('inv-s-rsvp-limite').value = c.rsvp_limite || '';
+    document.getElementById('inv-s-gsheet-url').value = c.gsheet_url || '';
+    document.getElementById('inv-s-emailjs-template').value = c.emailjs_template || '';
+    if (c.color_tema) { document.getElementById('inv-color-tema').value = c.color_tema; previewColorTema(c.color_tema); }
+    document.getElementById('inv-hero-emoji').value = c.hero_emoji || '🌸';
   } else {
     invSetMode('invitacion');
     setInvModelo('clasico');
@@ -6286,6 +6484,45 @@ function readInviteForm() {
     },
     slug: document.getElementById('inv-slug').value.trim() || toSlug(document.getElementById('inv-novios').value.trim()) || 'invitacion'
   };
+  // Sobreescribir con campos sociales si modelo es social
+  if (data.config.modelo === 'social') {
+    const mType = document.querySelector('input[name="inv-s-media-type"]:checked');
+    Object.assign(data.config, {
+      novios: document.getElementById('inv-s-novios').value.trim(),
+      titulo: document.getElementById('inv-s-titulo').value.trim(),
+      fecha_display: document.getElementById('inv-s-fecha-display').value.trim(),
+      fecha_iso: document.getElementById('inv-s-fecha-iso').value,
+      media_url: document.getElementById('inv-s-media-url').value.trim(),
+      media_type: mType ? mType.value : 'image',
+      youtube_audio: document.getElementById('inv-s-youtube-audio').value.trim(),
+      recepcion_hora: document.getElementById('inv-s-recepcion-hora').value.trim(),
+      lugar_nombre: document.getElementById('inv-s-lugar-nombre').value.trim(),
+      lugar_direccion: document.getElementById('inv-s-lugar-dir').value.trim(),
+      lugar_maps: document.getElementById('inv-s-lugar-maps').value.trim(),
+      dresscode: document.getElementById('inv-s-dresscode').value.trim(),
+      dresscode_nota: document.getElementById('inv-s-dresscode-nota').value.trim(),
+      frase_emotiva: document.getElementById('inv-frase-emotiva').value.trim(),
+      album_url: document.getElementById('inv-album-url').value.trim(),
+      regalo_texto: document.getElementById('inv-s-regalo-texto').value.trim(),
+      alias_mp: document.getElementById('inv-s-alias').value.trim(),
+      alias_banco: document.getElementById('inv-s-alias-banco').value.trim(),
+      alias_titular: document.getElementById('inv-s-alias-titular').value.trim(),
+      cbu: document.getElementById('inv-s-cbu').value.trim(),
+      rsvp_activo: document.getElementById('inv-s-rsvp-activo').checked,
+      rsvp_limite: document.getElementById('inv-s-rsvp-limite').value,
+      gsheet_url: document.getElementById('inv-s-gsheet-url').value.trim(),
+      emailjs_template: document.getElementById('inv-s-emailjs-template').value.trim(),
+      color_tema: document.getElementById('inv-color-tema').value || 'mauve',
+      hero_emoji: document.getElementById('inv-hero-emoji').value.trim() || '🌸',
+      carousel_images_1: _invCarousel1 || [],
+      carousel_images_2: _invCarousel2 || [],
+      trivia_preguntas: _invTrivia.filter(p => p.activa),
+      emailjs_service: 'service_35rtklk',
+      emailjs_key: 'odUJtdh1Z0U27ZkaN',
+    });
+    if (!data.slug) data.slug = toSlug(data.config.novios) || 'invitacion';
+  }
+  return data;
 }
 
 function saveInvite() {
