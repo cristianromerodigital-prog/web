@@ -390,7 +390,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.61</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.62</div>
     </div>
   </aside>
 
@@ -1022,7 +1022,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
                 <div class="form-group">
                   <label class="form-label">Audio YouTube (ID del video)</label>
                   <input class="form-input" id="inv-s-youtube-audio" placeholder="https://www.youtube.com/watch?v=... o solo el ID">
-                  <small style="color:var(--gray);font-size:10px;margin-top:4px;display:block">Solo el ID (lo que va después de v= en la URL de YouTube).</small>
+                  <small style="color:var(--gray);font-size:10px;margin-top:4px;display:block">Pegá la URL completa o solo el ID del video.</small>
                 </div>
               </div>
 
@@ -6518,7 +6518,7 @@ function readInviteForm() {
       regalo_label: document.getElementById('inv-regalo-label').value.trim(),
       regalo_titulo: document.getElementById('inv-regalo-titulo').value.trim(),
       regalo_texto: document.getElementById('inv-regalo-texto').value.trim(),
-      youtube_audio: document.getElementById('inv-youtube-audio').value.trim(),
+      youtube_audio: extractYouTubeId(document.getElementById('inv-youtube-audio').value),
       env_mostrar: document.getElementById('inv-env-mostrar').checked,
       env_slogan: document.getElementById('inv-env-slogan').value.trim(),
       env_color: document.getElementById('inv-env-color').value,
