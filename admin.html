@@ -2469,7 +2469,95 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <div class="settings-section-title" style="margin-bottom:12px">Base de Clientes <i class="tip" data-tip="Clientes dados de alta. Cada uno tiene sus servicios asociados: invitación digital, galería QR y entrega de fotos. Clic en un cliente para gestionarlo.">?</i></div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
           <p style="font-size:12px;color:var(--gray2);letter-spacing:1px">Registros dados de alta · cada cliente genera automáticamente Fiesta QR, Invitación y Entrega.</p>
-          <button class="btn-sm btn-sec" onclick="loadClientesPage()">↻ Actualizar</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn-sm btn-gold" onclick="abrirAltaManual()">+ Alta manual</button>
+            <button class="btn-sm btn-sec" onclick="loadClientesPage()">↻ Actualizar</button>
+          </div>
+        </div>
+
+        <!-- Modal alta manual -->
+        <div id="alta-manual-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1100;align-items:center;justify-content:center;padding:16px">
+          <div style="background:var(--black3);border:1px solid rgba(255,255,255,0.08);max-width:520px;width:100%;max-height:90vh;overflow-y:auto;padding:28px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+              <div style="font-size:13px;font-weight:600;letter-spacing:1px;color:var(--gold)">ALTA MANUAL DE CLIENTE</div>
+              <button onclick="document.getElementById('alta-manual-modal').style.display='none'" style="background:none;border:none;color:var(--gray2);font-size:22px;cursor:pointer;line-height:1;padding:0 4px">×</button>
+            </div>
+
+            <!-- Tipo -->
+            <div style="margin-bottom:16px">
+              <label style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gray2);display:block;margin-bottom:8px">Tipo de evento</label>
+              <div style="display:flex;gap:8px">
+                <button id="am-btn-xv"    class="btn-sm btn-sec" onclick="amSetTipo('XV')"    style="flex:1">XV</button>
+                <button id="am-btn-cumple" class="btn-sm btn-sec" onclick="amSetTipo('CUMPLE')" style="flex:1">Cumpleaños</button>
+                <button id="am-btn-boda"  class="btn-sm btn-sec" onclick="amSetTipo('BODA')"  style="flex:1">Boda</button>
+              </div>
+            </div>
+
+            <!-- Campos XV -->
+            <div id="am-xv" style="display:none;margin-bottom:12px">
+              <label style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--violet);display:block;margin-bottom:8px">La Quinceañera</label>
+              <input id="am-xv-nombre" type="text" placeholder="Nombre de la quinceañera *"
+                style="background:var(--black2);border:1px solid rgba(255,255,255,0.08);color:var(--white);padding:9px 12px;font-size:12px;outline:none;width:100%;font-family:inherit;border-radius:4px;box-sizing:border-box">
+            </div>
+
+            <!-- Campos quien contrata (XV + CUMPLE) -->
+            <div id="am-contratante" style="display:none;margin-bottom:12px">
+              <label style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gray2);display:block;margin-bottom:8px">Quien contrata</label>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <input id="am-nombre"  type="text"  placeholder="Nombre y apellido *"
+                  style="background:var(--black2);border:1px solid rgba(255,255,255,0.08);color:var(--white);padding:9px 12px;font-size:12px;outline:none;font-family:inherit;border-radius:4px">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                  <input id="am-tel"   type="tel"   placeholder="Teléfono"
+                    style="background:var(--black2);border:1px solid rgba(255,255,255,0.08);color:var(--white);padding:9px 12px;font-size:12px;outline:none;font-family:inherit;border-radius:4px">
+                  <input id="am-email" type="email" placeholder="Email"
+                    style="background:var(--black2);border:1px solid rgba(255,255,255,0.08);color:var(--white);padding:9px 12px;font-size:12px;outline:none;font-family:inherit;border-radius:4px">
+                </div>
+              </div>
+            </div>
+
+            <!-- Campos BODA -->
+            <div id="am-boda" style="display:none;margin-bottom:12px">
+              <label style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gray2);display:block;margin-bottom:8px">Novia y Novio</label>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                  <input id="am-novia-nombre" type="text" placeholder="Nombre de la novia *"
+                    style="background:var(--black2);border:1px solid rgba(255,255,255,0.08);color:var(--white);padding:9px 12px;font-size:12px;outline:none;font-family:inherit;border-radius:4px">
+                  <input id="am-novio-nombre" type="text" placeholder="Nombre del novio"
+                    style="background:var(--black2);border:1px solid rgba(255,255,255,0.08);color:var(--white);padding:9px 12px;font-size:12px;outline:none;font-family:inherit;border-radius:4px">
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                  <input id="am-novia-tel"   type="tel"   placeholder="Teléfono novia"
+                    style="background:var(--black2);border:1px solid rgba(255,255,255,0.08);color:var(--white);padding:9px 12px;font-size:12px;outline:none;font-family:inherit;border-radius:4px">
+                  <input id="am-novia-email" type="email" placeholder="Email novia"
+                    style="background:var(--black2);border:1px solid rgba(255,255,255,0.08);color:var(--white);padding:9px 12px;font-size:12px;outline:none;font-family:inherit;border-radius:4px">
+                </div>
+              </div>
+            </div>
+
+            <!-- Evento -->
+            <div id="am-evento" style="display:none;margin-bottom:12px">
+              <label style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gray2);display:block;margin-bottom:8px">Datos del evento</label>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <input id="am-fecha" type="date"
+                  style="background:var(--black2);border:1px solid rgba(255,255,255,0.08);color:var(--white);padding:9px 12px;font-size:12px;outline:none;font-family:inherit;border-radius:4px">
+                <input id="am-salon" type="text" placeholder="Salón / Lugar"
+                  style="background:var(--black2);border:1px solid rgba(255,255,255,0.08);color:var(--white);padding:9px 12px;font-size:12px;outline:none;font-family:inherit;border-radius:4px">
+                <input id="am-dir" type="text" placeholder="Dirección"
+                  style="background:var(--black2);border:1px solid rgba(255,255,255,0.08);color:var(--white);padding:9px 12px;font-size:12px;outline:none;font-family:inherit;border-radius:4px">
+              </div>
+            </div>
+
+            <!-- Contrato -->
+            <div id="am-contrato-row" style="display:none;margin-bottom:20px">
+              <label style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gray2);display:block;margin-bottom:8px">Número de contrato <span style="color:var(--gray);font-size:9px">(opcional — si no lo ingresás se carga como "MANUAL" y lo podés editar después)</span></label>
+              <input id="am-contrato" type="text" placeholder="ej: 6030"
+                style="background:var(--black2);border:1px solid rgba(255,255,255,0.08);color:var(--white);padding:9px 12px;font-size:12px;outline:none;font-family:inherit;border-radius:4px;width:100%;box-sizing:border-box">
+            </div>
+
+            <div id="am-guardar-row" style="display:none">
+              <button id="am-btn-guardar" class="btn-sm btn-gold" onclick="guardarAltaManual()" style="width:100%;padding:11px">Dar de alta</button>
+            </div>
+          </div>
         </div>
         <div style="margin-bottom:16px">
           <input id="cl-search" type="text" placeholder="Buscar por nombre, teléfono..."
@@ -3743,6 +3831,72 @@ function renderClientes() {
 
 function escHtmlCl(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── ALTA MANUAL ──
+let _amTipo = null;
+
+function abrirAltaManual() {
+  _amTipo = null;
+  ['am-xv','am-contratante','am-boda','am-evento','am-contrato-row','am-guardar-row'].forEach(function(id){ document.getElementById(id).style.display='none'; });
+  ['am-btn-xv','am-btn-cumple','am-btn-boda'].forEach(function(id){ document.getElementById(id).classList.remove('btn-gold'); document.getElementById(id).classList.add('btn-sec'); });
+  ['am-xv-nombre','am-nombre','am-tel','am-email','am-novia-nombre','am-novio-nombre','am-novia-tel','am-novia-email','am-fecha','am-salon','am-dir','am-contrato'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('alta-manual-modal').style.display='flex';
+}
+
+function amSetTipo(t) {
+  _amTipo = t;
+  ['am-btn-xv','am-btn-cumple','am-btn-boda'].forEach(function(id){ document.getElementById(id).classList.remove('btn-gold'); document.getElementById(id).classList.add('btn-sec'); });
+  document.getElementById('am-btn-'+t.toLowerCase()).classList.remove('btn-sec');
+  document.getElementById('am-btn-'+t.toLowerCase()).classList.add('btn-gold');
+  document.getElementById('am-xv').style.display         = t==='XV'    ? 'block' : 'none';
+  document.getElementById('am-contratante').style.display = t!=='BODA'  ? 'block' : 'none';
+  document.getElementById('am-boda').style.display        = t==='BODA'  ? 'block' : 'none';
+  document.getElementById('am-evento').style.display      = 'block';
+  document.getElementById('am-contrato-row').style.display = 'block';
+  document.getElementById('am-guardar-row').style.display  = 'block';
+}
+
+async function guardarAltaManual() {
+  if (!_amTipo) return;
+  var v = function(id){ return (document.getElementById(id)?.value||'').trim(); };
+  var fecha = v('am-fecha');
+  if (!fecha) { alert('La fecha del evento es obligatoria.'); return; }
+
+  var body;
+  if (_amTipo === 'XV') {
+    if (!v('am-xv-nombre')) { alert('Ingresá el nombre de la quinceañera.'); return; }
+    body = { tipo:'XV', quinceanera:{ nombre:v('am-xv-nombre') }, cliente:{ nombre:v('am-nombre'), telefono:v('am-tel'), email:v('am-email') }, evento:{ fecha:fecha, salon:v('am-salon'), direccion:v('am-dir') } };
+  } else if (_amTipo === 'CUMPLE') {
+    if (!v('am-nombre')) { alert('Ingresá el nombre del cliente.'); return; }
+    body = { tipo:'CUMPLE', cliente:{ nombre:v('am-nombre'), telefono:v('am-tel'), email:v('am-email') }, evento:{ fecha:fecha, salon:v('am-salon'), direccion:v('am-dir') } };
+  } else {
+    if (!v('am-novia-nombre')) { alert('Ingresá el nombre de la novia.'); return; }
+    body = { tipo:'BODA', novia:{ nombre:v('am-novia-nombre'), telefono:v('am-novia-tel'), email:v('am-novia-email') }, novio:{ nombre:v('am-novio-nombre') }, fiesta:{ fecha:fecha, salon:v('am-salon'), direccion:v('am-dir') } };
+  }
+
+  var btn = document.getElementById('am-btn-guardar');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+
+  try {
+    var res = await fetch(CLIENTES_WORKER + '/solicitudes', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    var d = await res.json();
+    if (!d.ok) throw new Error(d.error || 'Error al crear cliente');
+
+    var contrato = v('am-contrato') || 'MANUAL';
+    await fetch(CLIENTES_WORKER + '/solicitudes/' + d.id + '/contrato', {
+      method:'PATCH', headers:{'Authorization':'Bearer '+getAdminJWT(),'Content-Type':'application/json'},
+      body: JSON.stringify({ codigo_contrato: contrato })
+    });
+
+    document.getElementById('alta-manual-modal').style.display='none';
+    toast('Cliente dado de alta correctamente');
+    await loadClientesPage();
+  } catch(e) {
+    alert('Error: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Dar de alta';
+  }
 }
 
 function abrirClienteModal(id) {
