@@ -390,7 +390,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.90</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.91</div>
     </div>
   </aside>
 
@@ -9051,7 +9051,9 @@ async function ctSaveDraftManual() {
           novia:{ nombre:ctV('ct-b-novia-nombre'), dni:ctV('ct-b-novia-dni'), telefono:ctV('ct-b-novia-tel'), email:ctV('ct-b-novia-email') },
           novio:{ nombre:ctV('ct-b-novio-nombre'), dni:ctV('ct-b-novio-dni'), domicilio:ctV('ct-b-novio-dom'), telefono:ctV('ct-b-novio-tel'), email:ctV('ct-b-novio-email') },
           fiesta:{ fecha:ctV('ct-b-fiesta-fecha'), horaInicio:ctV('ct-b-fiesta-hora'), horaFin:ctV('ct-b-fiesta-hora-fin'), salon:ctV('ct-b-fiesta-salon'), direccion:ctV('ct-b-fiesta-dir'), invitados:ctV('ct-b-invitados') },
-          contacto:{ nombre:ctV('ct-b-contacto-nombre'), relacion:ctV('ct-b-contacto-rel'), telefono:ctV('ct-b-contacto-tel') } };
+          contacto:{ nombre:ctV('ct-b-contacto-nombre'), relacion:ctV('ct-b-contacto-rel'), telefono:ctV('ct-b-contacto-tel') },
+          civil:     document.getElementById('ct-b-tiene-civil')?.checked ? { fecha:ctV('ct-b-civil-fecha'), horario:ctV('ct-b-civil-hora'), direccion:ctV('ct-b-civil-dir') } : null,
+          religiosa: document.getElementById('ct-b-tiene-reli')?.checked  ? { fecha:ctV('ct-b-reli-fecha'),  horario:ctV('ct-b-reli-hora'),  direccion:ctV('ct-b-reli-dir')  } : null };
       var r = await fetch(CLIENTES_WORKER + '/solicitudes', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(p) });
       var d = await r.json();
       if (d.ok) _ctSolicitudId = d.id;
@@ -9236,6 +9238,20 @@ async function ctCargarSolicitud(sol) {
     set('ct-b-contacto-nombre', d.contacto?.nombre);
     set('ct-b-contacto-rel',    d.contacto?.relacion);
     set('ct-b-contacto-tel',    d.contacto?.telefono);
+    if (d.civil) {
+      const civilCb = document.getElementById('ct-b-tiene-civil');
+      if (civilCb) { civilCb.checked = true; ctToggleEvento('civil', true); }
+      set('ct-b-civil-fecha', d.civil.fecha);
+      set('ct-b-civil-hora',  d.civil.horario);
+      set('ct-b-civil-dir',   d.civil.direccion);
+    }
+    if (d.religiosa) {
+      const reliCb = document.getElementById('ct-b-tiene-reli');
+      if (reliCb) { reliCb.checked = true; ctToggleEvento('reli', true); }
+      set('ct-b-reli-fecha', d.religiosa.fecha);
+      set('ct-b-reli-hora',  d.religiosa.horario);
+      set('ct-b-reli-dir',   d.religiosa.direccion);
+    }
   } else if (sol.tipo === 'XV') {
     set('ct-x-quince-nombre', d.quinceanera?.nombre);
     set('ct-x-quince-nac',    d.quinceanera?.fechaNacimiento);
