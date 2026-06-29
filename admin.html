@@ -390,7 +390,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.89</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.90</div>
     </div>
   </aside>
 
@@ -8390,6 +8390,7 @@ async function initContratosPage() {
     if (cloud.presupuestosId) document.getElementById('ct-presupuestos-id').value = cloud.presupuestosId;
     if (!hadUrl) { ctCargarServicios(); ctLoadHistorial(); }
   }
+  ctRestoreDraft();
 }
 
 function _ctBuildPage_UNUSED() {
@@ -9082,6 +9083,11 @@ function ctSaveDraft() {
   const data = JSON.stringify({ tipo: ctTipo, fields, solicitudId: _ctSolicitudId || null, pagoItems: ctPagoItems });
   try { localStorage.setItem(key, data); } catch(e) {}
   syncToCloud(key, data);
+  // Siempre actualizar la clave genérica para recuperar el borrador tras recargar la página
+  if (key !== CT_DRAFT_KEY) {
+    try { localStorage.setItem(CT_DRAFT_KEY, data); } catch(e) {}
+    syncToCloud(CT_DRAFT_KEY, data);
+  }
 }
 
 let _ctSkipNextRestore = false;
@@ -9117,6 +9123,10 @@ function ctClearDraft() {
   const key = ctDraftKey();
   try { localStorage.removeItem(key); } catch(e) {}
   syncToCloud(key, JSON.stringify(null));
+  if (key !== CT_DRAFT_KEY) {
+    try { localStorage.removeItem(CT_DRAFT_KEY); } catch(e) {}
+    syncToCloud(CT_DRAFT_KEY, JSON.stringify(null));
+  }
   // Reset form
   document.querySelectorAll('#ct-form-area input, #ct-form-area select').forEach(el => {
     if (el.type === 'checkbox') el.checked = false;
