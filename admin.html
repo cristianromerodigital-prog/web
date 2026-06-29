@@ -8944,19 +8944,24 @@ async function ctGenerar() {
       if (!ctEditingNumero && CLIENTES_WORKER) {
         const solId = _ctSolicitudId;
         _ctSolicitudId = null;
-        const patchContrato = function(id) {
+        const patchContrato = function(id, fromForm) {
           fetch(CLIENTES_WORKER + '/solicitudes/' + id + '/contrato', {
             method: 'PATCH', headers: { 'Authorization': 'Bearer ' + getAdminJWT(), 'Content-Type': 'application/json' },
             body: JSON.stringify({ codigo_contrato: String(json.numero) })
           }).then(function(){
+            if (fromForm) {
+              fetch(CONFIG.CRCLUB_URL + '/solicitudes/' + id + '/procesada', {
+                method: 'PATCH', headers: { Authorization: 'Bearer ' + getAdminJWT() }
+              }).then(function(){ setTimeout(ctRefreshSolicitudes, 500); }).catch(function(){});
+            }
             _fetchClientes({ search: _clientesSearch, offset: 0 }).then(function(){
               if (currentPage === 'clientes') renderClientes();
             });
           }).catch(function(){});
         };
         if (solId) {
-          // Solicitud del formulario: solo linkear contrato, sin crear nueva
-          patchContrato(solId);
+          // Solicitud del formulario: linkear contrato + marcar procesada
+          patchContrato(solId, true);
         } else {
           // Contrato manual: crear solicitud en D1 y linkear
           const payload = { tipo: data.tipo };
@@ -8976,7 +8981,7 @@ async function ctGenerar() {
             if (d.ok) {
               let evFecha = data.tipo === 'BODA' ? (data.fiesta?.fecha||'') : (data.evento?.fecha||'');
               if (evFecha) calSyncEvento({ tipo:'evento', fecha:evFecha, hora:'', lugar:'', nombre: data.tipo==='BODA' ? (data.novia?.nombre||'')+' & '+(data.novio?.nombre||'') : data.tipo==='XV' ? 'XV '+(data.quinceanera?.nombre||'') : 'Cumple '+(data.cliente?.nombre||'') });
-              patchContrato(d.id);
+              patchContrato(d.id, false);
             }
           }).catch(function(){});
         }
@@ -9026,7 +9031,7 @@ function ctSaveDraft() {
     if (!el.id) return;
     fields[el.id] = el.type === 'checkbox' ? el.checked : el.value;
   });
-  S.set(CT_DRAFT_KEY, { tipo: ctTipo, fields });
+  S.set(CT_DRAFT_KEY, { tipo: ctTipo, fields, solicitudId: _ctSolicitudId || null });
   const banner = document.getElementById('ct-draft-banner');
   if (banner) banner.style.display = 'flex';
 }
@@ -9041,6 +9046,7 @@ function ctRestoreDraft() {
 
 function _ctApplyDraft(draft) {
   ctSelTipo(draft.tipo);
+  if (draft.solicitudId) _ctSolicitudId = draft.solicitudId;
   setTimeout(() => {
     Object.entries(draft.fields || {}).forEach(([id, val]) => {
       const el = document.getElementById(id);
@@ -9119,12 +9125,6 @@ function ctRenderSolicitudes(data) {
 
 async function ctCargarSolicitud(sol) {
   _ctSolicitudId = sol.id || null;
-  if (sol.id) {
-    fetch(CONFIG.CRCLUB_URL + '/solicitudes/' + sol.id + '/procesada', {
-      method: 'PATCH',
-      headers: { Authorization: 'Bearer ' + getAdminJWT() }
-    }).then(function(){ setTimeout(ctRefreshSolicitudes, 500); }).catch(function(){});
-  }
   showPage('contratos');
   const d = sol.data;
   ctSelTipo(sol.tipo);
