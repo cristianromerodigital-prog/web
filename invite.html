@@ -569,6 +569,9 @@ function renderHero(c) {
     document.getElementById('hero-names').textContent = names;
   }
   document.getElementById('hero-date').textContent = c.fecha_display || '';
+  const hc = document.getElementById('hero-content');
+  const tx = c.hero_text_x || 0, ty = c.hero_text_y || 0;
+  hc.style.transform = (tx || ty) ? `translate(${tx}px,${ty}px)` : '';
 
   const wrap = document.getElementById('hero-media-wrap');
   if (c.media_url) {
