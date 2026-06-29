@@ -373,22 +373,34 @@ function enviar() {
     });
 }
 
+// Convierte URLs de Drive (/file/d/ID/view) a URL directa de imagen
+function driveToImg(url) {
+  if (!url) return url;
+  var m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  return m ? 'https://lh3.googleusercontent.com/d/' + m[1] : url;
+}
+
 // Settings: logo + fondo
 fetch(CONFIG.CF_URL + '/crd_settings')
   .then(function(r){ return r.json(); })
   .then(function(s){
     if (s.formularioFondo) {
-      document.body.style.backgroundImage = 'url(' + s.formularioFondo + ')';
+      var fondo = driveToImg(s.formularioFondo);
+      document.body.style.backgroundImage = 'url(' + fondo + ')';
       document.body.style.backgroundSize = 'cover';
       document.body.style.backgroundPosition = 'center center';
       document.body.style.backgroundRepeat = 'no-repeat';
       document.body.style.backgroundAttachment = 'fixed';
     }
-    var logoUrl = s.logoUrl || localStorage.getItem('crd_site_logo');
+    var logoUrl = driveToImg(s.logoUrl || localStorage.getItem('crd_site_logo'));
     if (logoUrl) {
       var img = document.getElementById('form-logo-img');
       var txt = document.getElementById('form-logo-text');
-      if (img) { img.src = logoUrl; img.style.display = 'block'; }
+      if (img) {
+        img.onerror = function() { this.style.display = 'none'; if (txt) txt.style.display = ''; };
+        img.src = logoUrl;
+        img.style.display = 'block';
+      }
       if (txt) txt.style.display = 'none';
     }
   })
