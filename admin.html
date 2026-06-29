@@ -390,7 +390,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.93</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.94</div>
     </div>
   </aside>
 
@@ -9228,7 +9228,16 @@ async function ctCargarSolicitud(sol) {
     else if (el.id !== 'ct-dia-firma') el.value = '';
   });
   document.querySelectorAll('[id^="ct-svc-"]').forEach(cb => { cb.checked = false; });
-  const d = sol.data;
+  // Fetchear datos frescos desde la DB (evita usar el cache embebido en el botón)
+  let d = sol.data;
+  if (sol.id && CLIENTES_WORKER) {
+    try {
+      const res = await fetch(CLIENTES_WORKER + '/solicitudes/' + sol.id, {
+        headers: { Authorization: 'Bearer ' + getAdminJWT() }
+      });
+      if (res.ok) { const fresh = await res.json(); d = fresh.data || d; }
+    } catch(e) {}
+  }
   ctSelTipo(sol.tipo);
 
   // Cargar datos desde la DB (fuente de verdad)
