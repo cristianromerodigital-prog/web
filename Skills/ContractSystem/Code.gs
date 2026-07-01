@@ -3,6 +3,8 @@
 // ═══════════════════════════════════════════
 
 function doGet(e) {
+  _sysSheetId     = (e && e.parameter && e.parameter.systemSheetId)  || null;
+  _presupuestosId = (e && e.parameter && e.parameter.presupuestosId) || null;
   const action   = (e && e.parameter && e.parameter.action)   || '';
   const callback = (e && e.parameter && e.parameter.callback) || '';
 
@@ -59,6 +61,8 @@ function _jsonResponse(data) {
 function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
+    _sysSheetId     = data.systemSheetId     || null;
+    _presupuestosId = data.presupuestosId    || null;
     if (data.action === 'getServicios')   return _jsonResponse(getServiciosParaForm());
     if (data.action === 'getContratos')   return _jsonResponse(getContratos());
     if (data.action === 'getSolicitudes') return _jsonResponse(getSolicitudes());
@@ -88,6 +92,11 @@ function doPost(e) {
     if (data.action === 'deleteContrato') {
       return ContentService
         .createTextOutput(JSON.stringify(deleteContrato(data.numero)))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    if (data.action === 'moverArchivo') {
+      return ContentService
+        .createTextOutput(JSON.stringify(moverArchivoACarpeta(data.fileId, data.carpetaId)))
         .setMimeType(ContentService.MimeType.JSON);
     }
     const resultado = crearContrato(data);

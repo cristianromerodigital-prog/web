@@ -47,7 +47,7 @@ function getDriveFolderFiles(folderId) {
 // ──── Servicios (lee desde Presupuestos 2026) ────
 
 function getServicios() {
-  const ss    = SpreadsheetApp.openById(CFG.PRESUPUESTOS_ID);
+  const ss    = SpreadsheetApp.openById(_presupuestosId || CFG.PRESUPUESTOS_ID);
   const sheet = ss.getSheetByName('Servicios');
   const data  = sheet.getDataRange().getValues();
 
@@ -230,6 +230,19 @@ function subirContratoPDF(base64, nombre, driveClienteId, clienteNombre) {
   var file = folder.createFile(blob);
   file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
   return { ok: true, url: file.getUrl(), fileId: file.getId(), newFolderId: newFolderId };
+}
+
+// ──── Mover archivo a otra carpeta (usado para reubicar doc/PDF de contrato) ────
+
+function moverArchivoACarpeta(fileId, carpetaId) {
+  try {
+    var file = DriveApp.getFileById(fileId);
+    var dest = DriveApp.getFolderById(carpetaId);
+    var parents = file.getParents();
+    while (parents.hasNext()) { parents.next().removeFile(file); }
+    dest.addFile(file);
+    return { ok: true };
+  } catch (e) { return { ok: false, error: e.toString() }; }
 }
 
 // ──── Sincronización Google Calendar ────
