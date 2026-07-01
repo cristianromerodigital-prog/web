@@ -94,6 +94,11 @@ function doPost(e) {
         .createTextOutput(JSON.stringify(deleteContrato(data.numero)))
         .setMimeType(ContentService.MimeType.JSON);
     }
+    if (data.action === 'trashFiles') {
+      return ContentService
+        .createTextOutput(JSON.stringify(trashFiles(data.docId || null, data.pdfId || null)))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
     if (data.action === 'moverArchivo') {
       return ContentService
         .createTextOutput(JSON.stringify(moverArchivoACarpeta(data.fileId, data.carpetaId)))

@@ -232,6 +232,16 @@ function subirContratoPDF(base64, nombre, driveClienteId, clienteNombre) {
   return { ok: true, url: file.getUrl(), fileId: file.getId(), newFolderId: newFolderId };
 }
 
+// ──── Borrar archivos de Drive (llamado desde Worker al eliminar contrato de D1) ────
+
+function trashFiles(docId, pdfId) {
+  try {
+    if (docId) DriveApp.getFileById(docId).setTrashed(true);
+    if (pdfId) DriveApp.getFileById(pdfId).setTrashed(true);
+    return { ok: true };
+  } catch(e) { return { ok: false, error: e.message }; }
+}
+
 // ──── Mover archivo a otra carpeta (usado para reubicar doc/PDF de contrato) ────
 
 function moverArchivoACarpeta(fileId, carpetaId) {
