@@ -315,3 +315,121 @@ function syncCalendar(events, calendarId) {
 
   return { ok: true, synced: synced, total: events.length };
 }
+
+// ──── Sync bidireccional Google Calendar ────
+
+function _calGet(calendarId) {
+  var cal = calendarId ? CalendarApp.getCalendarById(calendarId) : CalendarApp.getDefaultCalendar();
+  return cal || CalendarApp.getDefaultCalendar();
+}
+
+function _calInicio(fecha, hora) {
+  var p = fecha.split('-');
+  var h = (hora || '09:00').split(':');
+  return new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]), parseInt(h[0]) || 9, parseInt(h[1]) || 0);
+}
+
+function _fmtFecha(d) {
+  return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+}
+
+function _fmtHora(d) {
+  return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+}
+
+function upsertCalendarEvent(ev, calendarId) {
+  var cal = _calGet(calendarId);
+  var inicio = _calInicio(ev.fecha, ev.hora);
+  var fin = new Date(inicio.getTime() + 2 * 60 * 60 * 1000);
+  var existente = null;
+  if (ev.gcal_id) {
+    try { existente = cal.getEventById(ev.gcal_id); } catch (e) {}
+  }
+  if (!existente) {
+    // Adoptar evento legacy creado por el syncCalendar viejo (mismo título, mismo día)
+    var candidatos = cal.getEventsForDay(inicio, { search: ev.titulo });
+    if (candidatos.length) existente = candidatos[0];
+  }
+  if (existente) {
+    existente.setTitle(ev.titulo);
+    existente.setTime(inicio, fin);
+    existente.setLocation(ev.lugar || '');
+    return { ok: true, gcal_id: existente.getId() };
+  }
+  var nuevo = cal.createEvent(ev.titulo, inicio, fin, { location: ev.lugar || '' });
+  return { ok: true, gcal_id: nuevo.getId() };
+}
+
+function deleteCalendarEvent(gcalId, calendarId) {
+  var cal = _calGet(calendarId);
+  try {
+    var ev = cal.getEventById(gcalId);
+    if (ev) ev.deleteEvent();
+  } catch (e) {}
+  return { ok: true };
+}
+
+function fullSyncCalendar(payload) {
+  var cal = _calGet(payload.calendarId);
+  var system = payload.system || [];
+  var knownExternal = payload.known_external_ids || [];
+  var created = [], deleted = [], moved = [];
+  var externalsNew = [], externalsUpdated = [], externalsGone = [];
+  var systemIds = {};
+
+  system.forEach(function(ev) {
+    try {
+      if (!ev.gcal_id) {
+        var r = upsertCalendarEvent(ev, payload.calendarId);
+        created.push({ key: ev.key, gcal_id: r.gcal_id });
+        systemIds[r.gcal_id] = true;
+        return;
+      }
+      systemIds[ev.gcal_id] = true;
+      var gEv = null;
+      try { gEv = cal.getEventById(ev.gcal_id); } catch (e) {}
+      if (!gEv) { deleted.push(ev.key); return; }
+      var f = _fmtFecha(gEv.getStartTime());
+      var h = gEv.isAllDayEvent() ? '' : _fmtHora(gEv.getStartTime());
+      if (f !== ev.fecha || (h && ev.hora && h !== ev.hora)) {
+        moved.push({ key: ev.key, fecha: f, hora: h || ev.hora });
+      }
+    } catch (e) {
+      Logger.log('fullSync system error ' + ev.key + ': ' + e.message);
+    }
+  });
+
+  var knownSet = {};
+  knownExternal.forEach(function(gid) {
+    knownSet[gid] = true;
+    var gEv = null;
+    try { gEv = cal.getEventById(gid); } catch (e) {}
+    if (!gEv) { externalsGone.push(gid); return; }
+    externalsUpdated.push({
+      gcal_id: gid,
+      titulo: gEv.getTitle(),
+      fecha: _fmtFecha(gEv.getStartTime()),
+      hora: gEv.isAllDayEvent() ? '' : _fmtHora(gEv.getStartTime()),
+      lugar: gEv.getLocation() || ''
+    });
+  });
+
+  var hoy = new Date();
+  var desde = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
+  var hasta = new Date(hoy.getFullYear() + 2, hoy.getMonth(), 1);
+  var vistos = {};
+  cal.getEvents(desde, hasta).forEach(function(gEv) {
+    var gid = gEv.getId();
+    if (systemIds[gid] || knownSet[gid] || vistos[gid]) return;
+    vistos[gid] = true;
+    externalsNew.push({
+      gcal_id: gid,
+      titulo: gEv.getTitle(),
+      fecha: _fmtFecha(gEv.getStartTime()),
+      hora: gEv.isAllDayEvent() ? '' : _fmtHora(gEv.getStartTime()),
+      lugar: gEv.getLocation() || ''
+    });
+  });
+
+  return { ok: true, created: created, deleted: deleted, moved: moved, externals_new: externalsNew, externals_updated: externalsUpdated, externals_gone: externalsGone };
+}

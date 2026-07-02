@@ -91,6 +91,15 @@ function doPost(e) {
         .createTextOutput(JSON.stringify(syncCalendar(data.events || [], data.calendarId || null)))
         .setMimeType(ContentService.MimeType.JSON);
     }
+    if (data.action === 'fullSync') {
+      return _jsonResponse(fullSyncCalendar(data));
+    }
+    if (data.action === 'upsertCalendarEvent') {
+      return _jsonResponse(upsertCalendarEvent(data.event || {}, data.calendarId || null));
+    }
+    if (data.action === 'deleteCalendarEvent') {
+      return _jsonResponse(deleteCalendarEvent(data.gcal_id || '', data.calendarId || null));
+    }
     if (data.action === 'getCalendars') {
       return _jsonResponse(getCalendars());
     }
