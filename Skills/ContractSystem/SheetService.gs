@@ -255,10 +255,33 @@ function moverArchivoACarpeta(fileId, carpetaId) {
   } catch (e) { return { ok: false, error: e.toString() }; }
 }
 
+// ──── Gestión de calendarios ────
+
+function createKuerreCalendar() {
+  var cal = CalendarApp.createCalendar('Kuerre');
+  Logger.log('ID: ' + cal.getId());
+  return { id: cal.getId(), name: cal.getName() };
+}
+
+function listCalendars() {
+  CalendarApp.getAllCalendars().forEach(function(c) {
+    Logger.log(c.getName() + ' → ' + c.getId() + (c.isMyPrimaryCalendar() ? ' [PRIMARY]' : ''));
+  });
+}
+
+function getCalendars() {
+  return CalendarApp.getAllCalendars().map(function(c) {
+    return { id: c.getId(), name: c.getName(), isDefault: c.isMyPrimaryCalendar() };
+  });
+}
+
 // ──── Sincronización Google Calendar ────
 
-function syncCalendar(events) {
-  var cal = CalendarApp.getDefaultCalendar();
+function syncCalendar(events, calendarId) {
+  var cal = calendarId
+    ? CalendarApp.getCalendarById(calendarId)
+    : CalendarApp.getDefaultCalendar();
+  if (!cal) cal = CalendarApp.getDefaultCalendar();
   var synced = 0;
 
   events.forEach(function(ev) {

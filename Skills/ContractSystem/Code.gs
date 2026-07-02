@@ -13,6 +13,7 @@ function doGet(e) {
   if (action === 'getServicios')   result = getServiciosParaForm();
   if (action === 'getContratos')   result = getContratos();
   if (action === 'getSolicitudes') result = getSolicitudes();
+  if (action === 'getCalendars')   result = getCalendars();
   if (action === 'nextNumber') {
     const tipo = (e.parameter.tipo || 'BODA').toUpperCase();
     result = peekLastNumber(tipo) + 1;
@@ -22,8 +23,9 @@ function doGet(e) {
     result = folderId ? getDriveFolderFiles(folderId) : [];
   }
   if (action === 'syncCalendar') {
-    const eventsJson = (e && e.parameter && e.parameter.events) || '[]';
-    try { result = syncCalendar(JSON.parse(eventsJson)); }
+    const eventsJson  = (e && e.parameter && e.parameter.events)     || '[]';
+    const calendarId  = (e && e.parameter && e.parameter.calendarId) || null;
+    try { result = syncCalendar(JSON.parse(eventsJson), calendarId); }
     catch(err) { result = { ok: false, error: err.message }; }
   }
 
@@ -86,8 +88,16 @@ function doPost(e) {
     }
     if (data.action === 'syncCalendar') {
       return ContentService
-        .createTextOutput(JSON.stringify(syncCalendar(data.events || [])))
+        .createTextOutput(JSON.stringify(syncCalendar(data.events || [], data.calendarId || null)))
         .setMimeType(ContentService.MimeType.JSON);
+    }
+    if (data.action === 'getCalendars') {
+      return _jsonResponse(getCalendars());
+    }
+    if (data.action === 'createCalendar') {
+      const name = data.name || 'Nuevo Calendario';
+      const cal  = CalendarApp.createCalendar(name);
+      return _jsonResponse({ ok: true, id: cal.getId(), name: cal.getName() });
     }
     if (data.action === 'deleteContrato') {
       return ContentService
