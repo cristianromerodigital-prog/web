@@ -346,8 +346,9 @@ function upsertCalendarEvent(ev, calendarId) {
     try { existente = cal.getEventById(ev.gcal_id); } catch (e) {}
   }
   if (!existente) {
-    // Adoptar evento legacy creado por el syncCalendar viejo (mismo título, mismo día)
-    var candidatos = cal.getEventsForDay(inicio, { search: ev.titulo });
+    // Adoptar evento legacy creado por el syncCalendar viejo (mismo título, mismo día).
+    // Comparación exacta en JS: el param {search} de getEventsForDay falla con títulos con emoji.
+    var candidatos = cal.getEventsForDay(inicio).filter(function(x){ return x.getTitle() === ev.titulo; });
     if (candidatos.length) existente = candidatos[0];
   }
   if (existente) {
