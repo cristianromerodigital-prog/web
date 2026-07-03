@@ -213,9 +213,10 @@ footer small a{color:inherit}
 
 /* ── SOBRE / ENVELOPE ── */
 #loading-splash{position:fixed;inset:0;z-index:10000;background:var(--black);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:24px;transition:opacity .6s ease}
-#loading-splash-text{font-family:'Mrs Saint Delafield',cursive;color:var(--white);font-size:clamp(32px,7vw,64px);text-align:center;line-height:1.15;display:inline-block;clip-path:inset(0 100% 0 0)}
+#loading-splash-text{font-family:'Mrs Saint Delafield',cursive;color:var(--white);font-size:clamp(32px,7vw,64px);text-align:center;line-height:1.15}
 #loading-splash-text.splash-text-lg{font-size:clamp(96px,21vw,192px)}
-#loading-splash-text.reveal{animation:splashTrace 2.2s cubic-bezier(.65,0,.35,1) forwards}
+.splash-word{display:inline-block;clip-path:inset(0 100% 0 0)}
+.splash-word.reveal{animation:splashTrace .5s cubic-bezier(.65,0,.35,1) forwards;animation-delay:var(--word-delay,0s)}
 @keyframes splashTrace{to{clip-path:inset(0 0 0 0)}}
 #envelope-screen{position:fixed;inset:0;z-index:9999;background:var(--black);display:none;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
 .env-scene{display:flex;flex-direction:column;align-items:center;gap:36px;perspective:900px}
@@ -941,10 +942,14 @@ const SPLASH_TEXT = {
 
 function traceSplashText(text) {
   const el = document.getElementById('loading-splash-text');
-  el.textContent = text;
-  el.classList.remove('reveal');
-  void el.offsetWidth; // reinicia la animación si se llama de nuevo
-  el.classList.add('reveal');
+  const words = text.split(' ');
+  const step = 2200 / words.length;
+  el.innerHTML = words.map((w, i) =>
+    `<span class="splash-word" style="--word-delay:${(i * step).toFixed(0)}ms">${w}</span>`
+  ).join(' ');
+  requestAnimationFrame(() => {
+    el.querySelectorAll('.splash-word').forEach(s => s.classList.add('reveal'));
+  });
 }
 
 async function init() {
