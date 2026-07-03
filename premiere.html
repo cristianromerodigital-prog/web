@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title id="page-title">Entrega · Cristian Romero Producciones</title>
+<title id="page-title">Premiere · Cristian Romero Producciones</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -596,7 +596,7 @@ const CFG = {
   fecha:         p.get('fecha')   || '',
   tipo:          p.get('tipo')    || '',
   portadaId:     p.get('portada') || '',
-  allowDownload: p.get('dl') !== '0',
+  allowDownload: false,
   welcomeMsg:    p.get('msg')    || '',
 };
 
@@ -873,6 +873,10 @@ function applyLogo(src) {
 }
 
 function applyConfig() {
+  // Descargas deshabilitadas en premiere (solo entrega.html) — pisa lo que venga del KV/URL
+  CFG.allowDownload = false;
+  const selDl = document.querySelector('.selbar-btn-dl');
+  if(selDl) selDl.style.display = 'none';
   const nombres = CFG.nombres || 'Tu premiere';
   document.getElementById('page-title').textContent = nombres + ' — Cristian Romero Producciones';
 
