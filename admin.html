@@ -394,7 +394,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.92</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.93</div>
     </div>
   </aside>
 
@@ -6558,25 +6558,29 @@ function saveInvite() {
   const data = readInviteForm();
   if (!data.config.novios && !data.config.titulo) { toast('Ingresá al menos un nombre o título'); return; }
   const list = getInvites();
+  let savedId;
   if (invEditingId) {
+    savedId = invEditingId;
     const idx = list.findIndex(i => i.id === invEditingId);
     if (idx !== -1) { list[idx].tipo = data.tipo; list[idx].config = data.config; list[idx].slug = data.slug; }
   } else {
-    const newId = 'inv_' + Date.now();
-    list.unshift({ id: newId, tipo: data.tipo, config: data.config, slug: data.slug, created: new Date().toISOString() });
+    savedId = 'inv_' + Date.now();
+    list.unshift({ id: savedId, tipo: data.tipo, config: data.config, slug: data.slug, created: new Date().toISOString() });
     if (_invClienteId) {
       const cid = _invClienteId;
       fetch(CLIENTES_WORKER + '/solicitudes/' + cid + '/invite', {
         method: 'PATCH',
         headers: { 'Authorization': 'Bearer ' + getAdminJWT(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ invite_id: newId })
+        body: JSON.stringify({ invite_id: savedId })
       }).then(function() {
         const idx = _clientes.findIndex(function(x){ return x.id === cid; });
-        if (idx !== -1) _clientes[idx].invite_id = newId;
+        if (idx !== -1) _clientes[idx].invite_id = savedId;
       }).catch(function(){});
     }
   }
   saveInvites(list);
+  const inv = list.find(i => i.id === savedId);
+  if (inv) genInviteUrl(inv);
   closeInviteModal();
   renderInvitesPage();
   toast('Invitación guardada ✓');
