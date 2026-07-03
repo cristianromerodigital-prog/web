@@ -213,11 +213,12 @@ footer small a{color:inherit}
 
 /* ── SOBRE / ENVELOPE ── */
 #loading-splash{position:fixed;inset:0;z-index:10000;background:var(--black);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:24px;transition:opacity .6s ease}
-#loading-splash-text{font-family:'Mrs Saint Delafield',cursive;color:var(--white);font-size:clamp(32px,7vw,64px);text-align:center;line-height:1.15}
-#loading-splash-text.splash-text-lg{font-size:clamp(96px,21vw,192px)}
-.splash-word{display:inline-block;clip-path:inset(0 100% 0 0)}
-.splash-word.reveal{animation:splashTrace .5s cubic-bezier(.65,0,.35,1) forwards;animation-delay:var(--word-delay,0s)}
-@keyframes splashTrace{to{clip-path:inset(0 0 0 0)}}
+#loading-splash-text{font-family:'Mrs Saint Delafield',cursive;color:var(--white);font-size:clamp(32px,7vw,64px);text-align:center;line-height:1.15;white-space:nowrap}
+#loading-splash-text.splash-text-lg{font-size:clamp(36px,8vw,72px)}
+#loading-splash-bar{width:180px;height:2px;background:rgba(245,240,232,0.15);overflow:hidden}
+#loading-splash-bar-fill{width:0;height:100%;background:var(--gold)}
+#loading-splash-bar-fill.fill{animation:splashBarFill 2s linear forwards}
+@keyframes splashBarFill{to{width:100%}}
 #envelope-screen{position:fixed;inset:0;z-index:9999;background:var(--black);display:none;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
 .env-scene{display:flex;flex-direction:column;align-items:center;gap:36px;perspective:900px}
 .env-wrap{position:relative;width:340px;height:215px;transform-style:preserve-3d;animation:env-rise 0.9s ease both;
@@ -287,6 +288,7 @@ footer small a{color:inherit}
 
 <div id="loading-splash">
   <span id="loading-splash-text"></span>
+  <div id="loading-splash-bar"><div id="loading-splash-bar-fill"></div></div>
 </div>
 
 <div id="invite-app" style="display:none">
@@ -941,15 +943,8 @@ const SPLASH_TEXT = {
 };
 
 function traceSplashText(text) {
-  const el = document.getElementById('loading-splash-text');
-  const words = text.split(' ');
-  const step = 2200 / words.length;
-  el.innerHTML = words.map((w, i) =>
-    `<span class="splash-word" style="--word-delay:${(i * step).toFixed(0)}ms">${w}</span>`
-  ).join(' ');
-  requestAnimationFrame(() => {
-    el.querySelectorAll('.splash-word').forEach(s => s.classList.add('reveal'));
-  });
+  document.getElementById('loading-splash-text').textContent = text;
+  document.getElementById('loading-splash-bar-fill').classList.add('fill');
 }
 
 async function init() {
@@ -983,7 +978,7 @@ async function init() {
   renderRSVP(cfg);
   renderSpotify(cfg);
   renderNav(cfg);
-  const wait = Math.max(0, 3000 - (Date.now() - splashStart));
+  const wait = Math.max(0, 2000 - (Date.now() - splashStart));
   setTimeout(() => {
     const splash = document.getElementById('loading-splash');
     splash.style.opacity = '0';
