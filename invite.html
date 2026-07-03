@@ -608,23 +608,38 @@ window.getHeroLayout = function() {
 let heroDrag = null;
 let heroWheelTimer = null;
 
-function initHeroPreviewInteractions() {
+// Distancia al centro de cada bloque en vez de hit-testing nativo: en formato Wedding
+// los trazos decorativos del script gigante pueden pintar por encima del bloque de
+// arriba y el navegador le asignaría el evento al bloque equivocado.
+function closestHeroBlock(clientX, clientY) {
+  let best = null, bestDist = Infinity;
   HERO_BLOCK_IDS.forEach(id => {
     const el = document.getElementById('hero-' + id);
     if (!el) return;
-    el.style.cursor = 'grab';
-    el.addEventListener('mousedown', e => startHeroDrag(e, id));
-    el.addEventListener('wheel', e => wheelHeroNudge(e, id), { passive: false });
+    const r = el.getBoundingClientRect();
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    const dist = (clientX - cx) ** 2 + (clientY - cy) ** 2;
+    if (dist < bestDist) { bestDist = dist; best = id; }
   });
+  return best;
+}
+
+function initHeroPreviewInteractions() {
+  const hc = document.getElementById('hero-content');
+  hc.style.cursor = 'grab';
+  hc.addEventListener('mousedown', startHeroDrag);
+  hc.addEventListener('wheel', wheelHeroNudge, { passive: false });
   document.addEventListener('mousemove', onHeroDragMove);
   document.addEventListener('mouseup', endHeroDrag);
 }
 
-function startHeroDrag(e, id) {
+function startHeroDrag(e) {
+  const id = closestHeroBlock(e.clientX, e.clientY);
+  if (!id) return;
   e.preventDefault();
   const p = heroLayout.pos[id] || { x: 0, y: 0 };
   heroDrag = { id, startX: e.clientX, startY: e.clientY, origX: p.x, origY: p.y };
-  document.getElementById('hero-' + id).style.cursor = 'grabbing';
+  document.getElementById('hero-content').style.cursor = 'grabbing';
 }
 
 function onHeroDragMove(e) {
@@ -658,12 +673,14 @@ function checkHeroReorder(draggedId) {
 
 function endHeroDrag() {
   if (!heroDrag) return;
-  document.getElementById('hero-' + heroDrag.id).style.cursor = 'grab';
+  document.getElementById('hero-content').style.cursor = 'grab';
   heroDrag = null;
   emitHeroLayoutChange();
 }
 
-function wheelHeroNudge(e, id) {
+function wheelHeroNudge(e) {
+  const id = closestHeroBlock(e.clientX, e.clientY);
+  if (!id) return;
   e.preventDefault();
   const p = heroLayout.pos[id] || { x: 0, y: 0 };
   const dy = e.deltaY > 0 ? 2 : -2;
