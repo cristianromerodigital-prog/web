@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Invitación</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500&family=Mrs+Saint+Delafield&family=Cinzel:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -178,6 +178,16 @@ footer small a{color:inherit}
 .theme-champagne.estilo-aero #nav{background:rgba(245,237,224,0.55);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
 .theme-champagne.estilo-aero section,.theme-champagne.estilo-aero #regalo{background:rgba(245,237,224,0.55)}
 .theme-champagne.estilo-aero .evento-item{background:transparent}
+
+/* FORMATO WEDDING (portada alternativa) */
+.formato-wedding .hero-eyebrow{font-family:'Montserrat',sans-serif;font-size:clamp(13px,2vw,18px);font-weight:400;letter-spacing:10px;opacity:1;margin-bottom:18px;color:var(--white)}
+.formato-wedding .hero-names{font-family:'Mrs Saint Delafield',cursive;font-size:clamp(80px,18vw,190px);line-height:0.85;letter-spacing:0;margin:4px 0 8px;transform:rotate(-3deg);color:var(--white)}
+.formato-wedding .hero-date{font-family:'Cinzel',serif;font-weight:500;font-size:clamp(20px,3vw,28px);letter-spacing:7px;margin-top:32px;color:var(--white)}
+.formato-wedding .hero-date .wedding-std{display:block;font-size:0.6em;letter-spacing:9px;margin-bottom:10px}
+.formato-wedding.fx-glow .hero-eyebrow,.formato-wedding.fx-glow .hero-names,.formato-wedding.fx-glow .hero-date{text-shadow:0 0 24px rgba(255,255,255,0.55),0 2px 18px rgba(0,0,0,0.75)}
+.formato-wedding.fx-sombra .hero-eyebrow,.formato-wedding.fx-sombra .hero-names,.formato-wedding.fx-sombra .hero-date{text-shadow:0 4px 22px rgba(0,0,0,0.85),0 2px 6px rgba(0,0,0,0.9)}
+.formato-wedding.fx-blur .hero-eyebrow,.formato-wedding.fx-blur .hero-names,.formato-wedding.fx-blur .hero-date{position:relative;display:inline-block}
+.formato-wedding.fx-blur .hero-eyebrow::before,.formato-wedding.fx-blur .hero-names::before,.formato-wedding.fx-blur .hero-date::before{content:'';position:absolute;inset:-14px -24px;background:rgba(0,0,0,0.22);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:14px;z-index:-1}
 
 /* TEMA: AZUL */
 .theme-azul{--gold:#a8bcd8;--gold2:#c0d4f0;--black:#070e1a;--black2:#0d1828;--white:#e8f0f8;--gray:#5a7090;--gray2:#8aaac8}
@@ -560,15 +570,25 @@ function formatFechaLimite(iso) {
 
 function renderHero(c) {
   document.title = c.titulo || (c.novios ? `Invitación — ${c.novios}` : 'Invitación');
-  document.getElementById('hero-eyebrow').textContent = c.tipo === 'save_the_date' ? (c.titulo || 'Save The Date') : (c.titulo || '¡Nos casamos!');
-  const names = c.novios || '';
-  const parts = names.split('&');
-  if (parts.length === 2) {
-    document.getElementById('hero-names').innerHTML = `${parts[0].trim()} <span class="hero-ampersand">&</span> ${parts[1].trim()}`;
+  const isWedding = c.formato === 'wedding';
+  document.body.classList.toggle('formato-wedding', isWedding);
+  document.body.classList.remove('fx-glow', 'fx-blur', 'fx-sombra');
+  if (isWedding) {
+    document.body.classList.add('fx-' + (c.wedding_fx || 'glow'));
+    document.getElementById('hero-eyebrow').textContent = (c.novios || '').toUpperCase();
+    document.getElementById('hero-names').textContent = c.wedding_script || 'The Wedding';
+    document.getElementById('hero-date').innerHTML = `<span class="wedding-std">Save the Date</span>${c.fecha_display || ''}`;
   } else {
-    document.getElementById('hero-names').textContent = names;
+    document.getElementById('hero-eyebrow').textContent = c.tipo === 'save_the_date' ? (c.titulo || 'Save The Date') : (c.titulo || '¡Nos casamos!');
+    const names = c.novios || '';
+    const parts = names.split('&');
+    if (parts.length === 2) {
+      document.getElementById('hero-names').innerHTML = `${parts[0].trim()} <span class="hero-ampersand">&</span> ${parts[1].trim()}`;
+    } else {
+      document.getElementById('hero-names').textContent = names;
+    }
+    document.getElementById('hero-date').textContent = c.fecha_display || '';
   }
-  document.getElementById('hero-date').textContent = c.fecha_display || '';
   const hc = document.getElementById('hero-content');
   const tx = c.hero_text_x || 0, ty = c.hero_text_y || 0;
   hc.style.transform = (tx || ty) ? `translate(${tx}px,${ty}px)` : '';
