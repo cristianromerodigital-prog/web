@@ -215,9 +215,9 @@ footer small a{color:inherit}
 #loading-splash{position:fixed;inset:0;z-index:10000;background:var(--black);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:24px;transition:opacity .6s ease}
 #loading-splash-text{font-family:'Mrs Saint Delafield',cursive;color:var(--white);font-size:clamp(32px,7vw,64px);text-align:center;line-height:1.15}
 #loading-splash-text.splash-text-lg{font-size:clamp(96px,21vw,192px)}
-#loading-splash-flourish{width:160px;height:auto}
-#loading-splash-flourish path{stroke-dasharray:280;stroke-dashoffset:280;animation:loadingSplashDraw 3s ease-out forwards}
-@keyframes loadingSplashDraw{to{stroke-dashoffset:0}}
+#loading-splash-cursor{color:var(--gold);animation:splashCursorBlink .8s step-end infinite}
+#loading-splash-cursor.hide{display:none}
+@keyframes splashCursorBlink{50%{opacity:0}}
 #envelope-screen{position:fixed;inset:0;z-index:9999;background:var(--black);display:none;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
 .env-scene{display:flex;flex-direction:column;align-items:center;gap:36px;perspective:900px}
 .env-wrap{position:relative;width:340px;height:215px;transform-style:preserve-3d;animation:env-rise 0.9s ease both;
@@ -286,10 +286,7 @@ footer small a{color:inherit}
 </div>
 
 <div id="loading-splash">
-  <span id="loading-splash-text">Se viene el gran día</span>
-  <svg id="loading-splash-flourish" viewBox="0 0 220 40" fill="none">
-    <path d="M8,20 C26,2 40,38 58,20 C76,2 90,38 108,20 C124,4 136,32 150,20 C160,12 168,20 176,20" stroke="var(--gold)" stroke-width="1.4" stroke-linecap="round"/>
-  </svg>
+  <span id="loading-splash-text"><span id="loading-splash-typed"></span><span id="loading-splash-cursor">|</span></span>
 </div>
 
 <div id="invite-app" style="display:none">
@@ -943,6 +940,24 @@ const SPLASH_TEXT = {
   otro: 'Se viene el gran día',
 };
 
+function typewriterEffect(text, duration) {
+  const typed = document.getElementById('loading-splash-typed');
+  const cursor = document.getElementById('loading-splash-cursor');
+  const chars = Array.from(text);
+  const perCharMs = duration / chars.length;
+  let i = 0;
+  typed.textContent = '';
+  cursor.classList.remove('hide');
+  const interval = setInterval(() => {
+    typed.textContent += chars[i];
+    i++;
+    if (i >= chars.length) {
+      clearInterval(interval);
+      setTimeout(() => cursor.classList.add('hide'), 500);
+    }
+  }, perCharMs);
+}
+
 async function init() {
   if (PREVIEW_MODE) {
     document.getElementById('loading-splash').style.display = 'none';
@@ -960,9 +975,8 @@ async function init() {
     document.getElementById('placeholder').style.display = 'flex';
     return;
   }
-  const splashTextEl = document.getElementById('loading-splash-text');
-  splashTextEl.textContent = SPLASH_TEXT[cfg.tipo] || SPLASH_TEXT.casamiento;
-  splashTextEl.classList.toggle('splash-text-lg', cfg.tipo === 'save_the_date');
+  document.getElementById('loading-splash-text').classList.toggle('splash-text-lg', cfg.tipo === 'save_the_date');
+  typewriterEffect(SPLASH_TEXT[cfg.tipo] || SPLASH_TEXT.casamiento, 2200);
   if (cfg.color_esquema && cfg.color_esquema !== 'negro') document.documentElement.classList.add('theme-' + cfg.color_esquema);
   if (cfg.estilo_aero) { document.documentElement.classList.add('estilo-aero'); startAeroParticles(); }
   if (cfg.color_acento) document.documentElement.style.setProperty('--gold', cfg.color_acento);
