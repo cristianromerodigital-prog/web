@@ -212,6 +212,8 @@ footer small a{color:inherit}
 .theme-blanco #footer-logo,.theme-champagne #footer-logo{filter:none}
 
 /* ── SOBRE / ENVELOPE ── */
+#loading-splash{position:fixed;inset:0;z-index:10000;background:var(--black);display:flex;align-items:center;justify-content:center;padding:24px;transition:opacity .6s ease}
+#loading-splash-text{font-family:'Mrs Saint Delafield',cursive;color:var(--white);font-size:clamp(32px,7vw,64px);text-align:center;line-height:1.15}
 #envelope-screen{position:fixed;inset:0;z-index:9999;background:var(--black);display:none;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
 .env-scene{display:flex;flex-direction:column;align-items:center;gap:36px;perspective:900px}
 .env-wrap{position:relative;width:340px;height:215px;transform-style:preserve-3d;animation:env-rise 0.9s ease both;
@@ -277,6 +279,10 @@ footer small a{color:inherit}
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"/></svg>
     </div>
   </div>
+</div>
+
+<div id="loading-splash">
+  <span id="loading-splash-text">Se viene el gran día</span>
 </div>
 
 <div id="invite-app" style="display:none">
@@ -922,8 +928,17 @@ async function submitRSVP() {
 function svgChurch() { return `<svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10v11M20 10v11M8 21v-4a4 4 0 018 0v4"/></svg>`; }
 function svgParty() { return `<svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M5 3v4M3 5h4M6 17v4M4 19h4M13 3l-4 14 5-5 4 6-1-15z"/></svg>`; }
 
+const SPLASH_TEXT = {
+  casamiento: 'Se viene la Boda del año',
+  quinces: 'Se vienen los 15 años',
+  cumpleanos: 'Se viene la fiesta',
+  save_the_date: 'Guardá la fecha',
+  otro: 'Se viene el gran día',
+};
+
 async function init() {
   if (PREVIEW_MODE) {
+    document.getElementById('loading-splash').style.display = 'none';
     cfg = {};
     document.body.style.userSelect = 'none';
     renderHero(cfg);
@@ -931,11 +946,14 @@ async function init() {
     initHeroPreviewInteractions();
     return;
   }
+  const splashStart = Date.now();
   if (!cfg) cfg = await parseConfig();
   if (!cfg) {
+    document.getElementById('loading-splash').style.display = 'none';
     document.getElementById('placeholder').style.display = 'flex';
     return;
   }
+  document.getElementById('loading-splash-text').textContent = SPLASH_TEXT[cfg.tipo] || SPLASH_TEXT.casamiento;
   if (cfg.color_esquema && cfg.color_esquema !== 'negro') document.documentElement.classList.add('theme-' + cfg.color_esquema);
   if (cfg.estilo_aero) { document.documentElement.classList.add('estilo-aero'); startAeroParticles(); }
   if (cfg.color_acento) document.documentElement.style.setProperty('--gold', cfg.color_acento);
@@ -948,15 +966,17 @@ async function init() {
   renderRSVP(cfg);
   renderSpotify(cfg);
   renderNav(cfg);
-  if (cfg.youtube_audio && cfg.env_mostrar !== false) {
-    showEnvelope(cfg);
-  } else {
+  const wait = Math.max(0, 3000 - (Date.now() - splashStart));
+  setTimeout(() => {
+    const splash = document.getElementById('loading-splash');
+    splash.style.opacity = '0';
+    setTimeout(() => splash.remove(), 600);
     document.getElementById('invite-app').style.display = 'block';
     if (cfg.youtube_audio) initYoutubeAudio(cfg.youtube_audio);
-    // sin sobre: unmute en primer scroll/touch/click (manejado dentro de initYoutubeAudio)
+    // unmute en primer scroll/touch/click (manejado dentro de initYoutubeAudio)
     const vid0 = document.getElementById('hero-media');
     if (vid0 && vid0.tagName === 'VIDEO') vid0.play().catch(() => {});
-  }
+  }, wait);
   // Load branding from crd_settings
   try {
     const sRes = await fetch(CF_URL_INV + '/crd_settings?t=' + Date.now());
