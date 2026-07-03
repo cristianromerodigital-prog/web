@@ -1126,10 +1126,15 @@ function showError(msg) {
   document.getElementById('panels-container').innerHTML =
     `<div style="text-align:center;padding:80px 20px;color:rgba(255,255,255,.4);font-size:13px;line-height:1.8">${msg}</div>`;
 }
+const _loadStart = Date.now();
+
 function hideLoading() {
-  const ls = document.getElementById('loading-screen');
-  ls.classList.add('hidden');
-  setTimeout(() => ls.style.display = 'none', 700);
+  const remaining = Math.max(0, 3000 - (Date.now() - _loadStart));
+  setTimeout(() => {
+    const ls = document.getElementById('loading-screen');
+    ls.classList.add('hidden');
+    setTimeout(() => ls.style.display = 'none', 700);
+  }, remaining);
 }
 
 // ═══════════════════════════════════════════════════════════
