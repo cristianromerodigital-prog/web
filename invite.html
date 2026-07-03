@@ -217,7 +217,7 @@ footer small a{color:inherit}
 #loading-splash-text.splash-text-lg{font-size:clamp(36px,8vw,72px)}
 #loading-splash-bar{width:180px;height:2px;background:rgba(245,240,232,0.15);overflow:hidden}
 #loading-splash-bar-fill{width:0;height:100%;background:var(--gold)}
-#loading-splash-bar-fill.fill{animation:splashBarFill 2s linear forwards}
+#loading-splash-bar-fill.fill{animation:splashBarFill 1s linear forwards}
 @keyframes splashBarFill{to{width:100%}}
 #envelope-screen{position:fixed;inset:0;z-index:9999;background:var(--black);display:none;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
 .env-scene{display:flex;flex-direction:column;align-items:center;gap:36px;perspective:900px}
@@ -978,7 +978,7 @@ async function init() {
   renderRSVP(cfg);
   renderSpotify(cfg);
   renderNav(cfg);
-  const wait = Math.max(0, 2000 - (Date.now() - splashStart));
+  const wait = Math.max(0, 1000 - (Date.now() - splashStart));
   setTimeout(() => {
     const splash = document.getElementById('loading-splash');
     splash.style.opacity = '0';
