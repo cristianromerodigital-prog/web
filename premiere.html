@@ -877,6 +877,8 @@ function applyConfig() {
   CFG.allowDownload = false;
   const selDl = document.querySelector('.selbar-btn-dl');
   if(selDl) selDl.style.display = 'none';
+  const dlAllBtn = document.getElementById('btn-dl-all');
+  if(dlAllBtn) dlAllBtn.style.display = 'none';
   const nombres = CFG.nombres || 'Tu premiere';
   document.getElementById('page-title').textContent = nombres + ' — Cristian Romero Producciones';
 
@@ -1224,6 +1226,7 @@ function downloadSelected() {
   });
 }
 function dlAll() {
+  if(!CFG.allowDownload) { return; }
   window.open(driveFolderUrl(rootFolderId), '_blank');
 }
 
