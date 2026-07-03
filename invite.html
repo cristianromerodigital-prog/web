@@ -917,6 +917,7 @@ async function init() {
   if (PREVIEW_MODE) {
     cfg = {};
     document.body.style.userSelect = 'none';
+    document.getElementById('hero').style.minHeight = '0';
     renderHero(cfg);
     document.getElementById('invite-app').style.display = 'block';
     initHeroPreviewInteractions();
