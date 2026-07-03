@@ -63,7 +63,7 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
 .nav-btn-select { border:1px solid rgba(255,255,255,.2); color:rgba(255,255,255,.6); background:transparent; }
 .nav-btn-select:hover { border-color:rgba(255,255,255,.5); color:var(--white); }
 .nav-btn-select.active { border-color:var(--cyan); color:var(--cyan); background:rgba(0,212,232,.08); }
-.nav-avatar { width:34px; height:34px; border-radius:4px; background:linear-gradient(135deg,var(--cyan),var(--gold)); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:500; color:var(--bg); cursor:default; letter-spacing:.05em; }
+.nav-avatar { width:34px; height:34px; border-radius:4px; background:linear-gradient(135deg,var(--cyan),var(--gold)); background-size:cover; background-position:center; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:500; color:var(--bg); cursor:default; letter-spacing:.05em; }
 
 /* ── HERO ── */
 #hero { position:relative; width:100%; height:100vh; min-height:620px; overflow:hidden; }
@@ -416,7 +416,6 @@ body.ae-select .ae-item .ae-check { display:flex; }
     <li><a href="#videos">Videos</a></li>
   </ul>
   <div class="nav-right">
-    <button class="nav-btn nav-btn-select" id="btn-select" onclick="toggleSelectMode()">☑ Seleccionar</button>
     <button class="nav-btn nav-btn-outline" id="btn-dl-all" onclick="dlAll()">↓ Todo</button>
     <div class="nav-avatar" id="nav-avatar">CR</div>
   </div>
@@ -894,10 +893,17 @@ function applyConfig() {
   if(CFG.fecha) document.getElementById('hero-fecha-text').textContent = CFG.fecha;
   else document.querySelector('.hero-badge').style.display = 'none';
 
-  // Nav avatar initials
-  const initials = nombres.split(/\s+/).filter(w => /[a-záéíóúñ]/i.test(w)).slice(0,2).map(w=>w[0].toUpperCase()).join('');
+  // Nav avatar: miniatura de portada, o iniciales si no hay portada
   const av = document.getElementById('nav-avatar');
-  if(av && initials) av.textContent = initials;
+  if(av) {
+    if(CFG.portadaId) {
+      av.style.backgroundImage = `url('${thumbUrl(CFG.portadaId, 80)}')`;
+      av.textContent = '';
+    } else {
+      const initials = nombres.split(/\s+/).filter(w => /[a-záéíóúñ]/i.test(w)).slice(0,2).map(w=>w[0].toUpperCase()).join('');
+      if(initials) av.textContent = initials;
+    }
+  }
 
   // Hero bg
   if(CFG.portadaId) {
