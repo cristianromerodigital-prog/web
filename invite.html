@@ -215,9 +215,9 @@ footer small a{color:inherit}
 #loading-splash{position:fixed;inset:0;z-index:10000;background:var(--black);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:24px;transition:opacity .6s ease}
 #loading-splash-text{font-family:'Mrs Saint Delafield',cursive;color:var(--white);font-size:clamp(32px,7vw,64px);text-align:center;line-height:1.15}
 #loading-splash-text.splash-text-lg{font-size:clamp(96px,21vw,192px)}
-#loading-splash-cursor{color:var(--gold);animation:splashCursorBlink .8s step-end infinite}
+#loading-splash-cursor{display:inline-block;font-size:0.55em;transform-origin:80% 80%;animation:splashPencilWrite .35s ease-in-out infinite}
 #loading-splash-cursor.hide{display:none}
-@keyframes splashCursorBlink{50%{opacity:0}}
+@keyframes splashPencilWrite{0%,100%{transform:rotate(-8deg) translateY(0)}50%{transform:rotate(6deg) translateY(-2px)}}
 #envelope-screen{position:fixed;inset:0;z-index:9999;background:var(--black);display:none;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
 .env-scene{display:flex;flex-direction:column;align-items:center;gap:36px;perspective:900px}
 .env-wrap{position:relative;width:340px;height:215px;transform-style:preserve-3d;animation:env-rise 0.9s ease both;
@@ -286,7 +286,7 @@ footer small a{color:inherit}
 </div>
 
 <div id="loading-splash">
-  <span id="loading-splash-text"><span id="loading-splash-typed"></span><span id="loading-splash-cursor">|</span></span>
+  <span id="loading-splash-text"><span id="loading-splash-typed"></span><span id="loading-splash-cursor">✏️</span></span>
 </div>
 
 <div id="invite-app" style="display:none">
