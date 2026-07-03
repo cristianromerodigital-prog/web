@@ -139,6 +139,7 @@ body { background:var(--bg); color:var(--white); font-family:'Montserrat',sans-s
 .card { position:relative; flex-shrink:0; width:224px; border-radius:4px; overflow:hidden; cursor:pointer; z-index:1; transition:transform .35s cubic-bezier(.25,.46,.45,.94) .18s, box-shadow .35s ease .18s, z-index 0s .18s; }
 .card:hover { transform:scale(1.16) translateY(-6px); box-shadow:0 28px 70px rgba(0,0,0,.85); z-index:40; }
 .card-thumb { width:100%; aspect-ratio:3/2; object-fit:cover; object-position:top center; display:block; background:#1a1a20; transition:transform .4s ease .18s; }
+.card-thumb, .ae-item img, #lb-img, .lb-thumb { -webkit-user-drag:none; -webkit-touch-callout:none; user-select:none; -webkit-user-select:none; }
 .card:hover .card-thumb { transform:scale(1.05); }
 .card-overlay { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; padding:14px; background:linear-gradient(to top, rgba(0,0,0,.9) 0%, rgba(0,0,0,.4) 45%, transparent 100%); opacity:0; transition:opacity .25s ease .25s; }
 .card:hover .card-overlay { opacity:1; }
@@ -548,7 +549,7 @@ body.ae-select .ae-item .ae-check { display:flex; }
   </div>
   <div class="lb-main">
     <button class="lb-nav" id="lb-prev" onclick="lbPrev()">‹</button>
-    <img id="lb-img" src="" alt="">
+    <img id="lb-img" src="" alt="" draggable="false" oncontextmenu="return false">
     <button class="lb-nav" id="lb-next" onclick="lbNext()">›</button>
   </div>
   <div class="lb-thumbs-wrap">
@@ -1052,7 +1053,7 @@ function buildPhotoRow(row) {
     const dlAttrs = CFG.allowDownload ? `href="${dlHref}" download="${photo.name}" target="_blank"` : `href="#" onclick="return false"`;
     card.innerHTML = `
       <div class="card-check">✓</div>
-      <img class="card-thumb" src="${thumbUrl(photo.id, 440)}" alt="${photo.name}" loading="lazy">
+      <img class="card-thumb" src="${thumbUrl(photo.id, 440)}" alt="${photo.name}" loading="lazy" draggable="false" oncontextmenu="return false">
       <div class="card-overlay">
         <div class="card-name">${photo.name.replace(/\.[^.]+$/,'')}</div>
         <div class="card-btns">
@@ -1097,7 +1098,7 @@ function buildVideoRow(row) {
     const thumb = thumbUrl(video.id, 720);
     card.innerHTML = `
       <div class="video-thumb-wrap">
-        <img class="video-thumb" src="${thumb}" alt="${video.name}" loading="lazy"
+        <img class="video-thumb" src="${thumb}" alt="${video.name}" loading="lazy" draggable="false" oncontextmenu="return false"
           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
         <div class="video-thumb-fallback" style="display:none;position:absolute;inset:0;background:#111;align-items:center;justify-content:center;flex-direction:column;gap:10px">
           <div style="width:56px;height:56px;border-radius:50%;border:2px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:22px;color:rgba(255,255,255,.6)">▶</div>
@@ -1154,6 +1155,8 @@ function buildThumbs() {
     t.className = 'lb-thumb' + (i===lbIndex?' active':'');
     t.src = thumbUrl(p.id, 100);
     t.loading = 'lazy';
+    t.draggable = false;
+    t.oncontextmenu = () => false;
     t.addEventListener('click', () => { lbIndex=i; renderLb(); });
     strip.appendChild(t);
   });
@@ -1306,7 +1309,7 @@ function openAlbumExpand(photos, albumName) {
     item.dataset.id = photo.id;
     item.innerHTML = `
       <div class="ae-check">✓</div>
-      <img src="${thumbUrl(photo.id, 600)}" alt="${photo.name}" loading="lazy">`;
+      <img src="${thumbUrl(photo.id, 600)}" alt="${photo.name}" loading="lazy" draggable="false" oncontextmenu="return false">`;
     item.addEventListener('click', () => {
       if(document.body.classList.contains('ae-select')) {
         aeToggleSelect(photo.id, item);
