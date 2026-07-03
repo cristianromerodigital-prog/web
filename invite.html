@@ -954,6 +954,8 @@ async function init() {
     document.getElementById('invite-app').style.display = 'block';
     if (cfg.youtube_audio) initYoutubeAudio(cfg.youtube_audio);
     // sin sobre: unmute en primer scroll/touch/click (manejado dentro de initYoutubeAudio)
+    const vid0 = document.getElementById('hero-media');
+    if (vid0 && vid0.tagName === 'VIDEO') vid0.play().catch(() => {});
   }
   // Load branding from crd_settings
   try {
@@ -1119,6 +1121,8 @@ function openEnvelope() {
     screen.style.transition = 'opacity 0.55s ease';
     screen.style.opacity = '0';
     setTimeout(() => screen.remove(), 650);
+    const vid = document.getElementById('hero-media');
+    if (vid && vid.tagName === 'VIDEO') vid.play().catch(() => {});
   }, 950);
 }
 
