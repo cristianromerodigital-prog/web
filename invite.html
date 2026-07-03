@@ -703,7 +703,8 @@ function renderHero(c) {
     document.body.classList.add('fx-' + (c.wedding_fx || 'glow'));
     document.getElementById('hero-eyebrow').textContent = (c.novios || '').toUpperCase();
     document.getElementById('hero-names').textContent = c.wedding_script || 'The Wedding';
-    document.getElementById('hero-date').innerHTML = `<span class="wedding-std">Save the Date</span>${c.fecha_display || ''}`;
+    const stdLabel = c.tipo === 'save_the_date' ? `<span class="wedding-std">Save the Date</span>` : '';
+    document.getElementById('hero-date').innerHTML = `${stdLabel}${c.fecha_display || ''}`;
   } else {
     document.getElementById('hero-eyebrow').textContent = c.tipo === 'save_the_date' ? (c.titulo || 'Save The Date') : (c.titulo || '¡Nos casamos!');
     const names = c.novios || '';
@@ -736,6 +737,8 @@ function renderHero(c) {
 }
 
 function renderEvento(c) {
+  const sec = document.getElementById('evento');
+  if (c.tipo === 'save_the_date') { sec.style.display = 'none'; sec.previousElementSibling.style.display = 'none'; return; }
   const SUBTITULOS_DEFAULT = {
     casamiento: 'Con inmensa alegría los invitamos a celebrar nuestro <em>casamiento</em>',
     quinces: 'Con todo nuestro amor te invitamos a celebrar sus <em>quince años</em>',
@@ -773,6 +776,8 @@ function renderEvento(c) {
 }
 
 function renderLugar(c) {
+  const sec = document.getElementById('lugar');
+  if (c.tipo === 'save_the_date') { sec.style.display = 'none'; sec.previousElementSibling.style.display = 'none'; return; }
   const esBoda = !c.tipo || c.tipo === 'casamiento' || c.tipo === 'save_the_date';
   if (esBoda && c.ceremonia_lugar) {
     document.getElementById('ceremonia-lugar-sec').style.display = '';
@@ -798,6 +803,8 @@ function renderLugar(c) {
 }
 
 function renderDresscode(c) {
+  const sec = document.getElementById('dresscode');
+  if (c.tipo === 'save_the_date') { sec.style.display = 'none'; sec.previousElementSibling.style.display = 'none'; return; }
   document.getElementById('dresscode-val').textContent = c.dresscode || 'Formal';
   const nota = document.getElementById('dresscode-nota');
   if (c.dresscode_nota) nota.textContent = c.dresscode_nota;
@@ -836,7 +843,7 @@ function renderRSVP(c) {
 
 function renderSpotify(c) {
   const sec = document.getElementById('spotify');
-  if (!c.spotify_url) { sec.style.display = 'none'; sec.previousElementSibling.style.display = 'none'; return; }
+  if (c.tipo === 'save_the_date' || !c.spotify_url) { sec.style.display = 'none'; sec.previousElementSibling.style.display = 'none'; return; }
   document.getElementById('btn-spotify').href = c.spotify_url;
   const embedWrap = document.getElementById('spotify-embed-wrap');
   const embedUrl = c.spotify_url.replace('open.spotify.com/', 'open.spotify.com/embed/');
@@ -845,6 +852,7 @@ function renderSpotify(c) {
 
 function renderNav(c) {
   const nav = document.getElementById('nav');
+  if (c.tipo === 'save_the_date') { nav.style.display = 'none'; return; }
   const hide = [];
   if (!c.rsvp_activo || c.tipo === 'save_the_date') hide.push('rsvp');
   if (!c.spotify_url) hide.push('spotify');
