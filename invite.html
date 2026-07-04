@@ -583,13 +583,18 @@ function formatFechaLimite(iso) {
   return `${parseInt(d)} de ${meses[parseInt(m)-1]} de ${y}`;
 }
 
-const HERO_BLOCK_IDS = ['eyebrow', 'names', 'date'];
+const HERO_BLOCK_IDS = ['eyebrow', 'names', 'date', 'countdown'];
+const HERO_REORDERABLE_IDS = ['eyebrow', 'names', 'date'];
 let heroLayout = null;
+
+function heroBlockEl(id) {
+  return document.getElementById(id === 'countdown' ? 'countdown' : 'hero-' + id);
+}
 
 function defaultHeroLayout(tx, ty) {
   return {
     order: ['eyebrow', 'names', 'date'],
-    pos: { eyebrow: { x: tx, y: ty }, names: { x: tx, y: ty }, date: { x: tx, y: ty } }
+    pos: { eyebrow: { x: tx, y: ty }, names: { x: tx, y: ty }, date: { x: tx, y: ty }, countdown: { x: 0, y: 0 } }
   };
 }
 
@@ -598,15 +603,22 @@ function resolveHeroLayout(c) {
   return defaultHeroLayout(c.hero_text_x || 0, c.hero_text_y || 0);
 }
 
+// El countdown participa del offset (pos) pero nunca del reorden -- su `order:99`
+// en CSS lo deja siempre al final del grupo, se mueva a donde se mueva.
 function applyHeroLayout(layout) {
-  HERO_BLOCK_IDS.forEach((id, i) => {
-    const el = document.getElementById('hero-' + id);
+  HERO_REORDERABLE_IDS.forEach((id, i) => {
+    const el = heroBlockEl(id);
     if (!el) return;
     const ord = layout.order.indexOf(id);
     el.style.order = ord === -1 ? i : ord;
     const p = layout.pos[id] || { x: 0, y: 0 };
     el.style.transform = (p.x || p.y) ? `translate(${p.x}px,${p.y}px)` : '';
   });
+  const cdEl = heroBlockEl('countdown');
+  if (cdEl) {
+    const p = (layout.pos && layout.pos.countdown) || { x: 0, y: 0 };
+    cdEl.style.transform = (p.x || p.y) ? `translate(${p.x}px,${p.y}px)` : '';
+  }
 }
 
 window.applyHeroPreview = function(c) {
@@ -635,7 +647,7 @@ let heroWheelTimer = null;
 function closestHeroBlock(clientX, clientY) {
   let best = null, bestDist = Infinity;
   HERO_BLOCK_IDS.forEach(id => {
-    const el = document.getElementById('hero-' + id);
+    const el = heroBlockEl(id);
     if (!el) return;
     const r = el.getBoundingClientRect();
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
@@ -673,11 +685,12 @@ function onHeroDragMove(e) {
 }
 
 function checkHeroReorder(draggedId) {
-  const draggedEl = document.getElementById('hero-' + draggedId);
+  if (draggedId === 'countdown') return; // el countdown se reposiciona, nunca se reordena
+  const draggedEl = heroBlockEl(draggedId);
   const draggedRect = draggedEl.getBoundingClientRect();
   const draggedMid = draggedRect.top + draggedRect.height / 2;
-  HERO_BLOCK_IDS.filter(id => id !== draggedId).forEach(otherId => {
-    const otherEl = document.getElementById('hero-' + otherId);
+  HERO_REORDERABLE_IDS.filter(id => id !== draggedId).forEach(otherId => {
+    const otherEl = heroBlockEl(otherId);
     const r = otherEl.getBoundingClientRect();
     const otherMid = r.top + r.height / 2;
     const draggedOrder = heroLayout.order.indexOf(draggedId);
@@ -702,7 +715,7 @@ function endHeroDrag() {
   if (moved < 5) {
     heroLayout.pos[id] = { x: origX, y: origY };
     applyHeroLayout(heroLayout);
-    openTextStylePanel('hero-' + id);
+    if (id !== 'countdown') openTextStylePanel('hero-' + id); // countdown no tiene panel de texto
   } else {
     emitHeroLayoutChange();
   }
@@ -1044,7 +1057,7 @@ function renderHero(c) {
     document.getElementById('hero-overlay').style.background = 'rgba(12,12,12,0.6)';
   }
 
-  if (c.fecha_iso) startCountdown(c.fecha_iso);
+  if (c.fecha_iso) { document.getElementById('countdown').style.display = ''; startCountdown(c.fecha_iso); }
   else document.getElementById('countdown').style.display = 'none';
 
   document.getElementById('footer-names').textContent = c.novios || '';
