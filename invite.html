@@ -1298,6 +1298,7 @@ async function init() {
   renderRSVP(cfg);
   renderSpotify(cfg);
   renderNav(cfg);
+  applyAllTextStyles(cfg.text_styles);
   const wait = Math.max(0, 1000 - (Date.now() - splashStart));
   setTimeout(() => {
     const splash = document.getElementById('loading-splash');
