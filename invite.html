@@ -18,7 +18,7 @@
   --gray:#888;
   --gray2:#aaa;
 }
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{background:var(--black);color:var(--white);font-family:'Montserrat',sans-serif;font-weight:300}
 
 /* NAV */
@@ -603,21 +603,36 @@ function resolveHeroLayout(c) {
   return defaultHeroLayout(c.hero_text_x || 0, c.hero_text_y || 0);
 }
 
+// Los offsets se calibran arrastrando dentro del preview del admin, que siempre
+// renderiza a 390x844 (ver HERO_POPUP_NATIVE_W/H en admin.html). Si se aplicaran tal
+// cual en un dispositivo real con otro tamaño de viewport, un offset grande (ej. mover
+// una fecha -260px) queda desproporcionado. Por eso se escalan según el tamaño real de
+// #hero contra esa referencia, para que la posición relativa se mantenga sin importar
+// el dispositivo.
+const HERO_LAYOUT_REF_W = 390, HERO_LAYOUT_REF_H = 844;
+function heroLayoutScale() {
+  const hero = document.getElementById('hero');
+  if (!hero) return { sx: 1, sy: 1 };
+  const r = hero.getBoundingClientRect();
+  return { sx: (r.width || HERO_LAYOUT_REF_W) / HERO_LAYOUT_REF_W, sy: (r.height || HERO_LAYOUT_REF_H) / HERO_LAYOUT_REF_H };
+}
+
 // El countdown participa del offset (pos) pero nunca del reorden -- su `order:99`
 // en CSS lo deja siempre al final del grupo, se mueva a donde se mueva.
 function applyHeroLayout(layout) {
+  const { sx, sy } = heroLayoutScale();
   HERO_REORDERABLE_IDS.forEach((id, i) => {
     const el = heroBlockEl(id);
     if (!el) return;
     const ord = layout.order.indexOf(id);
     el.style.order = ord === -1 ? i : ord;
     const p = layout.pos[id] || { x: 0, y: 0 };
-    el.style.transform = (p.x || p.y) ? `translate(${p.x}px,${p.y}px)` : '';
+    el.style.transform = (p.x || p.y) ? `translate(${p.x * sx}px,${p.y * sy}px)` : '';
   });
   const cdEl = heroBlockEl('countdown');
   if (cdEl) {
     const p = (layout.pos && layout.pos.countdown) || { x: 0, y: 0 };
-    cdEl.style.transform = (p.x || p.y) ? `translate(${p.x}px,${p.y}px)` : '';
+    cdEl.style.transform = (p.x || p.y) ? `translate(${p.x * sx}px,${p.y * sy}px)` : '';
   }
 }
 
