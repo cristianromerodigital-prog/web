@@ -754,7 +754,9 @@ const FONT_CATALOG = {
   'Bodoni Moda':         { category: 'display', weights: [400,500,600,700,800,900] },
   'Italiana':            { category: 'display', weights: [400] },
   'Cormorant':           { category: 'display', weights: [300,400,500,600,700] },
-  'Yeseva One':          { category: 'display', weights: [400] }
+  'Yeseva One':          { category: 'display', weights: [400] },
+  // Fuente propia (self-hosted, no es de Google Fonts) -- ver fonts/TheWeddingSignature-Regular.woff2
+  'The Wedding Signature': { category: 'script', weights: [400], custom: true, file: 'fonts/TheWeddingSignature-Regular.woff2' }
 };
 const FONT_CATEGORY_LABELS = { script: 'Script / Manuscrita', serif: 'Serif elegante', sans: 'Sans-serif elegante', display: 'Display / Decorativa' };
 const WEIGHT_LABELS = { 100:'Ultra fina', 200:'Extra fina', 300:'Fina', 400:'Normal', 500:'Medio', 600:'Semi negrita', 700:'Negrita', 800:'Extra negrita', 900:'Ultra negrita' };
@@ -772,6 +774,13 @@ const loadedFonts = new Set();
 function ensureFontLoaded(fontName) {
   if (!fontName || loadedFonts.has(fontName) || !FONT_CATALOG[fontName]) return;
   loadedFonts.add(fontName);
+  const info = FONT_CATALOG[fontName];
+  if (info.custom) {
+    const style = document.createElement('style');
+    style.textContent = `@font-face{font-family:'${fontName}';src:url('${info.file}') format('woff2');font-weight:${info.weights[0]};font-display:swap;}`;
+    document.head.appendChild(style);
+    return;
+  }
   let link = document.getElementById('dynamic-fonts-link');
   if (!link) {
     link = document.createElement('link');
@@ -779,12 +788,12 @@ function ensureFontLoaded(fontName) {
     link.rel = 'stylesheet';
     document.head.appendChild(link);
   }
-  const families = [...loadedFonts].map(name => {
+  const families = [...loadedFonts].filter(name => !FONT_CATALOG[name].custom).map(name => {
     const slug = name.replace(/ /g, '+');
-    const info = FONT_CATALOG[name];
-    return info.weights.length > 1 ? `family=${slug}:wght@${info.weights.join(';')}` : `family=${slug}`;
+    const i = FONT_CATALOG[name];
+    return i.weights.length > 1 ? `family=${slug}:wght@${i.weights.join(';')}` : `family=${slug}`;
   }).join('&');
-  link.href = `https://fonts.googleapis.com/css2?${families}&display=swap`;
+  if (families) link.href = `https://fonts.googleapis.com/css2?${families}&display=swap`;
 }
 
 let textStyles = {};
