@@ -708,6 +708,27 @@ function emitHeroLayoutChange() {
   window.dispatchEvent(new CustomEvent('herolayoutchange', { detail: JSON.parse(JSON.stringify(heroLayout)) }));
 }
 
+// ── TEXT STYLES (tamano/grosor por bloque, todas las secciones) ──
+const TEXT_STYLE_IDS = ['hero-eyebrow', 'hero-names', 'hero-date', 'ev-title', 'ev-body',
+  'ceremonia-lugar-nombre', 'ceremonia-lugar-dir', 'lugar-nombre', 'lugar-dir', 'dresscode-title',
+  'regalo-titulo', 'regalo-texto', 'rsvp-title', 'rsvp-body', 'spotify-title', 'spotify-body'];
+
+let textStyles = {};
+
+function applyTextStyle(id, style) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (style && style.size) el.style.setProperty('--ts-scale', style.size / 100);
+  else el.style.removeProperty('--ts-scale');
+  if (style && style.weight) el.style.fontWeight = style.weight;
+  else el.style.removeProperty('font-weight');
+}
+
+function applyAllTextStyles(styles) {
+  textStyles = styles || {};
+  TEXT_STYLE_IDS.forEach(id => applyTextStyle(id, textStyles[id]));
+}
+
 function renderHero(c) {
   document.title = c.titulo || (c.novios ? `Invitación — ${c.novios}` : 'Invitación');
   const isWedding = c.formato === 'wedding';
