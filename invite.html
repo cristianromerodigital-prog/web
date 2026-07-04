@@ -724,10 +724,68 @@ function emitHeroLayoutChange() {
   window.dispatchEvent(new CustomEvent('herolayoutchange', { detail: JSON.parse(JSON.stringify(heroLayout)) }));
 }
 
-// ── TEXT STYLES (tamano/grosor por bloque, todas las secciones) ──
+// ── TEXT STYLES (tamano/grosor/fuente por bloque, todas las secciones) ──
 const TEXT_STYLE_IDS = ['hero-eyebrow', 'hero-names', 'hero-date', 'ev-title', 'ev-body',
   'ceremonia-lugar-nombre', 'ceremonia-lugar-dir', 'lugar-nombre', 'lugar-dir', 'dresscode-title',
   'regalo-titulo', 'regalo-texto', 'rsvp-title', 'rsvp-body', 'spotify-title', 'spotify-body'];
+
+// Pesos verificados uno por uno contra Google Fonts (css2, User-Agent moderno) antes de
+// cargarlos -- una fuente de un solo peso (script/display decorativas) no tiene variantes
+// de grosor reales y el panel debe avisarlo en vez de ofrecer botones sin efecto.
+const FONT_CATALOG = {
+  'Dancing Script':      { category: 'script',  weights: [400,500,600,700] },
+  'Mrs Saint Delafield': { category: 'script',  weights: [400] },
+  'Great Vibes':         { category: 'script',  weights: [400] },
+  'Parisienne':          { category: 'script',  weights: [400] },
+  'Alex Brush':          { category: 'script',  weights: [400] },
+  'Cormorant Garamond':  { category: 'serif',   weights: [300,400,500,600,700] },
+  'Playfair Display':    { category: 'serif',   weights: [400,500,600,700,800,900] },
+  'Cinzel':              { category: 'serif',   weights: [400,500,600,700,800,900] },
+  'EB Garamond':         { category: 'serif',   weights: [400,500,600,700,800] },
+  'Marcellus':           { category: 'serif',   weights: [400] },
+  'Libre Baskerville':   { category: 'serif',   weights: [400,500,600,700] },
+  'Prata':               { category: 'serif',   weights: [400] },
+  'Montserrat':          { category: 'sans',    weights: [100,200,300,400,500,600,700,800,900] },
+  'Poppins':             { category: 'sans',    weights: [100,200,300,400,500,600,700,800,900] },
+  'Raleway':             { category: 'sans',    weights: [100,200,300,400,500,600,700,800,900] },
+  'Josefin Sans':        { category: 'sans',    weights: [100,200,300,400,500,600,700] },
+  'Quicksand':           { category: 'sans',    weights: [300,400,500,600,700] },
+  'Abril Fatface':       { category: 'display', weights: [400] },
+  'Bodoni Moda':         { category: 'display', weights: [400,500,600,700,800,900] },
+  'Italiana':            { category: 'display', weights: [400] },
+  'Cormorant':           { category: 'display', weights: [300,400,500,600,700] },
+  'Yeseva One':          { category: 'display', weights: [400] }
+};
+const FONT_CATEGORY_LABELS = { script: 'Script / Manuscrita', serif: 'Serif elegante', sans: 'Sans-serif elegante', display: 'Display / Decorativa' };
+const WEIGHT_LABELS = { 100:'Ultra fina', 200:'Extra fina', 300:'Fina', 400:'Normal', 500:'Medio', 600:'Semi negrita', 700:'Negrita', 800:'Extra negrita', 900:'Ultra negrita' };
+
+const TEXT_STYLE_TITLE_IDS = ['ev-title', 'ceremonia-lugar-nombre', 'lugar-nombre', 'dresscode-title', 'regalo-titulo', 'rsvp-title', 'spotify-title'];
+function originalFontFor(id) {
+  if (id === 'hero-names') return (cfg && cfg.formato === 'wedding') ? 'Mrs Saint Delafield' : 'Cormorant Garamond';
+  if (id === 'hero-date') return (cfg && cfg.formato === 'wedding') ? 'Cinzel' : 'Montserrat';
+  if (id === 'hero-eyebrow') return 'Montserrat';
+  if (TEXT_STYLE_TITLE_IDS.includes(id)) return 'Cormorant Garamond';
+  return 'Montserrat';
+}
+
+const loadedFonts = new Set();
+function ensureFontLoaded(fontName) {
+  if (!fontName || loadedFonts.has(fontName) || !FONT_CATALOG[fontName]) return;
+  loadedFonts.add(fontName);
+  let link = document.getElementById('dynamic-fonts-link');
+  if (!link) {
+    link = document.createElement('link');
+    link.id = 'dynamic-fonts-link';
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+  }
+  const families = [...loadedFonts].map(name => {
+    const slug = name.replace(/ /g, '+');
+    const info = FONT_CATALOG[name];
+    return info.weights.length > 1 ? `family=${slug}:wght@${info.weights.join(';')}` : `family=${slug}`;
+  }).join('&');
+  link.href = `https://fonts.googleapis.com/css2?${families}&display=swap`;
+}
 
 let textStyles = {};
 
@@ -738,11 +796,22 @@ function applyTextStyle(id, style) {
   else el.style.removeProperty('--ts-scale');
   if (style && style.weight) el.style.fontWeight = style.weight;
   else el.style.removeProperty('font-weight');
+  if (style && style.font) {
+    const cat = (FONT_CATALOG[style.font] || {}).category || 'sans';
+    const generic = cat === 'script' ? 'cursive' : (cat === 'sans' ? 'sans-serif' : 'serif');
+    el.style.fontFamily = `'${style.font}', ${generic}`;
+  } else {
+    el.style.removeProperty('font-family');
+  }
 }
 
 function applyAllTextStyles(styles) {
   textStyles = styles || {};
-  TEXT_STYLE_IDS.forEach(id => applyTextStyle(id, textStyles[id]));
+  TEXT_STYLE_IDS.forEach(id => {
+    const st = textStyles[id];
+    if (st && st.font) ensureFontLoaded(st.font);
+    applyTextStyle(id, st);
+  });
 }
 
 const TEXT_STYLE_LABELS = {
@@ -756,45 +825,98 @@ const TEXT_STYLE_LABELS = {
   'spotify-title': 'Spotify — Título', 'spotify-body': 'Spotify — Texto'
 };
 
+// Bloques cuyo texto esta hardcodeado en el HTML (sin campo propio en el formulario del admin).
+const TEXT_CONTENT_IDS = ['dresscode-title', 'rsvp-title', 'rsvp-body', 'spotify-title', 'spotify-body'];
+const TEXT_CONTENT_DEFAULTS = {
+  'dresscode-title': 'Dresscode',
+  'rsvp-title': '¿Venís?',
+  'rsvp-body': 'Por favor confirmá antes del {fecha}.',
+  'spotify-title': 'La playlist',
+  'spotify-body': '¿Querés que suene tu canción favorita? La playlist es colaborativa — agregá los temas que quieras.'
+};
+const TEXT_CONTENT_RENDER_FN = {
+  'dresscode-title': c => renderDresscode(c),
+  'rsvp-title': c => renderRSVP(c),
+  'rsvp-body': c => renderRSVP(c),
+  'spotify-title': c => renderSpotify(c),
+  'spotify-body': c => renderSpotify(c)
+};
+
 let tsPanelEl = null;
 let tsActiveId = null;
 let tsChangeTimer = null;
+
+function buildFontSelectOptions() {
+  let html = '<option value="">Original</option>';
+  ['script', 'serif', 'sans', 'display'].forEach(cat => {
+    const names = Object.keys(FONT_CATALOG).filter(n => FONT_CATALOG[n].category === cat);
+    html += `<optgroup label="${FONT_CATEGORY_LABELS[cat]}">` + names.map(n => `<option value="${n}">${n}</option>`).join('') + '</optgroup>';
+  });
+  return html;
+}
 
 function ensureTsPanel() {
   if (tsPanelEl) return tsPanelEl;
   tsPanelEl = document.createElement('div');
   tsPanelEl.id = 'ts-panel';
-  tsPanelEl.style.cssText = 'display:none;position:fixed;z-index:9999;background:#1a1a1a;border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:14px 16px;font-family:Montserrat,sans-serif;color:#f5f0e8;font-size:12px;width:220px;box-shadow:0 8px 24px rgba(0,0,0,0.5)';
+  tsPanelEl.style.cssText = 'display:none;position:fixed;z-index:9999;background:#1a1a1a;border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:14px 16px;font-family:Montserrat,sans-serif;color:#f5f0e8;font-size:12px;width:230px;max-height:80vh;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.5)';
   tsPanelEl.innerHTML = `
     <div id="ts-panel-title" style="font-size:11px;letter-spacing:1px;color:#c9a84c;margin-bottom:10px;text-transform:uppercase"></div>
+    <div id="ts-content-wrap" style="display:none;margin-bottom:12px">
+      <label style="display:block;font-size:10px;color:#999;margin-bottom:4px">Texto</label>
+      <textarea id="ts-content-textarea" rows="3" style="width:100%;background:#111;color:#fff;border:1px solid rgba(255,255,255,0.15);border-radius:4px;padding:6px;font-family:inherit;font-size:11px;resize:vertical"></textarea>
+    </div>
+    <label style="display:block;font-size:10px;color:#999;margin-bottom:4px">Fuente</label>
+    <select id="ts-font-select" style="width:100%;margin-bottom:12px;background:#111;color:#fff;border:1px solid rgba(255,255,255,0.15);padding:6px;border-radius:4px;font-size:11px">${buildFontSelectOptions()}</select>
     <label style="display:block;font-size:10px;color:#999;margin-bottom:4px">Tamaño: <span id="ts-size-val">100</span>%</label>
     <input type="range" id="ts-size-slider" min="50" max="180" step="5" value="100" style="width:100%;margin-bottom:12px">
     <div style="font-size:10px;color:#999;margin-bottom:6px">Grosor</div>
-    <div style="display:flex;gap:6px;margin-bottom:12px" id="ts-weight-buttons">
-      <button type="button" data-w="" style="flex:1;padding:6px 0;font-size:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;cursor:pointer;border-radius:4px">Original</button>
-      <button type="button" data-w="300" style="flex:1;padding:6px 0;font-size:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;cursor:pointer;border-radius:4px">Fina</button>
-      <button type="button" data-w="400" style="flex:1;padding:6px 0;font-size:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;cursor:pointer;border-radius:4px">Normal</button>
-      <button type="button" data-w="600" style="flex:1;padding:6px 0;font-size:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;cursor:pointer;border-radius:4px">Negrita</button>
-    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px" id="ts-weight-buttons"></div>
     <button type="button" id="ts-reset-btn" style="width:100%;padding:6px 0;font-size:10px;background:none;border:1px solid rgba(255,255,255,0.2);color:#999;cursor:pointer;border-radius:4px">Restablecer</button>
   `;
   document.body.appendChild(tsPanelEl);
   tsPanelEl.addEventListener('mousedown', e => e.stopPropagation());
+  tsPanelEl.querySelector('#ts-content-textarea').addEventListener('input', e => setTextContentField(tsActiveId, e.target.value));
+  tsPanelEl.querySelector('#ts-font-select').addEventListener('change', e => {
+    const val = e.target.value || null;
+    setTextStyleField(tsActiveId, 'font', val);
+    if (val) ensureFontLoaded(val);
+    renderWeightButtons(val || originalFontFor(tsActiveId));
+  });
   tsPanelEl.querySelector('#ts-size-slider').addEventListener('input', e => {
     const v = parseInt(e.target.value);
     tsPanelEl.querySelector('#ts-size-val').textContent = v;
     setTextStyleField(tsActiveId, 'size', v);
   });
-  tsPanelEl.querySelectorAll('#ts-weight-buttons button').forEach(btn => {
-    btn.addEventListener('click', () => setTextStyleField(tsActiveId, 'weight', btn.dataset.w ? parseInt(btn.dataset.w) : null));
-  });
   tsPanelEl.querySelector('#ts-reset-btn').addEventListener('click', () => {
     delete textStyles[tsActiveId];
     applyTextStyle(tsActiveId, null);
+    if (TEXT_CONTENT_IDS.includes(tsActiveId)) setTextContentField(tsActiveId, '');
     closeTsPanel();
     emitTextStylesChange();
   });
   return tsPanelEl;
+}
+
+function renderWeightButtons(fontName) {
+  const wrap = tsPanelEl.querySelector('#ts-weight-buttons');
+  const info = FONT_CATALOG[fontName];
+  const weights = info ? info.weights : [300, 400, 600];
+  if (weights.length <= 1) {
+    wrap.innerHTML = '<div style="font-size:10px;color:#888;font-style:italic">Esta fuente no tiene variantes de grosor.</div>';
+    return;
+  }
+  const cur = (textStyles[tsActiveId] || {}).weight || null;
+  wrap.innerHTML = '<button type="button" data-w="" class="ts-wbtn">Original</button>' +
+    weights.map(w => `<button type="button" data-w="${w}" class="ts-wbtn">${WEIGHT_LABELS[w] || w}</button>`).join('');
+  wrap.querySelectorAll('.ts-wbtn').forEach(btn => {
+    const w = btn.dataset.w ? parseInt(btn.dataset.w) : null;
+    btn.style.cssText = 'flex:1 1 30%;min-width:0;padding:6px 2px;font-size:9px;background:rgba(255,255,255,0.08);border:1px solid ' + (w === cur ? '#c9a84c' : 'rgba(255,255,255,0.15)') + ';color:#fff;cursor:pointer;border-radius:4px';
+    btn.addEventListener('click', () => {
+      setTextStyleField(tsActiveId, 'weight', w);
+      renderWeightButtons(fontName);
+    });
+  });
 }
 
 function setTextStyleField(id, field, value) {
@@ -808,8 +930,23 @@ function setTextStyleField(id, field, value) {
   tsChangeTimer = setTimeout(emitTextStylesChange, 150);
 }
 
+function setTextContentField(id, value) {
+  if (!id || !TEXT_CONTENT_RENDER_FN[id]) return;
+  if (!cfg.text_content) cfg.text_content = {};
+  if (value) cfg.text_content[id] = value;
+  else delete cfg.text_content[id];
+  TEXT_CONTENT_RENDER_FN[id](cfg);
+  clearTimeout(tsChangeTimer);
+  tsChangeTimer = setTimeout(emitTextStylesChange, 150);
+}
+
 function emitTextStylesChange() {
-  window.dispatchEvent(new CustomEvent('textstyleschange', { detail: JSON.parse(JSON.stringify(textStyles)) }));
+  window.dispatchEvent(new CustomEvent('textstyleschange', {
+    detail: {
+      styles: JSON.parse(JSON.stringify(textStyles)),
+      content: JSON.parse(JSON.stringify((cfg && cfg.text_content) || {}))
+    }
+  }));
 }
 
 function openTextStylePanel(id) {
@@ -818,18 +955,21 @@ function openTextStylePanel(id) {
   tsActiveId = id;
   const panel = ensureTsPanel();
   panel.querySelector('#ts-panel-title').textContent = TEXT_STYLE_LABELS[id] || id;
+  const isContent = TEXT_CONTENT_IDS.includes(id);
+  panel.querySelector('#ts-content-wrap').style.display = isContent ? 'block' : 'none';
+  if (isContent) {
+    panel.querySelector('#ts-content-textarea').value = (cfg.text_content && cfg.text_content[id]) || TEXT_CONTENT_DEFAULTS[id] || '';
+  }
   const cur = textStyles[id] || {};
+  panel.querySelector('#ts-font-select').value = cur.font || '';
   panel.querySelector('#ts-size-slider').value = cur.size || 100;
   panel.querySelector('#ts-size-val').textContent = cur.size || 100;
-  panel.querySelectorAll('#ts-weight-buttons button').forEach(btn => {
-    const w = btn.dataset.w ? parseInt(btn.dataset.w) : null;
-    btn.style.borderColor = (w === (cur.weight || null)) ? '#c9a84c' : 'rgba(255,255,255,0.15)';
-  });
+  renderWeightButtons(cur.font || originalFontFor(id));
   const r = el.getBoundingClientRect();
   panel.style.display = 'block';
   let top = r.bottom + 8;
-  if (top + 220 > window.innerHeight) top = Math.max(8, r.top - 228);
-  const left = Math.min(Math.max(8, r.left), window.innerWidth - 236);
+  if (top + 320 > window.innerHeight) top = Math.max(8, r.top - 328);
+  const left = Math.min(Math.max(8, r.left), window.innerWidth - 246);
   panel.style.top = top + 'px';
   panel.style.left = left + 'px';
 }
@@ -970,6 +1110,10 @@ function renderLugar(c) {
 function renderDresscode(c) {
   const sec = document.getElementById('dresscode');
   if (c.tipo === 'save_the_date') { sec.style.display = 'none'; sec.previousElementSibling.style.display = 'none'; return; }
+  const titleEl = document.getElementById('dresscode-title');
+  const titleCustom = c.text_content && c.text_content['dresscode-title'];
+  if (titleCustom) titleEl.textContent = titleCustom;
+  else titleEl.innerHTML = '<em>Dresscode</em>';
   document.getElementById('dresscode-val').textContent = c.dresscode || 'Formal';
   const nota = document.getElementById('dresscode-nota');
   if (c.dresscode_nota) nota.textContent = c.dresscode_nota;
@@ -999,8 +1143,13 @@ function renderRegalo(c) {
 function renderRSVP(c) {
   const sec = document.getElementById('rsvp');
   if (c.tipo === 'save_the_date' || !c.rsvp_activo) { sec.style.display = 'none'; return; }
-  const fl = document.getElementById('rsvp-fecha-limite');
-  fl.textContent = formatFechaLimite(c.rsvp_limite) || '';
+  const titleEl = document.getElementById('rsvp-title');
+  const titleCustom = c.text_content && c.text_content['rsvp-title'];
+  if (titleCustom) titleEl.textContent = titleCustom;
+  else titleEl.innerHTML = '¿<em>Venís</em>?';
+  const bodyTpl = (c.text_content && c.text_content['rsvp-body']) || 'Por favor confirmá antes del {fecha}.';
+  const fechaSpan = `<span id="rsvp-fecha-limite" style="color:var(--gold2)">${formatFechaLimite(c.rsvp_limite) || ''}</span>`;
+  document.getElementById('rsvp-body').innerHTML = bodyTpl.includes('{fecha}') ? bodyTpl.replace('{fecha}', fechaSpan) : bodyTpl;
   const alergiaEl = document.getElementById('rsvp-alergia');
   if (!alergiaEl.dataset.bound) {
     alergiaEl.dataset.bound = '1';
@@ -1013,6 +1162,11 @@ function renderRSVP(c) {
 function renderSpotify(c) {
   const sec = document.getElementById('spotify');
   if (c.tipo === 'save_the_date' || !c.spotify_url) { sec.style.display = 'none'; sec.previousElementSibling.style.display = 'none'; return; }
+  const titleEl = document.getElementById('spotify-title');
+  const titleCustom = c.text_content && c.text_content['spotify-title'];
+  if (titleCustom) titleEl.textContent = titleCustom;
+  else titleEl.innerHTML = 'La <em>playlist</em>';
+  document.getElementById('spotify-body').textContent = (c.text_content && c.text_content['spotify-body']) || '¿Querés que suene tu canción favorita? La playlist es colaborativa — agregá los temas que quieras.';
   document.getElementById('btn-spotify').href = c.spotify_url;
   const embedWrap = document.getElementById('spotify-embed-wrap');
   const embedUrl = c.spotify_url.replace('open.spotify.com/', 'open.spotify.com/embed/');
