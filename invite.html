@@ -688,8 +688,17 @@ function checkHeroReorder(draggedId) {
 function endHeroDrag() {
   if (!heroDrag) return;
   document.getElementById('hero-content').style.cursor = 'grab';
+  const { id, origX, origY } = heroDrag;
+  const p = heroLayout.pos[id];
+  const moved = Math.hypot(p.x - origX, p.y - origY);
   heroDrag = null;
-  emitHeroLayoutChange();
+  if (moved < 5) {
+    heroLayout.pos[id] = { x: origX, y: origY };
+    applyHeroLayout(heroLayout);
+    openTextStylePanel('hero-' + id);
+  } else {
+    emitHeroLayoutChange();
+  }
 }
 
 function wheelHeroNudge(e) {
@@ -823,6 +832,14 @@ function closeTsPanel() {
   tsActiveId = null;
 }
 
+function closestTextStyleId(el) {
+  while (el && el !== document.body) {
+    if (TEXT_STYLE_IDS.includes(el.id)) return el.id;
+    el = el.parentElement;
+  }
+  return null;
+}
+
 function initTextStyleClickHandlers() {
   TEXT_STYLE_IDS.filter(id => !id.startsWith('hero-')).forEach(id => {
     const el = document.getElementById(id);
@@ -830,7 +847,7 @@ function initTextStyleClickHandlers() {
   });
   document.addEventListener('click', e => {
     if (tsPanelEl && tsPanelEl.contains(e.target)) return;
-    if (TEXT_STYLE_IDS.includes(e.target.id)) return;
+    if (closestTextStyleId(e.target)) return;
     closeTsPanel();
   });
 }
@@ -977,9 +994,13 @@ function renderRSVP(c) {
   if (c.tipo === 'save_the_date' || !c.rsvp_activo) { sec.style.display = 'none'; return; }
   const fl = document.getElementById('rsvp-fecha-limite');
   fl.textContent = formatFechaLimite(c.rsvp_limite) || '';
-  document.getElementById('rsvp-alergia').addEventListener('change', function() {
-    document.getElementById('rsvp-alergia-detail-wrap').style.display = this.checked ? 'block' : 'none';
-  });
+  const alergiaEl = document.getElementById('rsvp-alergia');
+  if (!alergiaEl.dataset.bound) {
+    alergiaEl.dataset.bound = '1';
+    alergiaEl.addEventListener('change', function() {
+      document.getElementById('rsvp-alergia-detail-wrap').style.display = this.checked ? 'block' : 'none';
+    });
+  }
 }
 
 function renderSpotify(c) {
