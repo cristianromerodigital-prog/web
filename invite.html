@@ -729,6 +729,112 @@ function applyAllTextStyles(styles) {
   TEXT_STYLE_IDS.forEach(id => applyTextStyle(id, textStyles[id]));
 }
 
+const TEXT_STYLE_LABELS = {
+  'hero-eyebrow': 'Hero — Eyebrow', 'hero-names': 'Hero — Nombres', 'hero-date': 'Hero — Fecha',
+  'ev-title': 'Cuándo — Título', 'ev-body': 'Cuándo — Texto',
+  'ceremonia-lugar-nombre': 'Ceremonia — Nombre', 'ceremonia-lugar-dir': 'Ceremonia — Dirección',
+  'lugar-nombre': 'Dónde — Nombre', 'lugar-dir': 'Dónde — Dirección',
+  'dresscode-title': 'Dresscode — Título',
+  'regalo-titulo': 'Regalo — Título', 'regalo-texto': 'Regalo — Texto',
+  'rsvp-title': 'RSVP — Título', 'rsvp-body': 'RSVP — Texto',
+  'spotify-title': 'Spotify — Título', 'spotify-body': 'Spotify — Texto'
+};
+
+let tsPanelEl = null;
+let tsActiveId = null;
+let tsChangeTimer = null;
+
+function ensureTsPanel() {
+  if (tsPanelEl) return tsPanelEl;
+  tsPanelEl = document.createElement('div');
+  tsPanelEl.id = 'ts-panel';
+  tsPanelEl.style.cssText = 'display:none;position:fixed;z-index:9999;background:#1a1a1a;border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:14px 16px;font-family:Montserrat,sans-serif;color:#f5f0e8;font-size:12px;width:220px;box-shadow:0 8px 24px rgba(0,0,0,0.5)';
+  tsPanelEl.innerHTML = `
+    <div id="ts-panel-title" style="font-size:11px;letter-spacing:1px;color:#c9a84c;margin-bottom:10px;text-transform:uppercase"></div>
+    <label style="display:block;font-size:10px;color:#999;margin-bottom:4px">Tamaño: <span id="ts-size-val">100</span>%</label>
+    <input type="range" id="ts-size-slider" min="50" max="180" step="5" value="100" style="width:100%;margin-bottom:12px">
+    <div style="font-size:10px;color:#999;margin-bottom:6px">Grosor</div>
+    <div style="display:flex;gap:6px;margin-bottom:12px" id="ts-weight-buttons">
+      <button type="button" data-w="" style="flex:1;padding:6px 0;font-size:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;cursor:pointer;border-radius:4px">Original</button>
+      <button type="button" data-w="300" style="flex:1;padding:6px 0;font-size:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;cursor:pointer;border-radius:4px">Fina</button>
+      <button type="button" data-w="400" style="flex:1;padding:6px 0;font-size:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;cursor:pointer;border-radius:4px">Normal</button>
+      <button type="button" data-w="600" style="flex:1;padding:6px 0;font-size:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;cursor:pointer;border-radius:4px">Negrita</button>
+    </div>
+    <button type="button" id="ts-reset-btn" style="width:100%;padding:6px 0;font-size:10px;background:none;border:1px solid rgba(255,255,255,0.2);color:#999;cursor:pointer;border-radius:4px">Restablecer</button>
+  `;
+  document.body.appendChild(tsPanelEl);
+  tsPanelEl.addEventListener('mousedown', e => e.stopPropagation());
+  tsPanelEl.querySelector('#ts-size-slider').addEventListener('input', e => {
+    const v = parseInt(e.target.value);
+    tsPanelEl.querySelector('#ts-size-val').textContent = v;
+    setTextStyleField(tsActiveId, 'size', v);
+  });
+  tsPanelEl.querySelectorAll('#ts-weight-buttons button').forEach(btn => {
+    btn.addEventListener('click', () => setTextStyleField(tsActiveId, 'weight', btn.dataset.w ? parseInt(btn.dataset.w) : null));
+  });
+  tsPanelEl.querySelector('#ts-reset-btn').addEventListener('click', () => {
+    delete textStyles[tsActiveId];
+    applyTextStyle(tsActiveId, null);
+    closeTsPanel();
+    emitTextStylesChange();
+  });
+  return tsPanelEl;
+}
+
+function setTextStyleField(id, field, value) {
+  if (!id) return;
+  if (!textStyles[id]) textStyles[id] = {};
+  if (value === null || value === undefined) delete textStyles[id][field];
+  else textStyles[id][field] = value;
+  if (Object.keys(textStyles[id]).length === 0) delete textStyles[id];
+  applyTextStyle(id, textStyles[id]);
+  clearTimeout(tsChangeTimer);
+  tsChangeTimer = setTimeout(emitTextStylesChange, 150);
+}
+
+function emitTextStylesChange() {
+  window.dispatchEvent(new CustomEvent('textstyleschange', { detail: JSON.parse(JSON.stringify(textStyles)) }));
+}
+
+function openTextStylePanel(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  tsActiveId = id;
+  const panel = ensureTsPanel();
+  panel.querySelector('#ts-panel-title').textContent = TEXT_STYLE_LABELS[id] || id;
+  const cur = textStyles[id] || {};
+  panel.querySelector('#ts-size-slider').value = cur.size || 100;
+  panel.querySelector('#ts-size-val').textContent = cur.size || 100;
+  panel.querySelectorAll('#ts-weight-buttons button').forEach(btn => {
+    const w = btn.dataset.w ? parseInt(btn.dataset.w) : null;
+    btn.style.borderColor = (w === (cur.weight || null)) ? '#c9a84c' : 'rgba(255,255,255,0.15)';
+  });
+  const r = el.getBoundingClientRect();
+  panel.style.display = 'block';
+  let top = r.bottom + 8;
+  if (top + 220 > window.innerHeight) top = Math.max(8, r.top - 228);
+  const left = Math.min(Math.max(8, r.left), window.innerWidth - 236);
+  panel.style.top = top + 'px';
+  panel.style.left = left + 'px';
+}
+
+function closeTsPanel() {
+  if (tsPanelEl) tsPanelEl.style.display = 'none';
+  tsActiveId = null;
+}
+
+function initTextStyleClickHandlers() {
+  TEXT_STYLE_IDS.filter(id => !id.startsWith('hero-')).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', () => openTextStylePanel(id));
+  });
+  document.addEventListener('click', e => {
+    if (tsPanelEl && tsPanelEl.contains(e.target)) return;
+    if (TEXT_STYLE_IDS.includes(e.target.id)) return;
+    closeTsPanel();
+  });
+}
+
 function renderHero(c) {
   document.title = c.titulo || (c.novios ? `Invitación — ${c.novios}` : 'Invitación');
   const isWedding = c.formato === 'wedding';
@@ -977,6 +1083,7 @@ async function init() {
     renderHero(cfg);
     document.getElementById('invite-app').style.display = 'block';
     initHeroPreviewInteractions();
+    initTextStyleClickHandlers();
     return;
   }
   const splashStart = Date.now();
