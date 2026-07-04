@@ -613,6 +613,13 @@ window.applyHeroPreview = function(c) {
   if (!PREVIEW_MODE) return;
   cfg = c || {};
   renderHero(cfg);
+  renderEvento(cfg);
+  renderLugar(cfg);
+  renderDresscode(cfg);
+  renderRegalo(cfg);
+  renderRSVP(cfg);
+  renderSpotify(cfg);
+  applyAllTextStyles(cfg.text_styles);
 };
 
 window.getHeroLayout = function() {
