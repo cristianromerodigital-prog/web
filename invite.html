@@ -522,6 +522,28 @@ function toggleSound() {
   btn.innerHTML = vid.muted ? SVG_MUTE : SVG_VOL;
 }
 
+// Mismo patron que initYoutubeAudio: el primer touch/scroll/click en cualquier parte
+// de la pagina activa el sonido del video, sin obligar a tocar el boton puntual.
+function initHeroVideoGestureUnmute() {
+  function unmute() {
+    const vid = document.getElementById('hero-media');
+    const btn = document.getElementById('btn-sound');
+    if (!vid || !vid.muted) return;
+    vid.muted = false;
+    if (btn) btn.innerHTML = SVG_VOL;
+    document.removeEventListener('touchstart', unmute);
+    document.removeEventListener('scroll', unmute);
+    document.removeEventListener('click', onClick);
+  }
+  function onClick(e) {
+    if (e.target.closest && e.target.closest('#btn-sound')) return;
+    unmute();
+  }
+  document.addEventListener('touchstart', unmute, { passive: true });
+  document.addEventListener('scroll', unmute, { passive: true });
+  document.addEventListener('click', onClick);
+}
+
 function fmtHs(h) { if (!h) return ''; const t = h.trim(); return /hs\.?\s*$/i.test(t) ? t : t + ' hs.'; }
 
 async function parseConfig() {
@@ -1068,6 +1090,7 @@ function renderHero(c) {
   if (c.media_url) {
     if (c.media_type === 'video') {
       wrap.innerHTML = `<video id="hero-media" autoplay muted loop playsinline preload="auto"><source src="${c.media_url}"></video><button id="btn-sound" onclick="toggleSound()" style="position:absolute;bottom:80px;right:24px;z-index:10;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.3);color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)" title="Activar sonido">${SVG_MUTE}</button>`;
+      if (!PREVIEW_MODE) initHeroVideoGestureUnmute();
     } else {
       wrap.innerHTML = `<img id="hero-media" src="${c.media_url}" alt="">`;
     }
