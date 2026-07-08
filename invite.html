@@ -1418,6 +1418,12 @@ async function init() {
     // El nav (z-index 100) no debe interceptar drags/clicks sobre textos del hero
     // que queden cerca del borde superior; en el editor es solo decorativo.
     document.getElementById('nav').style.pointerEvents = 'none';
+    // La barra de scroll del iframe roba ~17px de ancho al hero y los textos
+    // se envuelven distinto que en el celular/PC. Ocultarla (el scroll con
+    // rueda sigue funcionando para clickear textos de otras secciones).
+    const noScrollbar = document.createElement('style');
+    noScrollbar.textContent = 'html{scrollbar-width:none}::-webkit-scrollbar{display:none}';
+    document.head.appendChild(noScrollbar);
     renderHero(cfg);
     document.getElementById('invite-app').style.display = 'block';
     initHeroPreviewInteractions();
