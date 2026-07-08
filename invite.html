@@ -36,8 +36,14 @@ body{background:var(--black);color:var(--white);font-family:'Montserrat',sans-se
    celular) escalado uniformemente por JS (fitHeroCanvas): mismos offsets, mismas
    proporciones de texto, en cualquier navegador/resolución. */
 @media(min-width:769px){
-  #hero-media{object-fit:contain}
-  #hero-content{width:390px;height:844px;flex:none;justify-content:center;transform-origin:center center}
+  /* La foto/video se recorta a un marco de telefono 390x844 escalado
+     (fitHeroCanvas le da el tamano), igual que el object-fit:cover del
+     celular — no contain, que mostraba la foto con otras proporciones. */
+  #hero-media-wrap{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);overflow:hidden}
+  /* 342 y no 390: #hero es un <section> con padding lateral 24px, en un
+     viewport 390 (celular/editor) el hero-content queda de 342 — el canvas
+     debe reproducir ese mismo ancho o los textos envuelven distinto. */
+  #hero-content{width:342px;height:844px;flex:none;justify-content:center;transform-origin:center center}
 }
 #hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(12,12,12,0.3) 0%,rgba(12,12,12,0.5) 60%,rgba(12,12,12,0.85) 100%);z-index:1}
 #hero-content{position:relative;z-index:2;padding:0 24px;display:flex;flex-direction:column;align-items:center}
@@ -676,13 +682,17 @@ function heroLayoutScale() {
 
 function fitHeroCanvas() {
   const hc = document.getElementById('hero-content');
-  if (!heroCanvasMQ.matches) { hc.style.transform = ''; return; }
+  const mw = document.getElementById('hero-media-wrap');
+  if (!heroCanvasMQ.matches) { hc.style.transform = ''; mw.style.width = ''; mw.style.height = ''; return; }
   const r = document.getElementById('hero').getBoundingClientRect();
   // Durante el splash #invite-app esta display:none y el hero mide 0x0 — no
   // aplicar scale(0); se recalcula al mostrar la invitacion (init) o en resize.
   if (!r.width || !r.height) return;
   const scale = Math.min(r.width / HERO_LAYOUT_REF_W, r.height / HERO_LAYOUT_REF_H);
   hc.style.transform = `scale(${scale})`;
+  // Marco de la foto/video: mismo recorte 390x844 que el viewport del celular.
+  mw.style.width = (HERO_LAYOUT_REF_W * scale) + 'px';
+  mw.style.height = (HERO_LAYOUT_REF_H * scale) + 'px';
 }
 
 window.addEventListener('resize', () => {
