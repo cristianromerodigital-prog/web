@@ -394,7 +394,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.98</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V1.99</div>
     </div>
   </aside>
 
@@ -3757,7 +3757,8 @@ function cmGoEntrega() {
 
 function cmGetFiestaUrl() {
   if (!_clienteActual) return '';
-  return (location.origin + '/fiestas.html?e=' + slugifyFiesta(_clienteActual.nombre_display, _clienteActual.fecha));
+  const slug = _clienteActual.evento_slug || slugifyFiesta(_clienteActual.nombre_display, _clienteActual.fecha);
+  return (location.origin + '/fiestas.html?e=' + slug);
 }
 
 function cmOpenFiesta() {
@@ -3988,18 +3989,22 @@ async function cmSaveEntregaFolder() {
   } catch(e) { toast('Error de red: ' + e.message, 'error'); }
 }
 
+async function ctCrearCarpetasParaSolicitud(id, codigo) {
+  const r = await fetch(CLIENTES_WORKER + '/solicitudes/' + id + '/carpetas', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + getAdminJWT(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ codigoContrato: codigo })
+  });
+  return r.json();
+}
+
 async function cmCrearCarpetas() {
   if (!_clienteActual) return;
   const codigo = document.getElementById('cm-codigo-contrato').value.trim();
   if (!codigo) { toast('Ingresá el código de contrato primero', 'error'); return; }
   if (!confirm('¿Crear carpetas en Drive para "' + _clienteActual.nombre_display + '" con código ' + codigo + '?')) return;
   try {
-    const r = await fetch(CLIENTES_WORKER + '/solicitudes/' + _clienteActual.id + '/carpetas', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + getAdminJWT(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({ codigoContrato: codigo })
-    });
-    const d = await r.json();
+    const d = await ctCrearCarpetasParaSolicitud(_clienteActual.id, codigo);
     if (!d.ok) { toast(d.error || 'Error al crear carpetas', 'error'); return; }
     toast('Carpetas creadas en Drive');
     const idx = _clientes.findIndex(function(x){ return x.id === _clienteActual.id; });
@@ -4077,7 +4082,13 @@ function showPage(id) {
   if (id === 'dashboard') renderDashboard();
   if (id === 'photos') renderPhotosPage();
   if (id === 'video') loadVideoPage();
-  if (id === 'content') { loadContentPage(); setTimeout(loadDestinations, 100); }
+  if (id === 'content') {
+    fetchFromCloud('crd_content').then(cloud => {
+      if (cloud && typeof cloud === 'object') localStorage.setItem('crd_content', JSON.stringify(cloud));
+      loadContentPage();
+    });
+    setTimeout(loadDestinations, 100);
+  }
   if (id === 'invites') renderInvitesPage();
   if (id === 'fiestas') loadFiestasPage();
   if (id === 'calendario') loadCalendarioPage();
@@ -9121,20 +9132,27 @@ async function ctGenerar() {
       if (!ctEditingNumero && CLIENTES_WORKER) {
         const solId = _ctSolicitudId;
         _ctSolicitudId = null;
-        const patchContrato = function(id, fromForm) {
-          fetch(CLIENTES_WORKER + '/solicitudes/' + id + '/contrato', {
-            method: 'PATCH', headers: { 'Authorization': 'Bearer ' + getAdminJWT(), 'Content-Type': 'application/json' },
-            body: JSON.stringify({ codigo_contrato: String(json.numero) })
-          }).then(function(){
-            if (fromForm) {
-              fetch(CONFIG.CRCLUB_URL + '/solicitudes/' + id + '/procesada', {
-                method: 'PATCH', headers: { Authorization: 'Bearer ' + getAdminJWT() }
-              }).then(function(){ setTimeout(ctRefreshSolicitudes, 500); }).catch(function(){});
-            }
-            _fetchClientes({ search: _clientesSearch, offset: 0 }).then(function(){
-              if (currentPage === 'clientes') renderClientes();
+        const patchContrato = async function(id, fromForm) {
+          try {
+            await fetch(CLIENTES_WORKER + '/solicitudes/' + id + '/contrato', {
+              method: 'PATCH', headers: { 'Authorization': 'Bearer ' + getAdminJWT(), 'Content-Type': 'application/json' },
+              body: JSON.stringify({ codigo_contrato: String(json.numero) })
             });
-          }).catch(function(){});
+          } catch(e) {}
+          if (fromForm) {
+            fetch(CONFIG.CRCLUB_URL + '/solicitudes/' + id + '/procesada', {
+              method: 'PATCH', headers: { Authorization: 'Bearer ' + getAdminJWT() }
+            }).then(function(){ setTimeout(ctRefreshSolicitudes, 500); }).catch(function(){});
+          }
+          try {
+            const d = await ctCrearCarpetasParaSolicitud(id, String(json.numero));
+            if (!d || !d.ok) toast('Contrato generado, pero falló la creación de carpetas en Drive' + (d && d.error ? ': ' + d.error : ''), 'error');
+          } catch(e) {
+            toast('Contrato generado, pero falló la creación de carpetas en Drive', 'error');
+          }
+          _fetchClientes({ search: _clientesSearch, offset: 0 }).then(function(){
+            if (currentPage === 'clientes') renderClientes();
+          });
         };
         if (solId) {
           patchContrato(solId, true);
@@ -9416,9 +9434,12 @@ async function ctCargarSolicitud(sol) {
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
   if (sol.tipo === 'BODA') {
     set('ct-b-novia-nombre', sol.cliente_nombre);
+    set('ct-b-novia-dni',    sol.cliente_dni);
     set('ct-b-novia-tel',    sol.cliente_tel);
     set('ct-b-novia-email',  sol.cliente_email);
     set('ct-b-novio-nombre', sol.cliente2_nombre);
+    set('ct-b-novio-dni',    sol.cliente2_dni);
+    set('ct-b-novio-dom',    sol.cliente2_dom);
     set('ct-b-fiesta-fecha',    sol.fecha);
     set('ct-b-fiesta-hora',     sol.hora_inicio);
     set('ct-b-fiesta-hora-fin', sol.hora_fin);
@@ -9442,6 +9463,7 @@ async function ctCargarSolicitud(sol) {
   } else if (sol.tipo === 'XV') {
     set('ct-x-quince-nombre',  sol.quinceanera_nombre);
     set('ct-x-cliente-nombre', sol.cliente_nombre);
+    set('ct-x-cliente-dni',    sol.cliente_dni);
     set('ct-x-cliente-tel',    sol.cliente_tel);
     set('ct-x-cliente-email',  sol.cliente_email);
     set('ct-x-fecha',          sol.fecha);
@@ -9452,6 +9474,7 @@ async function ctCargarSolicitud(sol) {
     set('ct-x-invitados',      sol.invitados);
   } else if (sol.tipo === 'CUMPLE') {
     set('ct-c-nombre',      sol.cliente_nombre);
+    set('ct-c-dni',         sol.cliente_dni);
     set('ct-c-tel',         sol.cliente_tel);
     set('ct-c-email',       sol.cliente_email);
     set('ct-c-fecha',       sol.fecha);
