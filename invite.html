@@ -38,11 +38,6 @@ body{background:var(--black);color:var(--white);font-family:'Montserrat',sans-se
 @media(min-width:769px){
   #hero-media{object-fit:contain}
   #hero-content{width:390px;height:844px;flex:none;justify-content:center;transform-origin:center center}
-  .hero-names{font-size:calc(52px * var(--ts-scale,1))}
-  .formato-wedding .hero-eyebrow{font-size:calc(13px * var(--ts-scale,1))}
-  .formato-wedding .hero-names{font-size:calc(80px * var(--ts-scale,1))}
-  .formato-wedding .hero-std{font-size:calc(12px * var(--ts-scale,1))}
-  .formato-wedding .hero-date{font-size:calc(20px * var(--ts-scale,1))}
 }
 #hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(12,12,12,0.3) 0%,rgba(12,12,12,0.5) 60%,rgba(12,12,12,0.85) 100%);z-index:1}
 #hero-content{position:relative;z-index:2;padding:0 24px;display:flex;flex-direction:column;align-items:center}
@@ -206,6 +201,16 @@ footer small a{color:inherit}
 .formato-wedding.fx-sombra .hero-eyebrow,.formato-wedding.fx-sombra .hero-names,.formato-wedding.fx-sombra .hero-std,.formato-wedding.fx-sombra .hero-date{text-shadow:0 4px 22px rgba(0,0,0,0.85),0 2px 6px rgba(0,0,0,0.9)}
 .formato-wedding.fx-blur .hero-eyebrow,.formato-wedding.fx-blur .hero-names,.formato-wedding.fx-blur .hero-std,.formato-wedding.fx-blur .hero-date{position:relative;display:inline-block}
 .formato-wedding.fx-blur .hero-eyebrow::before,.formato-wedding.fx-blur .hero-names::before,.formato-wedding.fx-blur .hero-std::before,.formato-wedding.fx-blur .hero-date::before{content:'';position:absolute;inset:-14px -24px;background:rgba(0,0,0,0.22);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:14px;z-index:-1}
+/* Desktop = canvas 390x844: tipografias del hero con el tamano de diseno del
+   celular (sin vw), el canvas escala todo junto. Va DESPUES de las reglas base
+   para ganarles en orden de cascada. */
+@media(min-width:769px){
+  .hero-names{font-size:calc(52px * var(--ts-scale,1))}
+  .formato-wedding .hero-eyebrow{font-size:calc(13px * var(--ts-scale,1))}
+  .formato-wedding .hero-names{font-size:calc(80px * var(--ts-scale,1))}
+  .formato-wedding .hero-std{font-size:calc(12px * var(--ts-scale,1))}
+  .formato-wedding .hero-date{font-size:calc(20px * var(--ts-scale,1))}
+}
 
 /* TEMA: AZUL */
 .theme-azul{--gold:#a8bcd8;--gold-rgb:168,188,216;--gold2:#c0d4f0;--black:#070e1a;--black2:#0d1828;--white:#e8f0f8;--gray:#5a7090;--gray2:#8aaac8}
@@ -673,6 +678,9 @@ function fitHeroCanvas() {
   const hc = document.getElementById('hero-content');
   if (!heroCanvasMQ.matches) { hc.style.transform = ''; return; }
   const r = document.getElementById('hero').getBoundingClientRect();
+  // Durante el splash #invite-app esta display:none y el hero mide 0x0 — no
+  // aplicar scale(0); se recalcula al mostrar la invitacion (init) o en resize.
+  if (!r.width || !r.height) return;
   const scale = Math.min(r.width / HERO_LAYOUT_REF_W, r.height / HERO_LAYOUT_REF_H);
   hc.style.transform = `scale(${scale})`;
 }
@@ -1444,6 +1452,9 @@ async function init() {
     splash.style.opacity = '0';
     setTimeout(() => splash.remove(), 600);
     document.getElementById('invite-app').style.display = 'block';
+    // Recien ahora el hero tiene dimensiones reales: calcular canvas y offsets.
+    fitHeroCanvas();
+    if (heroLayout) applyHeroLayout(heroLayout);
     if (cfg.youtube_audio) initYoutubeAudio(cfg.youtube_audio);
     // unmute en primer scroll/touch/click (manejado dentro de initYoutubeAudio)
     const vid0 = document.getElementById('hero-media');
