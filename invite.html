@@ -32,7 +32,18 @@ body{background:var(--black);color:var(--white);font-family:'Montserrat',sans-se
 /* HERO */
 #hero{position:relative;height:100vh;min-height:600px;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden}
 #hero-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:0}
-@media(min-width:769px){#hero-media{object-fit:contain}}
+/* En desktop el hero es un canvas de diseño fijo 390x844 (igual al editor y al
+   celular) escalado uniformemente por JS (fitHeroCanvas): mismos offsets, mismas
+   proporciones de texto, en cualquier navegador/resolución. */
+@media(min-width:769px){
+  #hero-media{object-fit:contain}
+  #hero-content{width:390px;height:844px;flex:none;justify-content:center;transform-origin:center center}
+  .hero-names{font-size:calc(52px * var(--ts-scale,1))}
+  .formato-wedding .hero-eyebrow{font-size:calc(13px * var(--ts-scale,1))}
+  .formato-wedding .hero-names{font-size:calc(80px * var(--ts-scale,1))}
+  .formato-wedding .hero-std{font-size:calc(12px * var(--ts-scale,1))}
+  .formato-wedding .hero-date{font-size:calc(20px * var(--ts-scale,1))}
+}
 #hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(12,12,12,0.3) 0%,rgba(12,12,12,0.5) 60%,rgba(12,12,12,0.85) 100%);z-index:1}
 #hero-content{position:relative;z-index:2;padding:0 24px;display:flex;flex-direction:column;align-items:center}
 .hero-eyebrow{font-size:calc(10px * var(--ts-scale,1));letter-spacing:6px;text-transform:uppercase;color:var(--gold);margin-bottom:24px;opacity:0.9}
@@ -647,12 +658,29 @@ function resolveHeroLayout(c) {
 // #hero contra esa referencia, para que la posición relativa se mantenga sin importar
 // el dispositivo.
 const HERO_LAYOUT_REF_W = 390, HERO_LAYOUT_REF_H = 844;
+const heroCanvasMQ = window.matchMedia('(min-width:769px)');
 function heroLayoutScale() {
+  // En desktop el hero-content es un canvas fijo 390x844 escalado entero por
+  // fitHeroCanvas, así que los offsets del editor aplican 1:1 dentro del canvas.
+  if (heroCanvasMQ.matches) return { sx: 1, sy: 1 };
   const hero = document.getElementById('hero');
   if (!hero) return { sx: 1, sy: 1 };
   const r = hero.getBoundingClientRect();
   return { sx: (r.width || HERO_LAYOUT_REF_W) / HERO_LAYOUT_REF_W, sy: (r.height || HERO_LAYOUT_REF_H) / HERO_LAYOUT_REF_H };
 }
+
+function fitHeroCanvas() {
+  const hc = document.getElementById('hero-content');
+  if (!heroCanvasMQ.matches) { hc.style.transform = ''; return; }
+  const r = document.getElementById('hero').getBoundingClientRect();
+  const scale = Math.min(r.width / HERO_LAYOUT_REF_W, r.height / HERO_LAYOUT_REF_H);
+  hc.style.transform = `scale(${scale})`;
+}
+
+window.addEventListener('resize', () => {
+  fitHeroCanvas();
+  if (heroLayout) applyHeroLayout(heroLayout); // sx/sy cambian al cruzar el breakpoint
+});
 
 // El countdown participa del offset (pos) pero nunca del reorden -- su `order:99`
 // en CSS lo deja siempre al final del grupo, se mueva a donde se mueva.
@@ -1134,6 +1162,7 @@ function renderHero(c) {
     document.getElementById('hero-date').textContent = c.fecha_display || '';
   }
   heroLayout = resolveHeroLayout(c);
+  fitHeroCanvas();
   applyHeroLayout(heroLayout);
 
   const wrap = document.getElementById('hero-media-wrap');
