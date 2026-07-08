@@ -188,11 +188,13 @@ footer small a{color:inherit}
 .formato-wedding .hero-eyebrow{font-family:'Montserrat',sans-serif;font-size:calc(clamp(13px,2vw,18px) * var(--ts-scale,1));font-weight:400;letter-spacing:10px;opacity:1;margin-bottom:18px;color:var(--white)}
 .formato-wedding .hero-names{font-family:'Mrs Saint Delafield',cursive;font-size:calc(clamp(80px,18vw,190px) * var(--ts-scale,1));line-height:0.85;letter-spacing:0;margin:4px 0 8px;transform:rotate(-3deg);color:var(--white)}
 .formato-wedding .hero-date{font-family:'Cinzel',serif;font-weight:500;font-size:calc(clamp(20px,3vw,28px) * var(--ts-scale,1));letter-spacing:7px;margin-top:32px;color:var(--white)}
-.formato-wedding .hero-date .wedding-std{display:block;font-size:0.6em;letter-spacing:9px;margin-bottom:10px}
-.formato-wedding.fx-glow .hero-eyebrow,.formato-wedding.fx-glow .hero-names,.formato-wedding.fx-glow .hero-date{text-shadow:0 0 24px rgba(255,255,255,0.55),0 2px 18px rgba(0,0,0,0.75)}
-.formato-wedding.fx-sombra .hero-eyebrow,.formato-wedding.fx-sombra .hero-names,.formato-wedding.fx-sombra .hero-date{text-shadow:0 4px 22px rgba(0,0,0,0.85),0 2px 6px rgba(0,0,0,0.9)}
-.formato-wedding.fx-blur .hero-eyebrow,.formato-wedding.fx-blur .hero-names,.formato-wedding.fx-blur .hero-date{position:relative;display:inline-block}
-.formato-wedding.fx-blur .hero-eyebrow::before,.formato-wedding.fx-blur .hero-names::before,.formato-wedding.fx-blur .hero-date::before{content:'';position:absolute;inset:-14px -24px;background:rgba(0,0,0,0.22);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:14px;z-index:-1}
+.formato-wedding .hero-std{font-family:'Cinzel',serif;font-weight:500;font-size:calc(clamp(12px,1.8vw,17px) * var(--ts-scale,1));letter-spacing:9px;margin-top:32px;color:var(--white)}
+.hero-std[hidden]{display:none!important}
+.formato-wedding .hero-std:not([hidden]) ~ .hero-date{margin-top:10px}
+.formato-wedding.fx-glow .hero-eyebrow,.formato-wedding.fx-glow .hero-names,.formato-wedding.fx-glow .hero-std,.formato-wedding.fx-glow .hero-date{text-shadow:0 0 24px rgba(255,255,255,0.55),0 2px 18px rgba(0,0,0,0.75)}
+.formato-wedding.fx-sombra .hero-eyebrow,.formato-wedding.fx-sombra .hero-names,.formato-wedding.fx-sombra .hero-std,.formato-wedding.fx-sombra .hero-date{text-shadow:0 4px 22px rgba(0,0,0,0.85),0 2px 6px rgba(0,0,0,0.9)}
+.formato-wedding.fx-blur .hero-eyebrow,.formato-wedding.fx-blur .hero-names,.formato-wedding.fx-blur .hero-std,.formato-wedding.fx-blur .hero-date{position:relative;display:inline-block}
+.formato-wedding.fx-blur .hero-eyebrow::before,.formato-wedding.fx-blur .hero-names::before,.formato-wedding.fx-blur .hero-std::before,.formato-wedding.fx-blur .hero-date::before{content:'';position:absolute;inset:-14px -24px;background:rgba(0,0,0,0.22);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:14px;z-index:-1}
 
 /* TEMA: AZUL */
 .theme-azul{--gold:#a8bcd8;--gold-rgb:168,188,216;--gold2:#c0d4f0;--black:#070e1a;--black2:#0d1828;--white:#e8f0f8;--gray:#5a7090;--gray2:#8aaac8}
@@ -313,6 +315,7 @@ footer small a{color:inherit}
   <div id="hero-content">
     <div class="hero-eyebrow" id="hero-eyebrow"></div>
     <div class="hero-names" id="hero-names"></div>
+    <div class="hero-std" id="hero-std" hidden>Save the Date</div>
     <div class="hero-date" id="hero-date"></div>
     <div id="countdown"></div>
   </div>
@@ -608,8 +611,8 @@ function formatFechaLimite(iso) {
   return `${parseInt(d)} de ${meses[parseInt(m)-1]} de ${y}`;
 }
 
-const HERO_BLOCK_IDS = ['eyebrow', 'names', 'date', 'countdown'];
-const HERO_REORDERABLE_IDS = ['eyebrow', 'names', 'date'];
+const HERO_BLOCK_IDS = ['eyebrow', 'names', 'std', 'date', 'countdown'];
+const HERO_REORDERABLE_IDS = ['eyebrow', 'names', 'std', 'date'];
 let heroLayout = null;
 
 function heroBlockEl(id) {
@@ -618,14 +621,23 @@ function heroBlockEl(id) {
 
 function defaultHeroLayout(tx, ty) {
   return {
-    order: ['eyebrow', 'names', 'date'],
-    pos: { eyebrow: { x: tx, y: ty }, names: { x: tx, y: ty }, date: { x: tx, y: ty }, countdown: { x: 0, y: 0 } }
+    order: ['eyebrow', 'names', 'std', 'date'],
+    pos: { eyebrow: { x: tx, y: ty }, names: { x: tx, y: ty }, std: { x: tx, y: ty }, date: { x: tx, y: ty }, countdown: { x: 0, y: 0 } }
   };
 }
 
 function resolveHeroLayout(c) {
-  if (c.hero_layout && Array.isArray(c.hero_layout.order) && c.hero_layout.pos) return c.hero_layout;
-  return defaultHeroLayout(c.hero_text_x || 0, c.hero_text_y || 0);
+  let layout;
+  if (c.hero_layout && Array.isArray(c.hero_layout.order) && c.hero_layout.pos) layout = c.hero_layout;
+  else layout = defaultHeroLayout(c.hero_text_x || 0, c.hero_text_y || 0);
+  // Layouts guardados antes de separar "Save the Date" no conocen el bloque 'std':
+  // insertarlo pegado a la fecha para que el reorden y el drag funcionen.
+  if (!layout.order.includes('std')) {
+    const di = layout.order.indexOf('date');
+    layout.order.splice(di === -1 ? layout.order.length : di, 0, 'std');
+  }
+  if (!layout.pos.std) layout.pos.std = { x: 0, y: 0 };
+  return layout;
 }
 
 // Los offsets se calibran arrastrando dentro del preview del admin, que siempre
@@ -689,7 +701,7 @@ function closestHeroBlock(clientX, clientY) {
   let best = null, bestDist = Infinity;
   HERO_BLOCK_IDS.forEach(id => {
     const el = heroBlockEl(id);
-    if (!el) return;
+    if (!el || el.offsetParent === null) return; // oculto (std fuera de STD, countdown sin fecha)
     const r = el.getBoundingClientRect();
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     const dist = (clientX - cx) ** 2 + (clientY - cy) ** 2;
@@ -732,6 +744,7 @@ function checkHeroReorder(draggedId) {
   const draggedMid = draggedRect.top + draggedRect.height / 2;
   HERO_REORDERABLE_IDS.filter(id => id !== draggedId).forEach(otherId => {
     const otherEl = heroBlockEl(otherId);
+    if (!otherEl || otherEl.offsetParent === null) return; // no intercambiar con bloques ocultos
     const r = otherEl.getBoundingClientRect();
     const otherMid = r.top + r.height / 2;
     const draggedOrder = heroLayout.order.indexOf(draggedId);
@@ -779,7 +792,7 @@ function emitHeroLayoutChange() {
 }
 
 // ── TEXT STYLES (tamano/grosor/fuente por bloque, todas las secciones) ──
-const TEXT_STYLE_IDS = ['hero-eyebrow', 'hero-names', 'hero-date', 'ev-title', 'ev-body',
+const TEXT_STYLE_IDS = ['hero-eyebrow', 'hero-names', 'hero-std', 'hero-date', 'ev-title', 'ev-body',
   'ceremonia-lugar-nombre', 'ceremonia-lugar-dir', 'lugar-nombre', 'lugar-dir', 'dresscode-title',
   'regalo-titulo', 'regalo-texto', 'rsvp-title', 'rsvp-body', 'spotify-title', 'spotify-body'];
 
@@ -819,6 +832,7 @@ const TEXT_STYLE_TITLE_IDS = ['ev-title', 'ceremonia-lugar-nombre', 'lugar-nombr
 function originalFontFor(id) {
   if (id === 'hero-names') return (cfg && cfg.formato === 'wedding') ? 'Mrs Saint Delafield' : 'Cormorant Garamond';
   if (id === 'hero-date') return (cfg && cfg.formato === 'wedding') ? 'Cinzel' : 'Montserrat';
+  if (id === 'hero-std') return 'Cinzel';
   if (id === 'hero-eyebrow') return 'Montserrat';
   if (TEXT_STYLE_TITLE_IDS.includes(id)) return 'Cormorant Garamond';
   return 'Montserrat';
@@ -852,6 +866,14 @@ function ensureFontLoaded(fontName) {
 
 let textStyles = {};
 
+// Efectos aplicables a cualquier bloque de texto: 'gold' replica el look del
+// countdown (.cd-num), 'white' el glow del formato Wedding (fx-glow).
+const TEXT_FX = {
+  gold:  { color: 'var(--gold)', shadow: '0 0 16px rgba(var(--gold-rgb),0.65),0 0 34px rgba(var(--gold-rgb),0.35)' },
+  white: { color: '#fff', shadow: '0 0 24px rgba(255,255,255,0.55),0 2px 18px rgba(0,0,0,0.75)' }
+};
+const TEXT_FX_LABELS = { gold: 'Glow dorado', white: 'Glow blanco' };
+
 function applyTextStyle(id, style) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -859,6 +881,13 @@ function applyTextStyle(id, style) {
   else el.style.removeProperty('--ts-scale');
   if (style && style.weight) el.style.fontWeight = style.weight;
   else el.style.removeProperty('font-weight');
+  if (style && style.fx && TEXT_FX[style.fx]) {
+    el.style.color = TEXT_FX[style.fx].color;
+    el.style.textShadow = TEXT_FX[style.fx].shadow;
+  } else {
+    el.style.removeProperty('color');
+    el.style.removeProperty('text-shadow');
+  }
   if (style && style.font) {
     const cat = (FONT_CATALOG[style.font] || {}).category || 'sans';
     const generic = cat === 'script' ? 'cursive' : (cat === 'sans' ? 'sans-serif' : 'serif');
@@ -878,7 +907,7 @@ function applyAllTextStyles(styles) {
 }
 
 const TEXT_STYLE_LABELS = {
-  'hero-eyebrow': 'Hero — Eyebrow', 'hero-names': 'Hero — Nombres', 'hero-date': 'Hero — Fecha',
+  'hero-eyebrow': 'Hero — Eyebrow', 'hero-names': 'Hero — Nombres', 'hero-std': 'Hero — Save the Date', 'hero-date': 'Hero — Fecha',
   'ev-title': 'Cuándo — Título', 'ev-body': 'Cuándo — Texto',
   'ceremonia-lugar-nombre': 'Ceremonia — Nombre', 'ceremonia-lugar-dir': 'Ceremonia — Dirección',
   'lugar-nombre': 'Dónde — Nombre', 'lugar-dir': 'Dónde — Dirección',
@@ -935,6 +964,8 @@ function ensureTsPanel() {
     <input type="range" id="ts-size-slider" min="50" max="180" step="5" value="100" style="width:100%;margin-bottom:12px">
     <div style="font-size:10px;color:#999;margin-bottom:6px">Grosor</div>
     <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px" id="ts-weight-buttons"></div>
+    <div style="font-size:10px;color:#999;margin-bottom:6px">Efecto</div>
+    <div style="display:flex;gap:6px;margin-bottom:12px" id="ts-fx-buttons"></div>
     <button type="button" id="ts-reset-btn" style="width:100%;padding:6px 0;font-size:10px;background:none;border:1px solid rgba(255,255,255,0.2);color:#999;cursor:pointer;border-radius:4px">Restablecer</button>
   `;
   document.body.appendChild(tsPanelEl);
@@ -978,6 +1009,21 @@ function renderWeightButtons(fontName) {
     btn.addEventListener('click', () => {
       setTextStyleField(tsActiveId, 'weight', w);
       renderWeightButtons(fontName);
+    });
+  });
+}
+
+function renderFxButtons() {
+  const wrap = tsPanelEl.querySelector('#ts-fx-buttons');
+  const cur = (textStyles[tsActiveId] || {}).fx || null;
+  const opts = [[null, 'Original']].concat(Object.keys(TEXT_FX).map(k => [k, TEXT_FX_LABELS[k]]));
+  wrap.innerHTML = opts.map(([v, l]) => `<button type="button" data-fx="${v || ''}" class="ts-fxbtn">${l}</button>`).join('');
+  wrap.querySelectorAll('.ts-fxbtn').forEach(btn => {
+    const v = btn.dataset.fx || null;
+    btn.style.cssText = 'flex:1 1 30%;min-width:0;padding:6px 2px;font-size:9px;background:rgba(255,255,255,0.08);border:1px solid ' + (v === cur ? '#c9a84c' : 'rgba(255,255,255,0.15)') + ';color:#fff;cursor:pointer;border-radius:4px';
+    btn.addEventListener('click', () => {
+      setTextStyleField(tsActiveId, 'fx', v);
+      renderFxButtons();
     });
   });
 }
@@ -1028,6 +1074,7 @@ function openTextStylePanel(id) {
   panel.querySelector('#ts-size-slider').value = cur.size || 100;
   panel.querySelector('#ts-size-val').textContent = cur.size || 100;
   renderWeightButtons(cur.font || originalFontFor(id));
+  renderFxButtons();
   const r = el.getBoundingClientRect();
   panel.style.display = 'block';
   let top = r.bottom + 8;
@@ -1067,12 +1114,14 @@ function renderHero(c) {
   const isWedding = c.formato === 'wedding';
   document.body.classList.toggle('formato-wedding', isWedding);
   document.body.classList.remove('fx-glow', 'fx-blur', 'fx-sombra');
+  // "Save the Date" es un bloque propio, separado de la fecha: se arrastra,
+  // reordena y estiliza independiente (solo visible en formato Wedding + STD).
+  document.getElementById('hero-std').hidden = !(isWedding && c.tipo === 'save_the_date');
   if (isWedding) {
     document.body.classList.add('fx-' + (c.wedding_fx || 'glow'));
     document.getElementById('hero-eyebrow').textContent = (c.novios || '').toUpperCase();
     document.getElementById('hero-names').textContent = c.wedding_script || 'The Wedding';
-    const stdLabel = c.tipo === 'save_the_date' ? `<span class="wedding-std">Save the Date</span>` : '';
-    document.getElementById('hero-date').innerHTML = `${stdLabel}${c.fecha_display || ''}`;
+    document.getElementById('hero-date').textContent = c.fecha_display || '';
   } else {
     document.getElementById('hero-eyebrow').textContent = c.tipo === 'save_the_date' ? (c.titulo || 'Save The Date') : (c.titulo || '¡Nos casamos!');
     const names = c.novios || '';
