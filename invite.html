@@ -671,6 +671,7 @@ window.applyHeroPreview = function(c) {
   renderRegalo(cfg);
   renderRSVP(cfg);
   renderSpotify(cfg);
+  renderNav(cfg);
   applyAllTextStyles(cfg.text_styles);
 };
 
@@ -1238,6 +1239,9 @@ function renderSpotify(c) {
 
 function renderNav(c) {
   const nav = document.getElementById('nav');
+  // En preview se re-ejecuta con cada cambio de config: resetear antes de ocultar
+  // para que un link/nav oculto reaparezca si el campo vuelve a completarse.
+  nav.style.display = '';
   if (c.tipo === 'save_the_date') { nav.style.display = 'none'; return; }
   const hide = [];
   if (!c.rsvp_activo || c.tipo === 'save_the_date') hide.push('rsvp');
@@ -1245,7 +1249,7 @@ function renderNav(c) {
   if ((!c.alias_mp && !c.cbu) || c.tipo === 'save_the_date') hide.push('regalo');
   nav.querySelectorAll('a').forEach(a => {
     const id = a.getAttribute('href').replace('#', '');
-    if (hide.includes(id)) a.style.display = 'none';
+    a.style.display = hide.includes(id) ? 'none' : '';
   });
 }
 
@@ -1325,6 +1329,9 @@ async function init() {
     document.getElementById('loading-splash').style.display = 'none';
     cfg = {};
     document.body.style.userSelect = 'none';
+    // El nav (z-index 100) no debe interceptar drags/clicks sobre textos del hero
+    // que queden cerca del borde superior; en el editor es solo decorativo.
+    document.getElementById('nav').style.pointerEvents = 'none';
     renderHero(cfg);
     document.getElementById('invite-app').style.display = 'block';
     initHeroPreviewInteractions();
