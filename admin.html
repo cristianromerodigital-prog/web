@@ -394,7 +394,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V2.03</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V2.04</div>
     </div>
   </aside>
 
@@ -2479,7 +2479,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
               <span style="color:var(--violet);margin-left:8px">●</span> Book
               <span style="color:var(--cyan);margin-left:8px">●</span> Civil
               <span style="color:var(--green);margin-left:8px">●</span> Religiosa
-              <span style="color:var(--gray);margin-left:8px">●</span> Nota
+              <span style="color:#c9c9d4;margin-left:8px">●</span> Nota
             </span>
             <button class="btn-sm" onclick="calAbrirAgendar('')">+ Agendar</button>
             <button class="btn-sm btn-sec" onclick="calSyncGAS()" id="cal-btn-sync">Sincronizar con Google Calendar</button>
@@ -10692,7 +10692,7 @@ function renderCalendar() {
   let inicioCol   = new Date(y, m, 1).getDay();
   if (inicioCol === 0) inicioCol = 7;
 
-  const colores = { evento: 'var(--gold)', book: 'var(--violet)', civil: 'var(--cyan)', religiosa: 'var(--green)', nota: 'var(--gray)' };
+  const colores = { evento: 'var(--gold)', book: 'var(--violet)', civil: 'var(--cyan)', religiosa: 'var(--green)', nota: '#c9c9d4' };
   const hoy = new Date(); hoy.setHours(0,0,0,0);
 
   const evPorDia = {};
@@ -10711,10 +10711,10 @@ function renderCalendar() {
     const esHoy = new Date(y, m, dia).getTime() === hoy.getTime();
     const selBg = _calDiaSel === fechaStr ? 'rgba(201,168,76,0.12)' : 'rgba(255,255,255,0.02)';
     const border = esHoy ? '1px solid var(--gold)' : '1px solid rgba(255,255,255,0.05)';
-    const dots = evs.slice(0,4).map(function(ev){ return '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+(colores[ev.tipo]||'var(--gray)')+'"></span>'; }).join('');
-    html += '<div onclick="calSelDia(\'' + fechaStr + '\')" style="background:'+selBg+';border:'+border+';border-radius:4px;padding:6px 4px;text-align:center;cursor:pointer;min-height:54px;position:relative">'
+    const dots = evs.slice(0,4).map(function(ev){ return '<span style="display:inline-block;width:18px;height:18px;border-radius:50%;background:'+(colores[ev.tipo]||'#c9c9d4')+'"></span>'; }).join('');
+    html += '<div onclick="calSelDia(\'' + fechaStr + '\')" style="background:'+selBg+';border:'+border+';border-radius:4px;padding:6px 4px;text-align:center;cursor:pointer;min-height:64px;position:relative">'
       + '<div style="font-size:11px;color:'+(esHoy?'var(--gold)':'var(--white)')+';font-weight:'+(esHoy?'700':'400')+';margin-bottom:4px">'+dia+'</div>'
-      + '<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:2px">'+dots+'</div>'
+      + '<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:4px">'+dots+'</div>'
       + '<div onclick="event.stopPropagation();calAbrirAgendar(\''+fechaStr+'\')" style="position:absolute;top:2px;right:2px;opacity:0;background:rgba(201,168,76,0.2);color:var(--gold);border:none;border-radius:3px;width:14px;height:14px;font-size:9px;line-height:14px;text-align:center;cursor:pointer;transition:opacity 0.15s" onmouseover="this.style.opacity=\'1\'" onmouseout="this.style.opacity=\'0\'">+</div>'
       + '</div>';
   }
@@ -10728,7 +10728,7 @@ function calSelDia(fechaStr) {
   renderCalendar();
   const evs = _calEventos.filter(function(ev){ return ev.fecha && ev.fecha.slice(0,10) === fechaStr; });
   const panel = document.getElementById('cal-day-panel');
-  const colores = { evento: 'var(--gold)', book: 'var(--violet)', civil: 'var(--cyan)', religiosa: 'var(--green)', nota: 'var(--gray)' };
+  const colores = { evento: 'var(--gold)', book: 'var(--violet)', civil: 'var(--cyan)', religiosa: 'var(--green)', nota: '#c9c9d4' };
   const etiquetas = { evento: 'Evento', book: 'Book', civil: 'Civil', religiosa: 'Religiosa', nota: 'Nota' };
   if (!evs.length) { if (panel) panel.style.display = 'none'; return; }
   const p = fechaStr.split('-');
@@ -10754,7 +10754,7 @@ function renderProximas() {
     .filter(function(ev){ return ev.fecha && new Date(ev.fecha + 'T00:00:00') >= hoy; })
     .sort(function(a,b){ return a.fecha.localeCompare(b.fecha); })
     .slice(0, 20);
-  const colores = { evento: 'var(--gold)', book: 'var(--violet)', civil: 'var(--cyan)', religiosa: 'var(--green)', nota: 'var(--gray)' };
+  const colores = { evento: 'var(--gold)', book: 'var(--violet)', civil: 'var(--cyan)', religiosa: 'var(--green)', nota: '#c9c9d4' };
   const iconos = { evento: '🎉', book: '📸', civil: '⚖️', religiosa: '⛪', nota: '📌' };
   const prox = document.getElementById('cal-proximas');
   if (!prox) return;
