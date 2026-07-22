@@ -394,7 +394,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V2.04</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V2.05</div>
     </div>
   </aside>
 
@@ -2479,7 +2479,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
               <span style="color:var(--violet);margin-left:8px">●</span> Book
               <span style="color:var(--cyan);margin-left:8px">●</span> Civil
               <span style="color:var(--green);margin-left:8px">●</span> Religiosa
-              <span style="color:#c9c9d4;margin-left:8px">●</span> Nota
+              <span style="color:var(--orange);margin-left:8px">●</span> Externo (Gmail)
             </span>
             <button class="btn-sm" onclick="calAbrirAgendar('')">+ Agendar</button>
             <button class="btn-sm btn-sec" onclick="calSyncGAS()" id="cal-btn-sync">Sincronizar con Google Calendar</button>
@@ -10647,6 +10647,17 @@ let _calFecha   = new Date();
 let _calEventos = [];
 let _calDiaSel  = null;
 
+function _clasificarAgendaExterna(titulo) {
+  const t = (titulo || '').toLowerCase()
+    .replace(/[áàä]/g,'a').replace(/[éè]/g,'e').replace(/[íì]/g,'i')
+    .replace(/[óò]/g,'o').replace(/[úù]/g,'u').replace(/ñ/g,'n');
+  if (/\bcivil\b/.test(t)) return 'civil';
+  if (/religios|iglesia|templo/.test(t)) return 'religiosa';
+  if (/\bbook\b|sesion/.test(t)) return 'book';
+  if (/casamiento|boda|matrimonio|\bxv\b|quince|15 an|cumple/.test(t)) return 'evento';
+  return 'nota';
+}
+
 async function loadCalendarioPage() {
   const grid = document.getElementById('cal-grid');
   const prox = document.getElementById('cal-proximas');
@@ -10670,7 +10681,7 @@ async function loadCalendarioPage() {
     try {
       const ag = await fetch(CLIENTES_WORKER + '/agenda', { headers: { 'Authorization': 'Bearer ' + getAdminJWT() } }).then(function(r){ return r.json(); });
       for (const n of (ag.agenda || [])) {
-        _calEventos.push({ fecha: n.fecha, hora: n.hora || '', tipo: 'nota', nombre: n.titulo, lugar: n.lugar || '', agendaId: n.id });
+        _calEventos.push({ fecha: n.fecha, hora: n.hora || '', tipo: _clasificarAgendaExterna(n.titulo), origen: 'agenda', nombre: n.titulo, lugar: n.lugar || '', agendaId: n.id });
       }
     } catch(e) {}
     renderCalendar();
@@ -10692,7 +10703,7 @@ function renderCalendar() {
   let inicioCol   = new Date(y, m, 1).getDay();
   if (inicioCol === 0) inicioCol = 7;
 
-  const colores = { evento: 'var(--gold)', book: 'var(--violet)', civil: 'var(--cyan)', religiosa: 'var(--green)', nota: '#c9c9d4' };
+  const colores = { evento: 'var(--gold)', book: 'var(--violet)', civil: 'var(--cyan)', religiosa: 'var(--green)', nota: 'var(--orange)' };
   const hoy = new Date(); hoy.setHours(0,0,0,0);
 
   const evPorDia = {};
@@ -10728,8 +10739,8 @@ function calSelDia(fechaStr) {
   renderCalendar();
   const evs = _calEventos.filter(function(ev){ return ev.fecha && ev.fecha.slice(0,10) === fechaStr; });
   const panel = document.getElementById('cal-day-panel');
-  const colores = { evento: 'var(--gold)', book: 'var(--violet)', civil: 'var(--cyan)', religiosa: 'var(--green)', nota: '#c9c9d4' };
-  const etiquetas = { evento: 'Evento', book: 'Book', civil: 'Civil', religiosa: 'Religiosa', nota: 'Nota' };
+  const colores = { evento: 'var(--gold)', book: 'var(--violet)', civil: 'var(--cyan)', religiosa: 'var(--green)', nota: 'var(--orange)' };
+  const etiquetas = { evento: 'Evento', book: 'Book', civil: 'Civil', religiosa: 'Religiosa', nota: 'Externo (Gmail)' };
   if (!evs.length) { if (panel) panel.style.display = 'none'; return; }
   const p = fechaStr.split('-');
   const tituloEl = document.getElementById('cal-day-titulo');
@@ -10742,7 +10753,7 @@ function calSelDia(fechaStr) {
       + (ev.hora ? '<div style="font-size:10px;color:var(--gray2);margin-top:2px">🕐 '+ev.hora+'</div>' : '')
       + (ev.lugar ? '<div style="font-size:10px;color:var(--gray2);margin-top:2px">📍 '+ev.lugar+'</div>' : '')
       + '</div>'
-      + '<button onclick="calEliminar(\''+(ev.tipo==='nota'?ev.agendaId:ev.id)+'\',\''+ev.tipo+'\',\''+String(ev.nombre).replace(/'/g,"\\'")+'\')" title="Eliminar de la agenda y de Google Calendar" style="margin-left:auto;background:none;border:none;color:var(--gray2);cursor:pointer;font-size:13px;padding:0 2px">🗑</button>'
+      + '<button onclick="calEliminar(\''+(ev.origen==='agenda'?ev.agendaId:ev.id)+'\',\''+ev.tipo+'\',\''+String(ev.nombre).replace(/'/g,"\\'")+'\',\''+(ev.origen==='agenda'?'agenda':'solicitud')+'\')" title="Eliminar de la agenda y de Google Calendar" style="margin-left:auto;background:none;border:none;color:var(--gray2);cursor:pointer;font-size:13px;padding:0 2px">🗑</button>'
       + '</div>';
   }).join('');
   if (panel) panel.style.display = 'block';
@@ -10754,7 +10765,7 @@ function renderProximas() {
     .filter(function(ev){ return ev.fecha && new Date(ev.fecha + 'T00:00:00') >= hoy; })
     .sort(function(a,b){ return a.fecha.localeCompare(b.fecha); })
     .slice(0, 20);
-  const colores = { evento: 'var(--gold)', book: 'var(--violet)', civil: 'var(--cyan)', religiosa: 'var(--green)', nota: '#c9c9d4' };
+  const colores = { evento: 'var(--gold)', book: 'var(--violet)', civil: 'var(--cyan)', religiosa: 'var(--green)', nota: 'var(--orange)' };
   const iconos = { evento: '🎉', book: '📸', civil: '⚖️', religiosa: '⛪', nota: '📌' };
   const prox = document.getElementById('cal-proximas');
   if (!prox) return;
@@ -10766,16 +10777,16 @@ function renderProximas() {
       + '<span style="font-size:11px;color:'+(colores[ev.tipo]||'var(--gray)')+';min-width:80px">'+(p[2]+'/'+p[1]+'/'+p[0])+(ev.hora?' '+ev.hora:'')+'</span>'
       + '<span style="font-size:12px;color:var(--white)">'+ev.nombre+'</span>'
       + (ev.lugar ? '<span style="font-size:10px;color:var(--gray2)">· '+ev.lugar+'</span>' : '')
-      + '<button onclick="calEliminar(\''+(ev.tipo==='nota'?ev.agendaId:ev.id)+'\',\''+ev.tipo+'\',\''+String(ev.nombre).replace(/'/g,"\\'")+'\')" title="Eliminar de la agenda y de Google Calendar" style="margin-left:auto;background:none;border:none;color:var(--gray2);cursor:pointer;font-size:13px;padding:0 2px">🗑</button>'
+      + '<button onclick="calEliminar(\''+(ev.origen==='agenda'?ev.agendaId:ev.id)+'\',\''+ev.tipo+'\',\''+String(ev.nombre).replace(/'/g,"\\'")+'\',\''+(ev.origen==='agenda'?'agenda':'solicitud')+'\')" title="Eliminar de la agenda y de Google Calendar" style="margin-left:auto;background:none;border:none;color:var(--gray2);cursor:pointer;font-size:13px;padding:0 2px">🗑</button>'
       + '</div>';
   }).join('');
 }
 
-async function calEliminar(id, tipo, nombre) {
+async function calEliminar(id, tipo, nombre, origen) {
   if (!confirm('¿Eliminar "' + nombre + '" (' + tipo + ') de la agenda y de Google Calendar?')) return;
   try {
     let r;
-    if (tipo === 'nota') {
+    if (origen === 'agenda') {
       r = await fetch(CLIENTES_WORKER + '/agenda/' + id, {
         method: 'DELETE', headers: { 'Authorization': 'Bearer ' + getAdminJWT() }
       }).then(function(x){ return x.json(); });
