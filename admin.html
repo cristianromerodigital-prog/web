@@ -394,7 +394,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V2.08</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V2.09</div>
     </div>
   </aside>
 
@@ -10766,7 +10766,7 @@ function calSelDia(fechaStr) {
 function renderProximas() {
   const hoy = new Date(); hoy.setHours(0,0,0,0);
   const futuras = _calEventos
-    .filter(function(ev){ return ev.fecha && new Date(ev.fecha + 'T00:00:00') >= hoy; })
+    .filter(function(ev){ return ev.fecha && new Date(ev.fecha + 'T00:00:00') >= hoy && String(ev.nombre||'').replace(/\s+/g,' ').trim().toLowerCase() !== 'more hija'; })
     .sort(function(a,b){ return a.fecha.localeCompare(b.fecha); })
     .slice(0, 20);
   const colores = { evento: 'var(--gold)', book: 'var(--violet)', civil: 'var(--cyan)', religiosa: 'var(--green)', nota: 'var(--orange)' };
