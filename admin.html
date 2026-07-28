@@ -394,7 +394,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V2.06</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V2.07</div>
     </div>
   </aside>
 
@@ -10722,7 +10722,7 @@ function renderCalendar() {
     const esHoy = new Date(y, m, dia).getTime() === hoy.getTime();
     const selBg = _calDiaSel === fechaStr ? 'rgba(201,168,76,0.12)' : 'rgba(255,255,255,0.02)';
     const border = esHoy ? '1px solid var(--gold)' : '1px solid rgba(255,255,255,0.05)';
-    const dots = evs.slice(0,4).map(function(ev){ return '<span style="display:inline-block;width:18px;height:18px;border-radius:50%;background:'+(colores[ev.tipo]||'#c9c9d4')+'"></span>'; }).join('');
+    const dots = evs.filter(function(ev){ return String(ev.nombre||'').trim().toLowerCase() !== 'more hija'; }).slice(0,4).map(function(ev){ return '<span style="display:inline-block;width:18px;height:18px;border-radius:50%;background:'+(colores[ev.tipo]||'#c9c9d4')+'"></span>'; }).join('');
     const tieneMore = evs.some(function(ev){ return String(ev.nombre||'').trim().toLowerCase() === 'more hija'; });
     const moreDot = tieneMore ? '<span title="More" style="position:absolute;top:2px;left:2px;width:8px;height:8px;border-radius:50%;background:#e5484d"></span>' : '';
     html += '<div onclick="calSelDia(\'' + fechaStr + '\')" style="background:'+selBg+';border:'+border+';border-radius:4px;padding:6px 4px;text-align:center;cursor:pointer;min-height:64px;position:relative">'
