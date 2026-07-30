@@ -32,6 +32,7 @@
 
     /* ── PAGE ── */
     .page { width: 900px; margin: 24px auto; background: var(--white); box-shadow: 0 8px 40px rgba(0,0,0,0.2); overflow: hidden; position: relative; }
+    .pr-pack-hidden { display: none !important; }
     .gold-bar { height: 5px; background: linear-gradient(90deg, #7A5C0A, var(--gold), var(--gold-lt), var(--gold), #7A5C0A); }
 
     /* ── IMAGE PLACEHOLDER ── */
@@ -625,7 +626,8 @@ const PRESUPUESTO_DEFAULT = {
   paymentMethods: 'Efectivo · Transferencia bancaria · Mercado Pago'
 };
 
-const _PR_KEY = new URLSearchParams(location.search).get('tipo') === 'boda' ? 'crd_presupuesto_boda' : 'crd_presupuesto';
+const _PR_TIPO = new URLSearchParams(location.search).get('tipo');
+const _PR_KEY = _PR_TIPO === 'boda' ? 'crd_presupuesto_boda' : _PR_TIPO === '18ymas' ? 'crd_presupuesto_18ymas' : 'crd_presupuesto';
 
 function getData() {
   try { return JSON.parse(localStorage.getItem(_PR_KEY)) || JSON.parse(JSON.stringify(PRESUPUESTO_DEFAULT)); }
@@ -698,6 +700,10 @@ function init() {
 
   // Packs
   (data.packs || []).forEach((pack, pi) => {
+    const pageEl = document.getElementById('page-pack-' + pi);
+    const isEmptyPack = !pack.name && !pack.totalPrice;
+    if (pageEl) pageEl.classList.toggle('pr-pack-hidden', isEmptyPack);
+    if (isEmptyPack) return;
     setText('pack-eyebrow-' + pi, (pack.number || String(pi+1).padStart(2,'0')) + ' — Pack');
     setText('pack-name-' + pi, pack.name);
     setText('total-price-' + pi, pack.totalPrice);
@@ -895,7 +901,7 @@ async function generarPDF(btn) {
   btn.disabled = true;
   try {
     const { jsPDF } = window.jspdf;
-    const pages = [...document.querySelectorAll('.page')];
+    const pages = [...document.querySelectorAll('.page:not(.pr-pack-hidden)')];
     let pdf = null;
 
     for (let i = 0; i < pages.length; i++) {
