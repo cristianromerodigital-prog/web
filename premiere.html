@@ -800,6 +800,12 @@ async function init() {
   const _dbg = p.get('debug') === '1';
   const _dbgLog = [];
 
+  fetch(CONFIG.CF_URL + '/crd_pm_visit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ slug })
+  }).catch(() => {});
+
   const [indexRes, msgRes] = await Promise.all([
     fetch(CONFIG.CF_URL + '/' + _cfIndexKey() + '?t=' + Date.now()).catch(e=>{ _dbgLog.push('indexFetch ERR: '+e.message); return null; }),
     fetch(CONFIG.CF_URL + '/crd_pm_msg_' + slug + '?t=' + Date.now()).catch(e=>{ _dbgLog.push('msgFetch ERR: '+e.message); return null; })
