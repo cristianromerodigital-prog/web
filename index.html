@@ -1133,7 +1133,7 @@ body::before {
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.06</span></span>
+    <span>© 2025 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.07</span></span>
     <div class="footer-bottom-links">
       <a href="#">Privacidad</a>
       <a href="#">Términos</a>
@@ -1429,7 +1429,7 @@ async function renderTestimonials() {
     const r = await fetch(`${CONFIG.CF_URL}/google_reviews`);
     if (r.ok) {
       const d = await r.json();
-      const googleReviews = (d.reviews || []).filter(rv => rv.rating >= 4 && rv.text?.text?.trim());
+      const googleReviews = (d.reviews || []).filter(rv => rv.rating >= 4 && (rv.originalText?.text || rv.text?.text || '').trim());
       const googleCards = googleReviews.map(rv => {
         const name   = rv.authorAttribution?.displayName || '';
         const photo  = rv.authorAttribution?.photoUri || '';
@@ -1437,7 +1437,7 @@ async function renderTestimonials() {
         return `
           <div class="testimonial-card">
             <div class="testimonial-stars">${'★'.repeat(rv.rating || 5)}</div>
-            <p class="testimonial-text">"${rv.text.text}"</p>
+            <p class="testimonial-text">"${rv.originalText?.text || rv.text.text}"</p>
             <div class="testimonial-author">
               <div class="testimonial-avatar">${avatar}</div>
               <div>
