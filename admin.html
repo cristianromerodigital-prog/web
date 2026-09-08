@@ -394,7 +394,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <span class="sidebar-user">Admin</span>
         <button class="logout-btn" onclick="doLogout()">Salir</button>
       </div>
-      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V2.10</div>
+      <div style="font-size:10px;color:var(--gray2);margin-top:8px;text-align:center;">V2.11</div>
     </div>
   </aside>
 
@@ -2275,6 +2275,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           <button class="cnt-subtab active" id="pr-tipo-quince" onclick="switchPresupuestoTipo('quince',this)">XV Años</button>
           <button class="cnt-subtab" id="pr-tipo-boda" onclick="switchPresupuestoTipo('boda',this)">Bodas</button>
           <button class="cnt-subtab" id="pr-tipo-18ymas" onclick="switchPresupuestoTipo('18ymas',this)">18 y Más</button>
+          <button class="cnt-subtab" id="pr-tipo-egresados" onclick="switchPresupuestoTipo('egresados',this)">Egresados</button>
         </div>
         <div style="display:flex;gap:10px;margin-bottom:28px;flex-wrap:wrap">
           <button onclick="abrirPresupuesto()" style="background:var(--gold);color:var(--black);padding:10px 22px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border:none;cursor:pointer;font-family:inherit">Abrir Presupuesto</button>
@@ -3631,7 +3632,7 @@ async function crclubDeleteReward(id, name) {
 }
 
 // ── CLOUDFLARE SYNC ──
-const CF_SYNC_KEYS = ["crd_portfolio","crd_testimonials","crd_posts","crd_settings","crd_content","crd_site_photos","crd_hero_video_url","crd_invites","crd_messages","crd_inv_base","crd_presupuesto","crd_presupuesto_boda","crd_presupuesto_18ymas","crd_editable","crd_opcionales","crd_entregas","crd_pedidos","crd_contratos_cfg","crd_site_logo","crd_ct_draft"];
+const CF_SYNC_KEYS = ["crd_portfolio","crd_testimonials","crd_posts","crd_settings","crd_content","crd_site_photos","crd_hero_video_url","crd_invites","crd_messages","crd_inv_base","crd_presupuesto","crd_presupuesto_boda","crd_presupuesto_18ymas","crd_presupuesto_egresados","crd_editable","crd_opcionales","crd_entregas","crd_pedidos","crd_contratos_cfg","crd_site_logo","crd_ct_draft"];
 
 async function syncToCloud(key, value) {
   if (!CF_SYNC_KEYS.includes(key) && !key.startsWith('crd_ct_draft')) return;
@@ -4293,6 +4294,7 @@ function showPage(id) {
       fetchFromCloud('crd_presupuesto').then(d => { if(d && typeof d==='object') localStorage.setItem('crd_presupuesto', JSON.stringify(d)); }),
       fetchFromCloud('crd_presupuesto_boda').then(d => { if(d && typeof d==='object') localStorage.setItem('crd_presupuesto_boda', JSON.stringify(d)); }),
       fetchFromCloud('crd_presupuesto_18ymas').then(d => { if(d && typeof d==='object') localStorage.setItem('crd_presupuesto_18ymas', JSON.stringify(d)); }),
+      fetchFromCloud('crd_presupuesto_egresados').then(d => { if(d && typeof d==='object') localStorage.setItem('crd_presupuesto_egresados', JSON.stringify(d)); }),
       fetchFromCloud('crd_editable').then(d => { if(d && typeof d==='object') localStorage.setItem('crd_editable', JSON.stringify(d)); }),
       fetchFromCloud('crd_opcionales').then(d => { if(Array.isArray(d)) localStorage.setItem('crd_opcionales', JSON.stringify(d)); }),
     ]).then(() => loadPresupuestoPage());
@@ -4411,6 +4413,8 @@ async function init() {
   if (cloudPresBoda && typeof cloudPresBoda === 'object') localStorage.setItem('crd_presupuesto_boda', JSON.stringify(cloudPresBoda));
   const cloudPres18ymas = await fetchFromCloud('crd_presupuesto_18ymas');
   if (cloudPres18ymas && typeof cloudPres18ymas === 'object') localStorage.setItem('crd_presupuesto_18ymas', JSON.stringify(cloudPres18ymas));
+  const cloudPresEgresados = await fetchFromCloud('crd_presupuesto_egresados');
+  if (cloudPresEgresados && typeof cloudPresEgresados === 'object') localStorage.setItem('crd_presupuesto_egresados', JSON.stringify(cloudPresEgresados));
   const cloudEditable = await fetchFromCloud('crd_editable');
   if (cloudEditable && typeof cloudEditable === 'object') localStorage.setItem('crd_editable', JSON.stringify(cloudEditable));
   const cloudOpcionales = await fetchFromCloud('crd_opcionales');
@@ -7517,7 +7521,7 @@ const PRESUPUESTO_DEFAULT = {
 
 let currentPresupuestoTipo = 'quince';
 
-function _prKey() { return currentPresupuestoTipo === 'boda' ? 'crd_presupuesto_boda' : currentPresupuestoTipo === '18ymas' ? 'crd_presupuesto_18ymas' : 'crd_presupuesto'; }
+function _prKey() { return currentPresupuestoTipo === 'boda' ? 'crd_presupuesto_boda' : currentPresupuestoTipo === '18ymas' ? 'crd_presupuesto_18ymas' : currentPresupuestoTipo === 'egresados' ? 'crd_presupuesto_egresados' : 'crd_presupuesto'; }
 
 function getPresupuesto() {
   try { return JSON.parse(localStorage.getItem(_prKey())) || JSON.parse(JSON.stringify(PRESUPUESTO_DEFAULT)); }
@@ -7785,7 +7789,7 @@ function savePresupuesto() {
 }
 
 function abrirPresupuesto() {
-  const param = currentPresupuestoTipo === 'boda' ? '?tipo=boda' : currentPresupuestoTipo === '18ymas' ? '?tipo=18ymas' : '';
+  const param = currentPresupuestoTipo === 'boda' ? '?tipo=boda' : currentPresupuestoTipo === '18ymas' ? '?tipo=18ymas' : currentPresupuestoTipo === 'egresados' ? '?tipo=egresados' : '';
   window.open('presupuesto.html' + param, '_blank');
 }
 

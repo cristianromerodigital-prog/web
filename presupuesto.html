@@ -627,7 +627,7 @@ const PRESUPUESTO_DEFAULT = {
 };
 
 const _PR_TIPO = new URLSearchParams(location.search).get('tipo');
-const _PR_KEY = _PR_TIPO === 'boda' ? 'crd_presupuesto_boda' : _PR_TIPO === '18ymas' ? 'crd_presupuesto_18ymas' : 'crd_presupuesto';
+const _PR_KEY = _PR_TIPO === 'boda' ? 'crd_presupuesto_boda' : _PR_TIPO === '18ymas' ? 'crd_presupuesto_18ymas' : _PR_TIPO === 'egresados' ? 'crd_presupuesto_egresados' : 'crd_presupuesto';
 
 function getData() {
   try { return JSON.parse(localStorage.getItem(_PR_KEY)) || JSON.parse(JSON.stringify(PRESUPUESTO_DEFAULT)); }
