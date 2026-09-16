@@ -521,13 +521,13 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
 /* ── INSTAGRAM FLOAT ── */
 #ig-float {
   position:fixed; bottom:100px; right:32px; z-index:500;
-  width:56px; height:56px; border-radius:50%;
+  width:56px; height:56px; border-radius:50%; clip-path:circle(50%);
   background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
   display:flex; align-items:center; justify-content:center;
-  box-shadow:0 4px 24px rgba(214,36,159,0.35); transition:transform var(--trans), box-shadow var(--trans);
+  filter:drop-shadow(0 4px 24px rgba(214,36,159,0.35)); transition:transform var(--trans), filter var(--trans);
   animation: waBounce 0.5s ease 2.2s both;
 }
-#ig-float:hover { transform:scale(1.1); box-shadow:0 6px 32px rgba(214,36,159,0.5); }
+#ig-float:hover { transform:scale(1.1); filter:drop-shadow(0 6px 32px rgba(214,36,159,0.5)); }
 #ig-float svg { width:26px; height:26px; fill:white; }
 
 /* ── ANIMATIONS ── */
@@ -1171,7 +1171,7 @@ body::before {
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2026 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.16</span></span>
+    <span>© 2026 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.17</span></span>
     <div class="footer-bottom-links">
       <a href="privacidad.html">Privacidad</a>
       <a href="#">Términos</a>
