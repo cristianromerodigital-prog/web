@@ -1171,7 +1171,7 @@ body::before {
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2026 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.21</span></span>
+    <span>© 2026 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.22</span></span>
     <div class="footer-bottom-links">
       <a href="privacidad.html">Privacidad</a>
       <a href="#">Términos</a>
@@ -1274,7 +1274,11 @@ function renderAll() {
   initSocialLinks();
   initPortfolioReveal();
 }
-loadFromCloud().then(renderAll).catch(renderAll);
+function renderAllAndScrollToHash() {
+  renderAll();
+  if (location.hash) scrollToSection(location.hash);
+}
+loadFromCloud().then(renderAllAndScrollToHash).catch(renderAllAndScrollToHash);
 
 // ── PRELOADER ──
 window.addEventListener('load', () => {
