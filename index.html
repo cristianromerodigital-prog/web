@@ -1171,7 +1171,7 @@ body::before {
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2026 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.22</span></span>
+    <span>© 2026 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.23</span></span>
     <div class="footer-bottom-links">
       <a href="privacidad.html">Privacidad</a>
       <a href="#">Términos</a>
@@ -1318,7 +1318,18 @@ function scrollToSection(hash) {
   const el = document.querySelector(hash);
   if (!el) return;
   el.scrollIntoView({behavior:'smooth'});
-  setTimeout(() => document.querySelector(hash)?.scrollIntoView({behavior:'smooth'}), 700);
+  let lastTop = null, tries = 0;
+  const check = () => {
+    tries++;
+    const cur = document.querySelector(hash);
+    if (!cur) return;
+    const top = Math.round(cur.getBoundingClientRect().top);
+    const settled = lastTop !== null && Math.abs(top - lastTop) < 2;
+    lastTop = top;
+    if (Math.abs(top) > 4) cur.scrollIntoView({behavior:'smooth'});
+    if (!settled && tries < 10) setTimeout(check, 500);
+  };
+  setTimeout(check, 500);
 }
 
 document.querySelectorAll('.nav-links a[href^="#"]').forEach(a => a.addEventListener('click', (e) => {
