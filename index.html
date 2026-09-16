@@ -1171,7 +1171,7 @@ body::before {
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2026 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.15</span></span>
+    <span>© 2026 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.16</span></span>
     <div class="footer-bottom-links">
       <a href="privacidad.html">Privacidad</a>
       <a href="#">Términos</a>
@@ -1310,7 +1310,11 @@ window.addEventListener('scroll', () => {
 // ── MOBILE NAV ──
 document.getElementById('hamburger').addEventListener('click', () => document.getElementById('mobile-nav').classList.add('open'));
 document.getElementById('mobile-close').addEventListener('click', () => document.getElementById('mobile-nav').classList.remove('open'));
-document.querySelectorAll('.mobile-link').forEach(a => a.addEventListener('click', () => document.getElementById('mobile-nav').classList.remove('open')));
+document.querySelectorAll('.mobile-link').forEach(a => a.addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('mobile-nav').classList.remove('open');
+  document.querySelector(a.getAttribute('href'))?.scrollIntoView({behavior:'smooth'});
+}));
 
 // ── SCROLL REVEAL ──
 const observer = new IntersectionObserver(entries => {
