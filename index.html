@@ -1171,7 +1171,7 @@ body::before {
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2026 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.19</span></span>
+    <span>© 2026 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.20</span></span>
     <div class="footer-bottom-links">
       <a href="privacidad.html">Privacidad</a>
       <a href="#">Términos</a>
@@ -1847,16 +1847,16 @@ function applyContent() {
     if(ct.wa_number) {
       const waBtn = document.getElementById('wa-btn');
       if(waBtn) waBtn.href='https://wa.me/'+ct.wa_number;
-      document.querySelectorAll('a[href^="https://wa.me"]').forEach(a=>a.href='https://wa.me/'+ct.wa_number);
+      document.querySelectorAll('a[href^="https://wa.me"]:not(.provider-logo)').forEach(a=>a.href='https://wa.me/'+ct.wa_number);
     }
   }
 
   // ── SOCIAL ──
   const sc = c.social;
   if(sc) {
-    if(sc.ig) document.querySelectorAll('a[href*="instagram.com"]').forEach(a=>a.href=sc.ig);
-    if(sc.fb) document.querySelectorAll('a[href*="facebook.com"]').forEach(a=>a.href=sc.fb);
-    if(sc.wa) document.querySelectorAll('a[href*="wa.me"]').forEach(a=>a.href=sc.wa);
+    if(sc.ig) document.querySelectorAll('a[href*="instagram.com"]:not(.provider-logo)').forEach(a=>a.href=sc.ig);
+    if(sc.fb) document.querySelectorAll('a[href*="facebook.com"]:not(.provider-logo)').forEach(a=>a.href=sc.fb);
+    if(sc.wa) document.querySelectorAll('a[href*="wa.me"]:not(.provider-logo)').forEach(a=>a.href=sc.wa);
     if(sc.social_title) { const el=document.querySelector('.social-section .section-title'); if(el) el.innerHTML=sc.social_title; }
     if(sc.social_desc) { const el=document.querySelector('.social-section .body-text'); if(el) el.textContent=sc.social_desc; }
   }
