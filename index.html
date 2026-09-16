@@ -1171,7 +1171,7 @@ body::before {
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2026 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.17</span></span>
+    <span>© 2026 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.18</span></span>
     <div class="footer-bottom-links">
       <a href="privacidad.html">Privacidad</a>
       <a href="#">Términos</a>
@@ -1362,7 +1362,7 @@ function renderProveedores() {
   strip.innerHTML = items.map(p => `
     <a class="provider-logo" href="${escAttr(p.link)}" target="_blank" rel="noopener noreferrer" title="${escAttr(p.name)}">
       <img src="${escAttr(p.logoUrl)}" alt="${escAttr(p.name)}" loading="lazy">
-      ${p.description ? `<span class="provider-desc">${escAttr(p.description)}</span>` : ''}
+      ${p.description ? `<span class="provider-desc">${parseText(escAttr(p.description))}</span>` : ''}
     </a>
   `).join('');
 }
