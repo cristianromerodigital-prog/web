@@ -394,10 +394,17 @@ nav.scrolled { box-shadow: 0 4px 40px rgba(0,0,0,0.5); }
 .testimonials { padding:120px 80px; background:var(--paper2); }
 .testimonials-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--paper2); margin-top:64px; }
 .providers-section { padding:90px 80px; background:var(--paper); }
-.providers-strip { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:48px; margin-top:56px; }
-.provider-logo { display:block; filter:grayscale(1); opacity:0.55; transition:filter 0.3s ease, opacity 0.3s ease; }
+.providers-strip { display:flex; flex-wrap:wrap; justify-content:center; align-items:flex-start; gap:64px; margin-top:56px; row-gap:96px; }
+.provider-logo { position:relative; display:flex; flex-direction:column; align-items:center; filter:grayscale(1); opacity:0.55; transition:filter 0.3s ease, opacity 0.3s ease; }
 .provider-logo:hover { filter:grayscale(0); opacity:1; }
-.provider-logo img { height:40px; width:auto; max-width:140px; object-fit:contain; display:block; }
+.provider-logo img { height:120px; width:auto; max-width:420px; object-fit:contain; display:block; }
+.provider-desc {
+  position:absolute; top:100%; left:50%; margin-top:14px;
+  width:220px; text-align:center; font-size:12px; line-height:1.6; color:var(--ink2);
+  transform:translate(-50%,4px); opacity:0; pointer-events:none;
+  transition:opacity 0.25s ease, transform 0.25s ease;
+}
+.provider-logo:hover .provider-desc { opacity:1; transform:translate(-50%,0); }
 .testimonial-card { background:var(--paper); padding:36px; border:1px solid var(--border); margin:-1px 0 0 -1px; display:flex; flex-direction:column; transition:background var(--trans), opacity 0.4s ease, transform 0.4s ease; }
 .testimonial-card:hover { background:var(--paper2); }
 .testimonial-stars { color:var(--ink); font-size:14px; margin-bottom:20px; letter-spacing:3px; }
@@ -549,6 +556,8 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
   .hamburger { display:flex; }
   .hero { grid-template-columns:1fr; padding:140px 24px 80px; }
   .portfolio-section,.services,.pricing,.testimonials,.blog-section,.clients-section,.providers-section { padding:80px 24px; }
+  .provider-logo img { height:70px; max-width:60vw; }
+  .provider-desc { width:70vw; }
   .portfolio-grid { columns:2; column-gap:2px; }
   .portfolio-item.wide { column-span:unset; }
   .countdown-bar { padding:20px; gap:20px; }
@@ -1151,7 +1160,7 @@ body::before {
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2026 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.12</span></span>
+    <span>© 2026 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.13</span></span>
     <div class="footer-bottom-links">
       <a href="privacidad.html">Privacidad</a>
       <a href="#">Términos</a>
@@ -1338,6 +1347,7 @@ function renderProveedores() {
   strip.innerHTML = items.map(p => `
     <a class="provider-logo" href="${escAttr(p.link)}" target="_blank" rel="noopener noreferrer" title="${escAttr(p.name)}">
       <img src="${escAttr(p.logoUrl)}" alt="${escAttr(p.name)}" loading="lazy">
+      ${p.description ? `<span class="provider-desc">${escAttr(p.description)}</span>` : ''}
     </a>
   `).join('');
 }
