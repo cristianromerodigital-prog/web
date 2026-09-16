@@ -1171,7 +1171,7 @@ body::before {
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2026 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.20</span></span>
+    <span>© 2026 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.21</span></span>
     <div class="footer-bottom-links">
       <a href="privacidad.html">Privacidad</a>
       <a href="#">Términos</a>
@@ -1260,11 +1260,10 @@ function initDefaults() {
 }
 initDefaults();
 // Load from cloud then render
-let testimonialsReady = Promise.resolve();
 function renderAll() {
   renderPortfolioFilters();
   renderPortfolio();
-  testimonialsReady = renderTestimonials();
+  renderTestimonials();
   renderProveedores();
   renderBlog();
   renderPricing();
@@ -1308,14 +1307,28 @@ window.addEventListener('scroll', () => {
   });
 });
 
+// ── NAV: scroll a una sección, corrigiendo si el layout se mueve mientras anima ──
+// (fotos lazy del portfolio que recién cargan al pasar el scroll por ahí pueden
+// empujar secciones más abajo; se re-apunta una vez terminada la animación)
+function scrollToSection(hash) {
+  const el = document.querySelector(hash);
+  if (!el) return;
+  el.scrollIntoView({behavior:'smooth'});
+  setTimeout(() => document.querySelector(hash)?.scrollIntoView({behavior:'smooth'}), 700);
+}
+
+document.querySelectorAll('.nav-links a[href^="#"]').forEach(a => a.addEventListener('click', (e) => {
+  e.preventDefault();
+  scrollToSection(a.getAttribute('href'));
+}));
+
 // ── MOBILE NAV ──
 document.getElementById('hamburger').addEventListener('click', () => document.getElementById('mobile-nav').classList.add('open'));
 document.getElementById('mobile-close').addEventListener('click', () => document.getElementById('mobile-nav').classList.remove('open'));
-document.querySelectorAll('.mobile-link').forEach(a => a.addEventListener('click', async (e) => {
+document.querySelectorAll('.mobile-link').forEach(a => a.addEventListener('click', (e) => {
   e.preventDefault();
   document.getElementById('mobile-nav').classList.remove('open');
-  try { await testimonialsReady; } catch(err) {}
-  document.querySelector(a.getAttribute('href'))?.scrollIntoView({behavior:'smooth'});
+  scrollToSection(a.getAttribute('href'));
 }));
 
 // ── SCROLL REVEAL ──
