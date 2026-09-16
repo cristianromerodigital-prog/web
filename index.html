@@ -435,13 +435,13 @@ nav.scrolled { box-shadow: 0 4px 40px rgba(0,0,0,0.5); }
 
 /* ── BLOG ── */
 .blog-section { padding:120px 80px; background:var(--paper); }
-.blog-grid { display:flex; flex-wrap:wrap; justify-content:center; gap:1px; background:var(--border); margin-top:64px; }
-.blog-card { flex:1 1 320px; max-width:420px; background:var(--paper); overflow:hidden; transition:background var(--trans); cursor:pointer; }
+.blog-grid { display:flex; flex-direction:column; gap:1px; background:var(--border); margin-top:64px; }
+.blog-card { display:flex; flex-direction:row-reverse; background:var(--paper); overflow:hidden; transition:background var(--trans); cursor:pointer; }
 .blog-card:hover { background:var(--paper2); }
-.blog-card-img { aspect-ratio:16/9; background:var(--paper3); overflow:hidden; display:flex; align-items:center; justify-content:center; color:var(--ink3); font-size:11px; letter-spacing:2px; text-transform:uppercase; position:relative; }
+.blog-card-img { flex:0 0 42%; min-height:280px; background:var(--paper3); overflow:hidden; display:flex; align-items:center; justify-content:center; color:var(--ink3); font-size:11px; letter-spacing:2px; text-transform:uppercase; position:relative; }
 .blog-card-img img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:transform 0.5s; }
 .blog-card:hover .blog-card-img img { transform:scale(1.04); }
-.blog-card-body { padding:28px 28px 36px; }
+.blog-card-body { flex:1; padding:40px 44px; display:flex; flex-direction:column; justify-content:center; }
 .blog-card-cat { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); margin-bottom:12px; }
 .blog-card-title { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:400; color:var(--ink); margin-bottom:12px; line-height:1.3; }
 .blog-card-excerpt { font-size:13px; color:var(--ink2); line-height:1.7; margin-bottom:20px; }
@@ -569,6 +569,9 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
   .portfolio-section,.services,.pricing,.testimonials,.blog-section,.clients-section,.providers-section { padding:80px 24px; }
   .provider-logo img { height:70px; max-width:60vw; }
   .provider-desc { width:70vw; }
+  .blog-card { flex-direction:column; }
+  .blog-card-img { flex:none; aspect-ratio:16/9; min-height:0; }
+  .blog-card-body { padding:28px 24px 36px; }
   .portfolio-grid { columns:2; column-gap:2px; }
   .portfolio-item.wide { column-span:unset; }
   .countdown-bar { padding:20px; gap:20px; }
@@ -1171,7 +1174,7 @@ body::before {
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2026 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.24</span></span>
+    <span>© 2026 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.25</span></span>
     <div class="footer-bottom-links">
       <a href="privacidad.html">Privacidad</a>
       <a href="#">Términos</a>
