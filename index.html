@@ -393,6 +393,11 @@ nav.scrolled { box-shadow: 0 4px 40px rgba(0,0,0,0.5); }
 /* ── TESTIMONIALS ── */
 .testimonials { padding:120px 80px; background:var(--paper2); }
 .testimonials-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--paper2); margin-top:64px; }
+.providers-section { padding:90px 80px; background:var(--paper); }
+.providers-strip { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:48px; margin-top:56px; }
+.provider-logo { display:block; filter:grayscale(1); opacity:0.55; transition:filter 0.3s ease, opacity 0.3s ease; }
+.provider-logo:hover { filter:grayscale(0); opacity:1; }
+.provider-logo img { height:40px; width:auto; max-width:140px; object-fit:contain; display:block; }
 .testimonial-card { background:var(--paper); padding:36px; border:1px solid var(--border); margin:-1px 0 0 -1px; display:flex; flex-direction:column; transition:background var(--trans), opacity 0.4s ease, transform 0.4s ease; }
 .testimonial-card:hover { background:var(--paper2); }
 .testimonial-stars { color:var(--ink); font-size:14px; margin-bottom:20px; letter-spacing:3px; }
@@ -543,7 +548,7 @@ footer { background:var(--paper2); border-top:1px solid var(--border); padding:8
   .nav-links { display:none; }
   .hamburger { display:flex; }
   .hero { grid-template-columns:1fr; padding:140px 24px 80px; }
-  .portfolio-section,.services,.pricing,.testimonials,.blog-section,.clients-section { padding:80px 24px; }
+  .portfolio-section,.services,.pricing,.testimonials,.blog-section,.clients-section,.providers-section { padding:80px 24px; }
   .portfolio-grid { columns:2; column-gap:2px; }
   .portfolio-item.wide { column-span:unset; }
   .countdown-bar { padding:20px; gap:20px; }
@@ -715,6 +720,7 @@ body::before {
     <li><a href="#portfolio">Portfolio</a></li>
     <li><a href="#servicios">Servicios</a></li>
     <li><a href="#precios">Precios</a></li>
+    <li><a href="#proveedores">Proveedores</a></li>
     <li><a href="#blog">Blog</a></li>
     <li><a href="#contacto">Contacto</a></li>
     <li><button class="nav-cta" onclick="openWA('consultar_nav')">Consultar</button></li>
@@ -731,6 +737,7 @@ body::before {
   <a href="#portfolio" class="mobile-link">Portfolio</a>
   <a href="#servicios" class="mobile-link">Servicios</a>
   <a href="#precios" class="mobile-link">Precios</a>
+  <a href="#proveedores" class="mobile-link">Proveedores</a>
   <a href="#blog" class="mobile-link">Blog</a>
   <a href="#contacto" class="mobile-link">Contacto</a>
 </div>
@@ -993,6 +1000,17 @@ body::before {
 
 <div class="section-divider"></div>
 
+<!-- PROVEEDORES -->
+<section class="providers-section" id="proveedores" style="display:none">
+  <div style="text-align:center" class="reveal">
+    <p class="section-eyebrow center">Con quienes trabajamos</p>
+    <h2 class="section-title center">Proveedores y <em>colaboradores</em></h2>
+  </div>
+  <div class="providers-strip reveal" id="providers-strip"></div>
+</section>
+
+<div class="section-divider"></div>
+
 <!-- BLOG -->
 <section class="blog-section" id="blog">
   <div class="reveal">
@@ -1133,7 +1151,7 @@ body::before {
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2026 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.11</span></span>
+    <span>© 2026 Cristian Romero Producciones · Buenos Aires, Argentina · <span style="opacity:0.5">V1.12</span></span>
     <div class="footer-bottom-links">
       <a href="privacidad.html">Privacidad</a>
       <a href="#">Términos</a>
@@ -1157,7 +1175,7 @@ body::before {
 const CONFIG = {
   CF_URL:                   'https://web.cristian-romero-digital.workers.dev',
   LOCALE:                   'es-AR',
-  CF_KEYS:                  ["crd_portfolio","crd_testimonials","crd_posts","crd_settings","crd_content","crd_site_photos","crd_hero_video_url","crd_categories"],
+  CF_KEYS:                  ["crd_portfolio","crd_testimonials","crd_posts","crd_settings","crd_content","crd_site_photos","crd_hero_video_url","crd_categories","crd_proveedores"],
   EMAILJS_KEY:              'odUJtdh1Z0U27ZkaN',
   EMAILJS_SERVICE:          'service_35rtklk',
   EMAILJS_TEMPLATE_CONTACT: 'template_bdpe4yq',
@@ -1194,6 +1212,10 @@ const S = {
   set: (k,v) => localStorage.setItem(k, JSON.stringify(v))
 };
 
+function escAttr(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
 // ── DEFAULT DATA ──
 function initDefaults() {
   if (!S.get('crd_testimonials')) {
@@ -1222,6 +1244,7 @@ function renderAll() {
   renderPortfolioFilters();
   renderPortfolio();
   renderTestimonials();
+  renderProveedores();
   renderBlog();
   renderPricing();
   applySitePhotos();
@@ -1303,6 +1326,21 @@ let portfolioItems = [];
 let lightboxItems = [];
 let currentFilter = 'all';
 let lightboxIndex = 0;
+
+function renderProveedores() {
+  const section = document.getElementById('proveedores');
+  const strip = document.getElementById('providers-strip');
+  const items = (S.get('crd_proveedores') || [])
+    .filter(p => p.enabled)
+    .sort((a,b) => (a.order||0) - (b.order||0));
+  if (!items.length) { section.style.display = 'none'; return; }
+  section.style.display = '';
+  strip.innerHTML = items.map(p => `
+    <a class="provider-logo" href="${escAttr(p.link)}" target="_blank" rel="noopener noreferrer" title="${escAttr(p.name)}">
+      <img src="${escAttr(p.logoUrl)}" alt="${escAttr(p.name)}" loading="lazy">
+    </a>
+  `).join('');
+}
 
 function renderPortfolioFilters() {
   try {
