@@ -626,12 +626,59 @@ const PRESUPUESTO_DEFAULT = {
   paymentMethods: 'Efectivo · Transferencia bancaria · Mercado Pago'
 };
 
+const PRESUPUESTO_BOOKS_DEFAULT = {
+  packs: [
+    { number:'01', name:'Pack Gold', items:[
+        {name:'Fotografía + video', desc:'Producción profesional durante una sesión de aproximadamente 3 horas.'},
+        {name:'3 cambios de ropa', desc:'Tres looks para generar variedad visual dentro de la misma producción.'},
+        {name:'1 locación', desc:'Elegimos una locación para realizar toda la sesión.'},
+        {name:'Libro 30 × 30 cm', desc:'Libro impreso de tapa dura con selección de imágenes de alta calidad.'},
+        {name:'Mural 50 × 70 cm', desc:'Ideal para presentar en atril durante la recepción del evento.'},
+        {name:'Videoclip de ingreso', desc:'Pieza audiovisual pensada para proyectar en pantalla al ingresar al salón.'},
+        {name:'Videoclip Backstage', desc:'Resumen audiovisual con el detrás de escena del book.'}
+      ], totalPrice:'$600.000.-', photos:['','',''] },
+    { number:'02', name:'Pack Platinum', items:[
+        {name:'Todo lo incluido en Gold', desc:'Fotografía, video, tres cambios de ropa, libro, mural y videoclips.'},
+        {name:'Entrevista previa', desc:'Trabajamos junto a la quinceañera para conocer gustos, intereses y actividades.'},
+        {name:'Concepto personalizado', desc:'La producción se diseña alrededor de su personalidad para que el resultado sea único.'},
+        {name:'Moodboard previo', desc:'Armamos una propuesta visual para definir estética, referencias y dirección del book.'},
+        {name:'Locación seleccionada', desc:'Buscamos una locación especialmente elegida para llevar el concepto a la práctica.'},
+        {name:'Producción personalizada', desc:'Cada decisión estética se construye en función de la idea trabajada previamente.'},
+        {name:'Maquillaje bonificado', desc:'El servicio de maquillaje está incluido como beneficio del pack.'}
+      ], totalPrice:'$740.000.-', photos:['','',''] },
+    { number:'03', name:'Pack Black', items:[
+        {name:'Todo lo incluido en Platinum', desc:'Incluye la producción personalizada, moodboard, locación y maquillaje bonificado.'},
+        {name:'Vestuario profesional', desc:'Acceso a vestuario alquilado especialmente para la producción.'},
+        {name:'Looks completos', desc:'Vestidos, accesorios, zapatos, botas y piezas necesarias según el concepto.'},
+        {name:'Invitación digital', desc:'Invitación online personalizada para compartir con los invitados.'},
+        {name:'QR colaborativo', desc:'Los invitados pueden subir fotos y dejar mensajes desde sus celulares.'},
+        {name:'Visualización durante el evento', desc:'Las fotos pueden mostrarse en pantalla si el salón dispone del sistema.'},
+        {name:'Plataforma estilo Netflix', desc:'Espacio visual para reunir fotografías y videos del evento y del estudio.'},
+        {name:'Galería de fotos y videos', desc:'Contenido organizado para volver a verlo y compartirlo después del evento.'}
+      ], totalPrice:'$990.000.-', photos:['','',''] },
+    { number:'04', name:'', items:[], totalPrice:'', photos:['','',''] }
+  ],
+  coverPhotos: ['','','','',''],
+  sobrePhotos: ['',''],
+  estiloPhotos: ['','',''],
+  includes: ['Fotografía profesional','Producción de video','Edición y entrega digital'],
+  observations: 'Válido por 15 días desde la fecha de envío. Precios en pesos argentinos - Este presupuesto no incluye IVA - Incluye hasta 20 km de traslado y cobertura de hasta 8 horas. El servicio cuenta con pólizas de seguro para el desarrollo del evento.',
+  instagram: '@cristian.romero.producciones',
+  phone: '11 6255 7763',
+  validity: 'Válido por 15 días',
+  paymentHow: 'Para reservar y bloquear la fecha se abona una seña. Podés hacerlo en efectivo, transferencia bancaria o Mercado Pago.',
+  paymentFreeze: 'Sí. El monto abonado en concepto de seña queda congelado. El saldo restante se actualiza al momento del evento.',
+  paymentNote: 'El total del presupuesto deberá estar abonado 15 días antes del evento. Ante cualquier consulta, escribinos sin compromiso.',
+  paymentMethods: 'Efectivo · Transferencia bancaria · Mercado Pago'
+};
+
 const _PR_TIPO = new URLSearchParams(location.search).get('tipo');
-const _PR_KEY = _PR_TIPO === 'boda' ? 'crd_presupuesto_boda' : _PR_TIPO === '18ymas' ? 'crd_presupuesto_18ymas' : _PR_TIPO === 'egresados' ? 'crd_presupuesto_egresados' : 'crd_presupuesto';
+const _PR_KEY = _PR_TIPO === 'boda' ? 'crd_presupuesto_boda' : _PR_TIPO === '18ymas' ? 'crd_presupuesto_18ymas' : _PR_TIPO === 'egresados' ? 'crd_presupuesto_egresados' : _PR_TIPO === 'books' ? 'crd_presupuesto_books' : 'crd_presupuesto';
+const _PR_DEFAULT = _PR_TIPO === 'books' ? PRESUPUESTO_BOOKS_DEFAULT : PRESUPUESTO_DEFAULT;
 
 function getData() {
-  try { return JSON.parse(localStorage.getItem(_PR_KEY)) || JSON.parse(JSON.stringify(PRESUPUESTO_DEFAULT)); }
-  catch(e) { return JSON.parse(JSON.stringify(PRESUPUESTO_DEFAULT)); }
+  try { return JSON.parse(localStorage.getItem(_PR_KEY)) || JSON.parse(JSON.stringify(_PR_DEFAULT)); }
+  catch(e) { return JSON.parse(JSON.stringify(_PR_DEFAULT)); }
 }
 function saveData(data) {
   const str = JSON.stringify(data);
