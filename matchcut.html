@@ -151,21 +151,33 @@
   .cs-loc a{ color:var(--accent-2); text-decoration:none; }
   .cs-loc a:hover{ text-decoration:underline; }
 
-  .cs-timeline{ margin-top:16px; display:flex; flex-direction:column; }
-  .cs-row{ display:flex; gap:12px; padding:9px 0; border-top:1px solid var(--border); }
-  .cs-row:first-child{ border-top:none; }
-  .cs-time{
-    flex:none; width:84px; font-family:'Oswald',sans-serif; font-size:12px; font-variant-numeric:tabular-nums;
-    color:var(--text-faint); padding-top:1px;
-  }
-  .cs-content{ flex:1; font-size:13.5px; line-height:1.4; }
-  .cs-row.is-marker .cs-content{ color:var(--accent); font-family:'Oswald',sans-serif; font-size:12px; letter-spacing:.05em; text-transform:uppercase; }
-  .cs-row.is-vestuario .cs-content{ display:flex; align-items:baseline; gap:6px; flex-wrap:wrap; }
-  .cs-row.is-vestuario .cs-content::before{ content:"👗"; font-size:12px; }
-  .cs-row.is-vestuario b{ font-size:13px; }
-  .cs-row.is-vestuario span{ color:var(--text-faint); font-size:12.5px; }
-  .cs-row.is-end .cs-content{ color:var(--text); font-weight:600; }
   .cs-credit{ margin-top:14px; font-size:11.5px; color:var(--text-faint); border-top:1px solid var(--border); padding-top:10px; }
+
+  /* ---------- Timeline inline (planos intercalados con el horario) ---------- */
+  .tl-block{ margin:26px 0 4px; }
+  .tl-clock{
+    display:inline-flex; align-items:center; gap:8px; font-family:'Oswald',sans-serif; font-size:12.5px;
+    letter-spacing:.05em; text-transform:uppercase; color:var(--accent);
+    background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:6px 12px; margin-bottom:10px;
+  }
+  .tl-clock .n{ color:var(--text-faint); font-family:'Karla',sans-serif; text-transform:none; letter-spacing:0; font-weight:400; }
+
+  .tl-marker{ margin:30px 0 14px; padding-top:16px; border-top:1px solid var(--border); display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .tl-marker:first-child{ margin-top:6px; padding-top:0; border-top:none; }
+  .tl-marker .time{ font-family:'Oswald',sans-serif; font-size:12px; color:var(--text-faint); font-variant-numeric:tabular-nums; }
+  .tl-marker .label{ font-family:'Oswald',sans-serif; font-size:16px; letter-spacing:.05em; text-transform:uppercase; color:var(--accent); }
+  .tl-marker.is-end{ border-top:2px solid var(--accent); }
+  .tl-marker.is-end .label{ color:var(--text); }
+
+  .tl-vestuario{
+    margin:16px 0; background:var(--surface-2); border:1px dashed var(--border); border-radius:10px;
+    padding:9px 12px; display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; font-size:13px;
+  }
+  .tl-vestuario::before{ content:"👗"; }
+  .tl-vestuario b{ font-size:13px; }
+  .tl-vestuario span{ color:var(--text-faint); font-size:12.5px; }
+
+  .tl-continue{ font-size:12.5px; color:var(--text-faint); border:1px dashed var(--border); border-radius:8px; padding:9px 12px; margin-bottom:14px; }
 </style>
 </head>
 <body>
@@ -212,9 +224,7 @@
         </div>
       </div>
 
-      <div class="cs-timeline" id="csTimeline"></div>
-
-      <p class="cs-credit">Tomás García · CR Producciones · Buenos Aires, Argentina</p>
+      <p class="cs-credit">Tomás García · CR Producciones · Buenos Aires, Argentina — el horario completo, intercalado con cada plano, está más abajo en la lista.</p>
     </div>
   </details>
 </div>
@@ -317,41 +327,40 @@ const DATA = [
   { "loc":"Locación C: Calle Porteña (Fin)", "num":"49", "encuadre":"Plano General", "accion":"Camina como si nada por calle muy porteña (kiosco, carteles).", "matchcut":"", "equipo":"a7C (Cámara en mano).", "notas":"El gag visual. Romper el glamour. Luz natural directa, sin estilizar tanto.", "videos":[] }
 ];
 
+const DATA_BY_NUM = Object.fromEntries(DATA.map(p => [p.num, p]));
+
 const LOOSE_NOTE = { matchcut: "Torre Eiffel", ref: "T3 E1 · m0:27", note: "Referencia suelta en la planilla, sin N° de plano asignado — B-roll de apoyo si hay oportunidad." };
 
-const TIMELINE = [
-  { time:"15:00", text:"En Loc. 1", type:"marker" },
-  { time:"15:10", text:"Listos para grabar", type:"marker" },
-  { time:"15:10 a 15:25", text:"Planos (1-13)-2-3-4-5-8-9", type:"shots" },
-  { time:"15:25 a 16:00", text:"Planos 6-7-10-11-12", type:"shots" },
-  { time:"16:10 a 16:20", text:"Planos 14-15-16-17", type:"shots" },
-  { time:"17:00", text:"En Loc. 2 (Arroyo)", type:"marker" },
-  { time:"", text:"Cambio a vestuario 2", extra:"Pink con chaqueta", type:"vestuario" },
-  { time:"17:00 a 17:40", text:"Planos 24-25-26-27", type:"shots" },
-  { time:"17:40 a 17:50", text:"Planos 18-19", type:"shots" },
-  { time:"18:00 a 18:20", text:"Planos 20-21-22-23", type:"shots" },
-  { time:"18:20 a 18:30", text:"Planos 28-29", type:"shots" },
-  { time:"", text:"Cambio de vestuario", extra:"Pink sin chaqueta", type:"vestuario" },
-  { time:"18:30 a 18:40", text:"Planos 30-31-32-33-34", type:"shots" },
-  { time:"18:40 a 18:50", text:"Planos 35-36", type:"shots" },
-  { time:"18:50 a 19:00", text:"Planos (37-39)-38", type:"shots" },
-  { time:"19:00 a 19:10", text:"Planos 40-41", type:"shots" },
-  { time:"19:10 a 19:30", text:"Planos 42-43-44-45", type:"shots" },
-  { time:"", text:"Cambio a vestuario 3", extra:"Chaqueta azul · Botas fuxia", type:"vestuario" },
-  { time:"19:30 a 19:50", text:"Planos 46-47-48", type:"shots" },
-  { time:"19:50 a 20:15", text:"Plano 49", type:"shots" },
-  { time:"20:15", text:"Fin de rodaje", type:"end" }
-];
+// Secuencia del callsheet intercalada con los planos: cada "time" agrupa las
+// cards que se filman en ese bloque horario (nums = claves del campo "num" en DATA).
+const BARRIO = "Barrio Inglés (Mañana)";
+const ARROYO = "Locación B: Arroyo y Recoleta (Tarde)";
+const PORTENA = "Locación C: Calle Porteña (Fin)";
 
-function renderTimeline(){
-  const el = document.getElementById('csTimeline');
-  el.innerHTML = TIMELINE.map(row => {
-    const content = row.type === 'vestuario'
-      ? `<b>${row.text}</b><span>${row.extra}</span>`
-      : row.text;
-    return `<div class="cs-row is-${row.type}"><div class="cs-time">${row.time}</div><div class="cs-content">${content}</div></div>`;
-  }).join('');
-}
+const SEQUENCE = [
+  { type:"marker", loc:BARRIO, time:"15:00", text:"En Loc. 1 · Barrio Inglés" },
+  { type:"marker", loc:BARRIO, time:"15:10", text:"Listos para grabar" },
+  { type:"time", loc:BARRIO, time:"15:10 a 15:25", nums:["1","2","3","4","5","8","9","13"] },
+  { type:"time", loc:BARRIO, time:"15:25 a 16:00", nums:["6","7","10","11","12"] },
+  { type:"time", loc:BARRIO, time:"16:10 a 16:20", nums:["14","15","16","17"] },
+  { type:"time", loc:BARRIO, time:"sin horario fijo", nums:["M"], note:"Colchón de B-roll — grabar cuando haya un hueco en Loc. 1." },
+  { type:"marker", loc:ARROYO, time:"17:00", text:"En Loc. 2 · Arroyo y Recoleta" },
+  { type:"vestuario", loc:ARROYO, text:"Cambio a vestuario 2", extra:"Pink con chaqueta" },
+  { type:"time", loc:ARROYO, time:"17:00 a 17:40", nums:["24","25","26","27"] },
+  { type:"time", loc:ARROYO, time:"17:40 a 17:50", nums:["18","19"] },
+  { type:"time", loc:ARROYO, time:"18:00 a 18:20", nums:["20","21","22","23"] },
+  { type:"time", loc:ARROYO, time:"18:20 a 18:30", nums:["28","29"] },
+  { type:"vestuario", loc:ARROYO, text:"Cambio de vestuario", extra:"Pink sin chaqueta" },
+  { type:"time", loc:ARROYO, time:"18:30 a 18:40", nums:["30-34"] },
+  { type:"time", loc:ARROYO, time:"18:40 a 18:50", nums:["35","36"] },
+  { type:"time", loc:ARROYO, time:"18:50 a 19:00", nums:["37-39"] },
+  { type:"time", loc:ARROYO, time:"19:00 a 19:10", nums:["40","41-45"], loose:true },
+  { type:"time", loc:ARROYO, time:"19:10 a 19:30", nums:[], note:"Planos 42-43-44-45 — agrupados arriba en el plano 41-45 (bloque 19:00 a 19:10)." },
+  { type:"vestuario", loc:ARROYO, text:"Cambio a vestuario 3", extra:"Chaqueta azul · Botas fuxia" },
+  { type:"time", loc:ARROYO, time:"19:30 a 19:50", nums:["46-48"] },
+  { type:"time", loc:PORTENA, time:"19:50 a 20:15", nums:["49"] },
+  { type:"marker", loc:"", time:"20:15", text:"Fin de rodaje", end:true }
+];
 
 function thumbUrl(id){ return `https://drive.google.com/thumbnail?id=${id}&sz=w400`; }
 function embedUrl(id){ return `https://drive.google.com/file/d/${id}/preview`; }
@@ -384,21 +393,35 @@ function cardHtml(p){
   </article>`;
 }
 
+function seqItemHtml(item){
+  if (item.type === "marker"){
+    return `<div class="tl-marker ${item.end ? 'is-end' : ''}" data-loc="${item.loc}">
+      <span class="time">${item.time}</span><span class="label">${item.text}</span>
+    </div>`;
+  }
+  if (item.type === "vestuario"){
+    return `<div class="tl-vestuario" data-loc="${item.loc}"><b>${item.text}</b><span>${item.extra}</span></div>`;
+  }
+  // type === "time"
+  const cards = item.nums.map(n => DATA_BY_NUM[n]).filter(Boolean);
+  const cardsHtml = cards.map(cardHtml).join('');
+  const looseHtml = item.loose
+    ? `<div class="loose-note" data-loc="${item.loc}"><span><b>${LOOSE_NOTE.matchcut}</b> — ${LOOSE_NOTE.note}</span><span>${LOOSE_NOTE.ref}</span></div>`
+    : '';
+  const noteHtml = (item.note && cards.length === 0)
+    ? `<div class="tl-continue" data-loc="${item.loc}">${item.note}</div>`
+    : (item.note ? `<p class="notes" style="margin-top:0"><span class="icon">↳</span><span>${item.note}</span></p>` : '');
+  return `<section class="tl-block" data-loc="${item.loc}">
+    <div class="tl-clock">${item.time} <span class="n">· ${cards.length || 'sin plano nuevo'}${cards.length ? ' plano'+(cards.length>1?'s':'') : ''}</span></div>
+    ${noteHtml}
+    ${cardsHtml}
+    ${looseHtml}
+  </section>`;
+}
+
 function render(){
   const main = document.getElementById('main');
-  const locs = [...new Set(DATA.map(p => p.loc))];
-  let html = '';
-
-  locs.forEach(loc => {
-    const items = DATA.filter(p => p.loc === loc);
-    html += `<div class="loc-header" data-loc-section="${loc}"><h2>${loc}</h2><span class="count">${items.length} planos</span><hr></div>`;
-    html += items.map(cardHtml).join('');
-    if (loc === "Locación B: Arroyo y Recoleta (Tarde)") {
-      html += `<div class="loose-note" data-loc="${loc}" data-mc="true"><span><b>${LOOSE_NOTE.matchcut}</b> — ${LOOSE_NOTE.note}</span><span>${LOOSE_NOTE.ref}</span></div>`;
-    }
-  });
-
-  main.innerHTML = html;
+  main.innerHTML = SEQUENCE.map(seqItemHtml).join('');
 
   document.getElementById('statTotal').textContent = DATA.length;
   document.getElementById('statPlanos').textContent = DATA.filter(p => p.matchcut).length;
@@ -423,16 +446,20 @@ function applyFilters(){
     card.style.display = (matchesLoc && matchesQ && matchesMc) ? '' : 'none';
   });
 
-  document.querySelectorAll('.loc-header').forEach(h => {
-    const loc = h.dataset.locSection;
-    const hasVisibleCard = [...document.querySelectorAll(`.card[data-loc="${CSS.escape(loc)}"]`)].some(c => c.style.display !== 'none');
-    const showLoc = (activeLoc === 'all' || activeLoc === loc) && hasVisibleCard;
-    h.style.display = showLoc ? '' : 'none';
+  document.querySelectorAll('.tl-block').forEach(block => {
+    const loc = block.dataset.loc;
+    const locOk = activeLoc === 'all' || activeLoc === loc;
+    const cardsInBlock = [...block.querySelectorAll('.card')];
+    const show = cardsInBlock.length
+      ? (locOk && cardsInBlock.some(c => c.style.display !== 'none'))
+      : (locOk && !q && !mcOnly); // bloques nota-only (sin cards), ej. la continuación 19:10–19:30
+    block.style.display = show ? '' : 'none';
   });
 
-  document.querySelectorAll('.loose-note').forEach(n => {
-    const showLoc = activeLoc === 'all' || activeLoc === n.dataset.loc;
-    n.style.display = (showLoc && !q) ? '' : 'none';
+  document.querySelectorAll('.tl-marker, .tl-vestuario').forEach(el => {
+    const loc = el.dataset.loc;
+    const locOk = loc === '' || activeLoc === 'all' || activeLoc === loc;
+    el.style.display = (locOk && !q && !mcOnly) ? '' : 'none';
   });
 }
 
