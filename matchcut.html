@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Match Cut · Cristian Romero Producciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Karla:wght@400;500;700&display=swap">
+<style>
+  :root{
+    --bg:#131210; --surface:#1c1a17; --surface-2:#242019; --border:#37312a;
+    --text:#f3ede2; --text-dim:#a79c8a; --text-faint:#7c7263;
+    --accent:#d9ab53; --accent-2:#eac27a; --accent-ink:#241c0c;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 28px -14px rgba(0,0,0,.6);
+    --slate-bg:#0d0c0a; --slate-text:#e9dfc9;
+    color-scheme: dark;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: var(--bg); color: var(--text);
+    font-family:'Karla', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  img{ max-width:100%; }
+  h1,h2,h3,.display{ font-family:'Oswald', system-ui, sans-serif; text-transform:uppercase; letter-spacing:.04em; font-weight:600; }
+  a{ color:inherit; }
+
+  .topbar{ padding:22px 20px 16px; max-width:820px; margin:0 auto; }
+  .eyebrow{ font-family:'Oswald',sans-serif; font-size:12px; letter-spacing:.18em; color:var(--accent); text-transform:uppercase; margin:0 0 6px; }
+  .topbar h1{ font-size:clamp(28px,7vw,40px); margin:0 0 6px; letter-spacing:.02em; }
+  .topbar p{ margin:0; color:var(--text-dim); font-size:14.5px; line-height:1.5; max-width:60ch; }
+  .stats{ display:flex; gap:18px; margin-top:14px; flex-wrap:wrap; }
+  .stat{ display:flex; flex-direction:column; gap:2px; }
+  .stat b{ font-family:'Oswald',sans-serif; font-size:20px; color:var(--accent); font-variant-numeric:tabular-nums; }
+  .stat span{ font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-faint); }
+
+  .filterbar{
+    position:sticky; top:0; z-index:20;
+    background:rgba(19,18,16,.88); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border); padding:10px 20px;
+  }
+  .filterbar-inner{ max-width:820px; margin:0 auto; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .search{ flex:1 1 160px; min-width:130px; display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 12px; }
+  .search svg{ flex:none; opacity:.55; }
+  .search input{ border:0; background:transparent; outline:0; color:var(--text); font-family:'Karla',sans-serif; font-size:14px; width:100%; }
+  .search input::placeholder{ color:var(--text-faint); }
+  .chip{
+    font-family:'Oswald',sans-serif; font-size:12px; letter-spacing:.04em; text-transform:uppercase;
+    padding:8px 13px; border-radius:8px; border:1px solid var(--border);
+    background:var(--surface); color:var(--text-dim); cursor:pointer; white-space:nowrap;
+  }
+  .chip[aria-pressed="true"]{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+  .chip-mc{ display:flex; align-items:center; gap:7px; border-color:var(--accent); color:var(--accent); }
+  .chip-mc::before{ content:"🎬"; font-size:13px; }
+  .chip-mc[aria-pressed="true"]{ background:var(--accent); color:var(--accent-ink); }
+  .filter-divider{ width:1px; align-self:stretch; background:var(--border); margin:0 2px; }
+
+  main{ max-width:820px; margin:0 auto; padding:18px 20px 60px; }
+
+  .loc-header{ display:flex; align-items:baseline; gap:10px; margin:30px 0 14px; }
+  .loc-header:first-child{ margin-top:6px; }
+  .loc-header h2{ font-size:16px; margin:0; color:var(--text); }
+  .loc-header .count{ font-size:12px; color:var(--text-faint); font-family:'Karla',sans-serif; text-transform:none; letter-spacing:0; }
+  .loc-header hr{ flex:1; border:0; border-top:1px solid var(--border); }
+
+  .card{ background:var(--surface); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); padding:16px 16px 14px; margin-bottom:12px; }
+  .card.is-mc{ border-color:color-mix(in srgb, var(--accent) 45%, var(--border)); }
+  .card-top{ display:flex; gap:12px; align-items:flex-start; }
+  .plano-num{
+    flex:none; font-family:'Oswald',sans-serif; font-size:20px; font-weight:600;
+    color:var(--text-dim); background:var(--surface-2); border-radius:8px;
+    min-width:44px; height:44px; display:flex; align-items:center; justify-content:center;
+    font-variant-numeric:tabular-nums; line-height:1; padding:0 6px; text-align:center;
+  }
+  .is-mc .plano-num{ color:var(--accent-ink); background:var(--accent); }
+  .card-copy{ flex:1; min-width:0; }
+  .encuadre{ font-family:'Oswald',sans-serif; font-size:12.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); margin:2px 0 4px; display:flex; align-items:center; gap:8px; }
+  .mc-badge{ font-family:'Karla',sans-serif; text-transform:none; letter-spacing:0; font-size:10.5px; font-weight:700; color:var(--accent-ink); background:var(--accent); border-radius:5px; padding:1px 6px; }
+  .accion{ font-size:15px; line-height:1.45; margin:0; }
+
+  .slate{ margin-top:12px; background:var(--slate-bg); color:var(--slate-text); border-radius:10px; padding:10px 12px; display:flex; flex-direction:column; gap:3px; }
+  .slate .mc{ font-size:14px; font-weight:600; }
+  .slate .mc::before{ content:"🎬 "; }
+
+  .notes{ margin-top:10px; font-size:12.5px; color:var(--text-dim); line-height:1.5; display:flex; gap:6px; }
+  .notes .icon{ flex:none; }
+  .equipo{ display:inline-block; margin-top:8px; font-size:11px; letter-spacing:.03em; color:var(--text-faint); border:1px solid var(--border); border-radius:6px; padding:3px 8px; }
+
+  .videos{ margin-top:14px; display:grid; grid-template-columns:repeat(auto-fill, minmax(96px,1fr)); gap:8px; }
+  .vthumb{ position:relative; aspect-ratio:9/16; border-radius:8px; overflow:hidden; border:1px solid var(--border); background:var(--surface-2); cursor:pointer; padding:0; }
+  .vthumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .vthumb .play{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg, transparent 55%, rgba(0,0,0,.55)); }
+  .vthumb .play svg{ width:26px; height:26px; filter:drop-shadow(0 1px 3px rgba(0,0,0,.6)); }
+  .vthumb .tag{ position:absolute; left:5px; bottom:5px; right:5px; font-size:9.5px; color:#f3ede2; font-variant-numeric:tabular-nums; line-height:1.25; text-shadow:0 1px 2px rgba(0,0,0,.8); }
+  .no-video{ margin-top:14px; font-size:12.5px; color:var(--text-faint); border:1px dashed var(--border); border-radius:8px; padding:10px 12px; }
+
+  .loose-note{ margin-top:6px; font-size:12.5px; color:var(--text-dim); background:var(--surface-2); border-radius:10px; padding:10px 12px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  .loose-note b{ color:var(--text); font-weight:600; }
+
+  footer{ max-width:820px; margin:10px auto 40px; padding:0 20px; font-size:12px; color:var(--text-faint); display:flex; gap:14px; flex-wrap:wrap; }
+  footer a{ color:var(--accent); text-decoration:none; }
+  footer a:hover{ text-decoration:underline; }
+
+  .modal{ position:fixed; inset:0; z-index:100; background:rgba(6,5,4,.92); display:flex; align-items:center; justify-content:center; }
+  .modal[hidden]{ display:none; }
+  .modal-box{ width:min(94vw,420px); height:min(88vh,760px); background:#000; border-radius:12px; overflow:hidden; position:relative; }
+  .modal-box iframe{ width:100%; height:100%; border:0; }
+  .modal-close{
+    position:fixed; top:14px; right:16px; width:38px; height:38px; border-radius:50%;
+    background:rgba(255,255,255,.12); color:#fff; border:0; font-size:20px; line-height:1; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .modal-cap{ position:fixed; bottom:16px; left:0; right:0; text-align:center; color:#e9dfc9; font-size:12.5px; padding:0 20px; }
+
+  @media (max-width:420px){
+    .plano-num{ min-width:38px; height:38px; font-size:17px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <p class="eyebrow">Cristian Romero Producciones</p>
+  <h1>Shot List · Guía de Rodaje</h1>
+  <p>Los 39 planos de la planilla. Los que tienen matchcut contra la serie de referencia (Emily in Paris) traen sus videos — tocá uno para verlo antes de grabar el plano equivalente.</p>
+  <div class="stats">
+    <div class="stat"><b id="statTotal">–</b><span>Planos totales</span></div>
+    <div class="stat"><b id="statPlanos">–</b><span>Con matchcut</span></div>
+    <div class="stat"><b id="statVideos">–</b><span>Videos de referencia</span></div>
+  </div>
+</div>
+
+<div class="filterbar">
+  <div class="filterbar-inner">
+    <label class="search">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="q" type="text" placeholder="Buscar plano, acción, ref…" autocomplete="off">
+    </label>
+    <button class="chip chip-mc" id="mcToggle" aria-pressed="false">Solo Matchcut</button>
+    <span class="filter-divider"></span>
+    <button class="chip" data-loc="all" aria-pressed="true">Todas</button>
+    <button class="chip" data-loc="Barrio Inglés (Mañana)" aria-pressed="false">Barrio Inglés</button>
+    <button class="chip" data-loc="Locación B: Arroyo y Recoleta (Tarde)" aria-pressed="false">Arroyo y Recoleta</button>
+    <button class="chip" data-loc="Locación C: Calle Porteña (Fin)" aria-pressed="false">Calle Porteña</button>
+  </div>
+</div>
+
+<main id="main"></main>
+
+<footer>
+  <a href="https://docs.google.com/spreadsheets/d/17rw_H7j8q0bYB1BACPNRfpvfKiZU4u9IIU_rRZrJIXE/edit?gid=1488499904" target="_blank" rel="noopener">Shot list completo (Sheets) ↗</a>
+  <a href="https://drive.google.com/drive/folders/1l6CjflSMvIQDRPISDyu9zBv8WDT-XVo1" target="_blank" rel="noopener">Carpeta de videos (Drive) ↗</a>
+</footer>
+
+<div class="modal" id="modal" hidden>
+  <button class="modal-close" id="modalClose" aria-label="Cerrar">✕</button>
+  <div class="modal-box"><iframe id="modalFrame" src="" allow="autoplay; fullscreen" allowfullscreen></iframe></div>
+  <div class="modal-cap" id="modalCap"></div>
+</div>
+
+<script>
+const DATA = [
+  { "loc":"Barrio Inglés (Mañana)", "num":"1", "encuadre":"PPP (Primerísimo Primer Plano)", "accion":"Ojos de la quinceañera abriéndose.", "matchcut":"", "equipo":"a7C + Trípode. Lente cerrado (50/85mm).", "notas":"Foco a los ojos. Buscar luz suave de ventana si es en interior o luz difusa en exterior.", "videos":[] },
+  { "loc":"Barrio Inglés (Mañana)", "num":"2", "encuadre":"Plano Detalle", "accion":"Sus manos acomodando un accesorio del outfit.", "matchcut":"", "equipo":"a7C + Trípode.", "notas":"Ojo con la profundidad de campo, que el fondo quede bien desenfocado.", "videos":[] },
+  { "loc":"Barrio Inglés (Mañana)", "num":"3", "encuadre":"Plano Detalle", "accion":"Se coloca perfume.", "matchcut":"", "equipo":"a7C + Trípode.", "notas":"Movimiento delicado, cuidar que no tape su rostro.", "videos":[] },
+  { "loc":"Barrio Inglés (Mañana)", "num":"4", "encuadre":"Plano Detalle", "accion":"Se pone los anteojos de sol.", "matchcut":"", "equipo":"a7C + Trípode.", "notas":"Atención a los reflejos en los cristales (que no se vea el equipo).", "videos":[] },
+  { "loc":"Barrio Inglés (Mañana)", "num":"5", "encuadre":"Plano Detalle", "accion":"Pantalla del celular. Muestra el mapa (Paris -> Bs As).", "matchcut":"", "equipo":"a7C (Cámara en mano).", "notas":"La animación se hace en post (After Effects). Grabar la pantalla limpia, preferentemente con fondo verde en la app o cuidando los brillos.", "videos":[] },
+  { "loc":"Barrio Inglés (Mañana)", "num":"6", "encuadre":"Plano General (PG)", "accion":"La quinceañera caminando. La cámara la sigue desde atrás.",
+    "matchcut":"Emily caminando por París.", "equipo":"a7C + Gimbal. Lente angular.", "notas":"Mantener la misma distancia todo el recorrido. Mostrar bien la arquitectura del Barrio Inglés.",
+    "videos":[ {"id":"1PZWmuA-gQW9cCZUT-yDIpFdGRixuLRdG","ref":"T1 E9 · m3:20"}, {"id":"1bFY7gm3fTyhwvqInKwJIkWb-w565QWuB","ref":"T1 E6 · m20:40"}, {"id":"1nNQK4uerBZ7ceKXKBTg08Gbl68i2kDX0","ref":"T1 E10 · m30:40"} ] },
+  { "loc":"Barrio Inglés (Mañana)", "num":"7", "encuadre":"Plano General Frontal", "accion":"Ella camina hacia cámara. Sonríe.", "matchcut":"", "equipo":"a7C + Gimbal (Retro-travelling).", "notas":"Recordale que no mire fijo al lente todo el tiempo; que observe el entorno y luego tire la sonrisa.", "videos":[] },
+  { "loc":"Barrio Inglés (Mañana)", "num":"8", "encuadre":"Plano Detalle", "accion":"Zapatos caminando sobre la vereda.",
+    "matchcut":"Emily (zapatos).", "equipo":"a7C + Gimbal (Tiro bajo).", "notas":"Buscar una vereda con baldosas pintorescas o texturizadas.",
+    "videos":[ {"id":"1_yMIdFbujI-pafk8Bhd_W9xyv3IbFQRC","ref":"T2 E9 · m4:18"} ] },
+  { "loc":"Barrio Inglés (Mañana)", "num":"9", "encuadre":"Plano Detalle", "accion":"Su mano rozando una pared o reja mientras camina.", "matchcut":"", "equipo":"a7C + Gimbal o a7C mano.", "notas":"Genera mucha textura y sensación de descubrimiento.", "videos":[] },
+  { "loc":"Barrio Inglés (Mañana)", "num":"10", "encuadre":"Plano General", "accion":"Ella dobla una esquina. La cámara queda atrás.",
+    "matchcut":"Emily dobla una esquina.", "equipo":"a7C + Gimbal.", "notas":"Crucial para el Match Cut. Buscar una esquina donde la luz recorte su silueta al girar.",
+    "videos":[ {"id":"1hAucOuydBObrp9UeCavc1NJolBTsro0Y","ref":"T1 E9 · m17:17"} ] },
+  { "loc":"Barrio Inglés (Mañana)", "num":"11", "encuadre":"Gran General", "accion":"La quinceañera caminando por una calle pintoresca.", "matchcut":"", "equipo":"a7C + Gimbal.", "notas":"Dejar que el espacio respire en el cuadro.", "videos":[] },
+  { "loc":"Barrio Inglés (Mañana)", "num":"12", "encuadre":"Plano Secuencia / Paneo", "accion":"Recorremos la arquitectura de la calle lentamente.", "matchcut":"", "equipo":"a7C + Gimbal.", "notas":"Paneos muy fluidos, esto sirve para ambientar 'París'.", "videos":[] },
+  { "loc":"Barrio Inglés (Mañana)", "num":"13", "encuadre":"Primer Plano (PP)", "accion":"Observa algo fuera de cuadro. Sorpresa/Curiosidad.",
+    "matchcut":"Emily mirando París asombrada.", "equipo":"a7C. Enfoque al ojo.", "notas":"Momento de actuación. Dirigila para que la sorpresa sea sutil y elegante.",
+    "videos":[ {"id":"1pjcIDNM7xNKjxucgm3kwpMTGG9T6IxuZ","ref":"T1 E1 · m16:38"}, {"id":"1CixjfpBWB02Nl4QbYgp1Q6r90HNhOl-Z","ref":"T1 E1 · m21:51"}, {"id":"1Eed3kgsy0PF65afMd9usLysmTdJqiTv4","ref":"T1 E2 · m17:51"} ] },
+  { "loc":"Barrio Inglés (Mañana)", "num":"14", "encuadre":"Subjetiva (POV)", "accion":"Lo que ella ve (fachada, balcón, flores, bicicleta).", "matchcut":"", "equipo":"a7C.", "notas":"Elegí el elemento más parisino/europeo que encuentres en el scouting.", "videos":[] },
+  { "loc":"Barrio Inglés (Mañana)", "num":"15", "encuadre":"Plano Detalle", "accion":"Levanta el teléfono y saca una foto.",
+    "matchcut":"Emily saca una foto.", "equipo":"a7C.", "notas":"Acción rápida de 1-2 segundos para el montaje.",
+    "videos":[ {"id":"1WpH8zRDlsBWQz9Ha6hxYFkaYSfjxll7M","ref":"T1 E1 · m16:31"}, {"id":"1avxruqlJu4yCfRNjhTRNF93LqJh6D_Wb","ref":"T2 E8 · m13:55"}, {"id":"1CUI0l8dSSGIdu2ZB72A7bMsaaDm8x_0Z","ref":"T3 E3 · m0:21"} ] },
+  { "loc":"Barrio Inglés (Mañana)", "num":"16", "encuadre":"Sobre el Hombro", "accion":"Vemos la pantalla del teléfono y la foto que acaba de sacar.", "matchcut":"", "equipo":"a7C.", "notas":"Cuidar la exposición para que la pantalla no quede quemada (sobreexpuesta).", "videos":[] },
+  { "loc":"Barrio Inglés (Mañana)", "num":"17", "encuadre":"Selfie", "accion":"Ella se toma una selfie mirando al celular.", "matchcut":"", "equipo":"a7C.", "notas":"De acá salen las capturas para el “falso Instagram” en post.", "videos":[] },
+  { "loc":"Barrio Inglés (Mañana)", "num":"M", "encuadre":"Montaje (B-Roll Varios)", "accion":"Pelo al viento, anteojos, sonrisa rápida, flores, vidriera.",
+    "matchcut":"Microfragmentos de Emily.", "equipo":"a7C.", "notas":"Grabar esto como “colchón”. Te van a salvar en la edición para darle ritmo al beat de la música.",
+    "videos":[ {"id":"1IGdDRs00i1v18by_Sga36dHi5cmxErl6","ref":"T1 E5 · m23:05"} ] },
+
+  { "loc":"Locación B: Arroyo y Recoleta (Tarde)", "num":"18", "encuadre":"Gran General", "accion":"Aparece caminando por la calle Arroyo.", "matchcut":"", "equipo":"a7C + Gimbal.", "notas":"La estética cambia, más sofisticado. Aprovechar el atardecer (Golden Hour).", "videos":[] },
+  { "loc":"Locación B: Arroyo y Recoleta (Tarde)", "num":"19", "encuadre":"Travelling Lateral", "accion":"La seguimos de perfil mientras camina.", "matchcut":"", "equipo":"a7C + Gimbal.", "notas":"Mantener exactamente su misma velocidad de caminata. Fondo elegante.", "videos":[] },
+  { "loc":"Locación B: Arroyo y Recoleta (Tarde)", "num":"20", "encuadre":"Primer Plano", "accion":"Mira hacia una vidriera elegante.",
+    "matchcut":"Emily mirando vidriera.", "equipo":"a7C.", "notas":"Dirigir la mirada. Que se note el asombro por la moda.",
+    "videos":[ {"id":"1LWNt3prbSy7mWhUYpQHQkHOlBH2561Th","ref":"T1 E7 · m0:15"}, {"id":"16bBCvlKhwzDWpe7YMXLX6_TKJ5YfIJzh","ref":"T1 E9 · m17:09"}, {"id":"1H1rcRZKP66UH3vkk_YJYugzurPxhe-zU","ref":"T1 E10 · m31:00"} ] },
+  { "loc":"Locación B: Arroyo y Recoleta (Tarde)", "num":"21", "encuadre":"POV", "accion":"El interior de la vidriera elegante.", "matchcut":"", "equipo":"a7C.", "notas":"Cuidado con tu propio reflejo en el vidrio. Usar filtro polarizador si tenés.", "videos":[] },
+  { "loc":"Locación B: Arroyo y Recoleta (Tarde)", "num":"22", "encuadre":"Plano Detalle", "accion":"Su mano acercándose al vidrio.", "matchcut":"", "equipo":"a7C.", "notas":"Foco crítico en la mano.", "videos":[] },
+  { "loc":"Locación B: Arroyo y Recoleta (Tarde)", "num":"23", "encuadre":"Plano Reflejo", "accion":"La protagonista aparece reflejada en la vidriera.", "matchcut":"", "equipo":"a7C (Perfil Plano/Log).", "notas":"Plano clave. Al grabar en 8-bit con la a7C exponer muy cuidadosamente para no perder información en las sombras del reflejo.", "videos":[] },
+  { "loc":"Locación B: Arroyo y Recoleta (Tarde)", "num":"24", "encuadre":"Plano General", "accion":"Pasa frente a cafetería, se detiene, mira adentro.", "matchcut":"", "equipo":"a7C + Gimbal.", "notas":"Ver en el scouting si hay mesas afuera o si se ve lindo desde la calle.", "videos":[] },
+  { "loc":"Locación B: Arroyo y Recoleta (Tarde)", "num":"25", "encuadre":"Plano Detalle", "accion":"Una taza de café humeante.", "matchcut":"", "equipo":"a7C + Trípode.", "notas":"Se puede grabar en un rincón tranquilo, no hace falta que sea en medio de la acción.", "videos":[] },
+  { "loc":"Locación B: Arroyo y Recoleta (Tarde)", "num":"26", "encuadre":"Primer Plano", "accion":"Ella toma la taza.", "matchcut":"", "equipo":"a7C + Trípode.", "notas":"", "videos":[] },
+  { "loc":"Locación B: Arroyo y Recoleta (Tarde)", "num":"27", "encuadre":"Plano Detalle", "accion":"Toma el café y sonríe.",
+    "matchcut":"Emily tomando café.", "equipo":"a7C + Trípode.", "notas":"Match Cut directo. Replicar el ángulo exacto de la serie.",
+    "videos":[ {"id":"14jxnHX0rIB2uas7KwZeCHuEWYGCQVVee","ref":"T2 E10 · m0:27"}, {"id":"1RCIqkW015Yr8wLTUQLruH31JHf_T-Z4D","ref":"T3 E1 · m2:38"}, {"id":"190wOeTBNibq8HX9U5mKE8EyLsjwvYIaJ","ref":"T4 E1 · m1:20"} ] },
+  { "loc":"Locación B: Arroyo y Recoleta (Tarde)", "num":"28", "encuadre":"Plano General (SlowMo)", "accion":"Camina hacia cámara (Fashion Moment).",
+    "matchcut":"Emily caminando con estilo.", "equipo":"a7C a 60fps/120fps (1080p).", "notas":"Cámara lenta. Que camine con actitud de pasarela. Acá entra el tema “Just One Dance”.",
+    "videos":[ {"id":"1AsNdYwHPGC7V0vpsiUuDs2F9lUQeeobN","ref":"T2 E7 · m15:10–19:23"}, {"id":"1lnAKmseckZyuu6IlyWPypRWcVSngYh2x","ref":"T2 E7 · m15:10–19:23 (alt)"} ] },
+  { "loc":"Locación B: Arroyo y Recoleta (Tarde)", "num":"29", "encuadre":"Plano Medio (SlowMo)", "accion":"Se acomoda el pelo mientras camina.",
+    "matchcut":"Emily se acomoda el pelo.", "equipo":"a7C a 60fps (1080p).", "notas":"Viento a favor ayuda mucho acá.",
+    "videos":[ {"id":"1FgPOVtnD03pr44Vv_Krhyk0t5eNxPVRE","ref":"T2 E9 · m3:00"} ] },
+  { "loc":"Locación B: Arroyo y Recoleta (Tarde)", "num":"30-34", "encuadre":"Detalles (SlowMo)", "accion":"Zapatos, cartera, joyas, anteojos de sol.", "matchcut":"", "equipo":"a7C a 60fps (1080p).", "notas":"Agrupé estos detalles de vestuario porque se graban juntos. Hacé que desfile un poco para cada uno.", "videos":[] },
+  { "loc":"Locación B: Arroyo y Recoleta (Tarde)", "num":"35", "encuadre":"Cámara Lenta", "accion":"Camina cruzando una esquina / calle.",
+    "matchcut":"Emily cruzando la calle.", "equipo":"a7C a 60fps + Gimbal.", "notas":"Toma épica. Cuidado con el tráfico.",
+    "videos":[ {"id":"1ct1nB5f3wRHoCE8rtjkBvjmvP7nVP6L0","ref":"T1 E1 · m15:33"} ] },
+  { "loc":"Locación B: Arroyo y Recoleta (Tarde)", "num":"36", "encuadre":"Gran General", "accion":"Ella sola en la calle, la cámara se aleja (queda pequeñita).", "matchcut":"", "equipo":"a7C + Gimbal.", "notas":"Momento emocional ('La Vie En Rose'). Requiere una calle con buena perspectiva y poco auto.", "videos":[] },
+  { "loc":"Locación B: Arroyo y Recoleta (Tarde)", "num":"37-39", "encuadre":"PP/POV", "accion":"Mira hacia arriba. POV del cielo/edificios. Sonríe.",
+    "matchcut":"Emily sonriendo.", "equipo":"a7C.", "notas":"El sol pegándole en el rostro queda espectacular acá.",
+    "videos":[ {"id":"1iVo56TcB6CksAN3KFVNHnCCNq8Mqs9mb","ref":"T2 E9 · m3:00"}, {"id":"1lO0d2rOByc_LAorib4ViQDSkJABFoqYl","ref":"T3 E10 · m0:09"} ] },
+  { "loc":"Locación B: Arroyo y Recoleta (Tarde)", "num":"40", "encuadre":"Travelling", "accion":"Ella avanza a cámara (cámara retrocede).", "matchcut":"", "equipo":"a7C + Gimbal.", "notas":"Acá se funde con el B-Roll de París (Torre Eiffel, etc.).", "videos":[] },
+  { "loc":"Locación B: Arroyo y Recoleta (Tarde)", "num":"41-45", "encuadre":"General / POV", "accion":"Llega a esquina. Saca celular, abre cámara, ráfaga de fotos.", "matchcut":"", "equipo":"a7C / Celular real.", "notas":"Se puede usar el celular de ella grabando de verdad para usar ese material en el montaje final.", "videos":[] },
+  { "loc":"Locación B: Arroyo y Recoleta (Tarde)", "num":"46-48", "encuadre":"Clímax", "accion":"Caminata de espaldas. Se detiene. Gira. Mira a cámara y sonríe.",
+    "matchcut":"Emily girando y mirando a cámara.", "equipo":"a7C + Gimbal.", "notas":"El plano final. Tiene que salir perfecto. Practicar la marca de foco cuando gira.",
+    "videos":[] },
+
+  { "loc":"Locación C: Calle Porteña (Fin)", "num":"49", "encuadre":"Plano General", "accion":"Camina como si nada por calle muy porteña (kiosco, carteles).", "matchcut":"", "equipo":"a7C (Cámara en mano).", "notas":"El gag visual. Romper el glamour. Luz natural directa, sin estilizar tanto.", "videos":[] }
+];
+
+const LOOSE_NOTE = { matchcut: "Torre Eiffel", ref: "T3 E1 · m0:27", note: "Referencia suelta en la planilla, sin N° de plano asignado — B-roll de apoyo si hay oportunidad." };
+
+function thumbUrl(id){ return `https://drive.google.com/thumbnail?id=${id}&sz=w400`; }
+function embedUrl(id){ return `https://drive.google.com/file/d/${id}/preview`; }
+const playIcon = `<svg viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>`;
+
+function cardHtml(p){
+  const isMc = !!p.matchcut;
+  const videosHtml = !isMc ? '' : (p.videos.length
+    ? `<div class="videos">${p.videos.map(v => `
+        <button class="vthumb" data-id="${v.id}" data-cap="Plano ${p.num} · ${v.ref}" title="Plano ${p.num} · ${v.ref}">
+          <img src="${thumbUrl(v.id)}" alt="Ref ${v.ref}" loading="lazy">
+          <span class="play">${playIcon}</span>
+          <span class="tag">${v.ref}</span>
+        </button>`).join('')}</div>`
+    : `<div class="no-video">Sin video de referencia cargado todavía.</div>`);
+
+  return `
+  <article class="card ${isMc ? 'is-mc' : ''}" data-loc="${p.loc}" data-mc="${isMc}" data-search="${(p.num+' '+p.encuadre+' '+p.accion+' '+p.matchcut+' '+p.notas).toLowerCase()}">
+    <div class="card-top">
+      <div class="plano-num">${p.num}</div>
+      <div class="card-copy">
+        <p class="encuadre">${p.encuadre}${isMc ? '<span class="mc-badge">Matchcut</span>' : ''}</p>
+        <p class="accion">${p.accion}</p>
+      </div>
+    </div>
+    ${isMc ? `<div class="slate"><span class="mc">${p.matchcut}</span></div>` : ''}
+    ${p.notas ? `<div class="notes"><span class="icon">🗒️</span><span>${p.notas}</span></div>` : ''}
+    ${p.equipo ? `<span class="equipo">${p.equipo}</span>` : ''}
+    ${videosHtml}
+  </article>`;
+}
+
+function render(){
+  const main = document.getElementById('main');
+  const locs = [...new Set(DATA.map(p => p.loc))];
+  let html = '';
+
+  locs.forEach(loc => {
+    const items = DATA.filter(p => p.loc === loc);
+    html += `<div class="loc-header" data-loc-section="${loc}"><h2>${loc}</h2><span class="count">${items.length} planos</span><hr></div>`;
+    html += items.map(cardHtml).join('');
+    if (loc === "Locación B: Arroyo y Recoleta (Tarde)") {
+      html += `<div class="loose-note" data-loc="${loc}" data-mc="true"><span><b>${LOOSE_NOTE.matchcut}</b> — ${LOOSE_NOTE.note}</span><span>${LOOSE_NOTE.ref}</span></div>`;
+    }
+  });
+
+  main.innerHTML = html;
+
+  document.getElementById('statTotal').textContent = DATA.length;
+  document.getElementById('statPlanos').textContent = DATA.filter(p => p.matchcut).length;
+  document.getElementById('statVideos').textContent = DATA.reduce((n,p) => n + p.videos.length, 0);
+
+  main.querySelectorAll('.vthumb').forEach(btn => {
+    btn.addEventListener('click', () => openModal(btn.dataset.id, btn.dataset.cap));
+  });
+
+  applyFilters();
+}
+
+function applyFilters(){
+  const q = document.getElementById('q').value.trim().toLowerCase();
+  const activeLoc = document.querySelector('.chip[data-loc][aria-pressed="true"]').dataset.loc;
+  const mcOnly = document.getElementById('mcToggle').getAttribute('aria-pressed') === 'true';
+
+  document.querySelectorAll('.card').forEach(card => {
+    const matchesLoc = activeLoc === 'all' || card.dataset.loc === activeLoc;
+    const matchesQ = !q || card.dataset.search.includes(q);
+    const matchesMc = !mcOnly || card.dataset.mc === 'true';
+    card.style.display = (matchesLoc && matchesQ && matchesMc) ? '' : 'none';
+  });
+
+  document.querySelectorAll('.loc-header').forEach(h => {
+    const loc = h.dataset.locSection;
+    const hasVisibleCard = [...document.querySelectorAll(`.card[data-loc="${CSS.escape(loc)}"]`)].some(c => c.style.display !== 'none');
+    const showLoc = (activeLoc === 'all' || activeLoc === loc) && hasVisibleCard;
+    h.style.display = showLoc ? '' : 'none';
+  });
+
+  document.querySelectorAll('.loose-note').forEach(n => {
+    const showLoc = activeLoc === 'all' || activeLoc === n.dataset.loc;
+    n.style.display = (showLoc && !q) ? '' : 'none';
+  });
+}
+
+document.getElementById('q').addEventListener('input', applyFilters);
+document.getElementById('mcToggle').addEventListener('click', function(){
+  const pressed = this.getAttribute('aria-pressed') === 'true';
+  this.setAttribute('aria-pressed', String(!pressed));
+  applyFilters();
+});
+document.querySelectorAll('.chip[data-loc]').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.chip[data-loc]').forEach(c => c.setAttribute('aria-pressed','false'));
+    chip.setAttribute('aria-pressed','true');
+    applyFilters();
+  });
+});
+
+const modal = document.getElementById('modal');
+const modalFrame = document.getElementById('modalFrame');
+const modalCap = document.getElementById('modalCap');
+function openModal(id, cap){ modalFrame.src = embedUrl(id) + '?autoplay=1'; modalCap.textContent = cap || ''; modal.hidden = false; }
+function closeModal(){ modal.hidden = true; modalFrame.src = ''; }
+document.getElementById('modalClose').addEventListener('click', closeModal);
+modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
+
+render();
+</script>
+</body>
+</html>
