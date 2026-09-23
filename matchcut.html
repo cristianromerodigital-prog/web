@@ -97,6 +97,8 @@
 
   .card{ background:var(--surface); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); padding:16px 16px 14px; margin-bottom:12px; }
   .card.is-mc{ border-color:color-mix(in srgb, var(--accent) 45%, var(--border)); }
+  .card.is-done{ opacity:.5; }
+  .card.is-done .accion, .card.is-done .encuadre{ text-decoration:line-through; text-decoration-color:var(--text-faint); }
   .card-top{ display:flex; gap:12px; align-items:flex-start; }
   .plano-num{
     flex:none; font-family:'Oswald',sans-serif; font-size:20px; font-weight:600;
@@ -109,6 +111,7 @@
   .encuadre{ font-family:'Oswald',sans-serif; font-size:12.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); margin:2px 0 4px; display:flex; align-items:center; gap:8px; }
   .mc-badge{ font-family:'Karla',sans-serif; text-transform:none; letter-spacing:0; font-size:10.5px; font-weight:700; color:var(--accent-ink); background:var(--accent); border-radius:5px; padding:1px 6px; }
   .accion{ font-size:15px; line-height:1.45; margin:0; }
+  .card-check{ flex:none; width:24px; height:24px; margin-top:2px; accent-color:var(--accent); cursor:pointer; }
 
   .meta-row{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
   .meta-chip{
@@ -309,13 +312,14 @@ function cardHtml(p){
   </div>`;
 
   return `
-  <article class="card ${isMc ? 'is-mc' : ''}" data-loc="${p.loc}" data-mc="${isMc}" data-search="${(p.num+' '+p.encuadre+' '+p.accion+' '+p.matchcut+' '+p.notas).toLowerCase()}">
+  <article class="card ${isMc ? 'is-mc' : ''}" data-loc="${p.loc}" data-mc="${isMc}" data-num="${p.num}" data-search="${(p.num+' '+p.encuadre+' '+p.accion+' '+p.matchcut+' '+p.notas).toLowerCase()}">
     <div class="card-top">
       <div class="plano-num">${p.num}</div>
       <div class="card-copy">
         <p class="encuadre">${p.encuadre}${isMc ? '<span class="mc-badge">Matchcut</span>' : ''}</p>
         <p class="accion">${p.accion}</p>
       </div>
+      <input type="checkbox" class="card-check" title="Marcar plano ${p.num} como filmado">
     </div>
     ${metaRow}
     ${isMc ? `<div class="slate"><span class="mc">${p.matchcut}</span></div>` : ''}
@@ -399,7 +403,29 @@ function render(){
     btn.addEventListener('click', () => openModal(btn.dataset.id, btn.dataset.cap));
   });
 
+  const done = loadDone();
+  main.querySelectorAll('.card-check').forEach(cb => {
+    const num = cb.closest('.card').dataset.num;
+    cb.checked = !!done[num];
+    cb.closest('.card').classList.toggle('is-done', cb.checked);
+    cb.addEventListener('change', () => {
+      cb.closest('.card').classList.toggle('is-done', cb.checked);
+      const d = loadDone();
+      d[num] = cb.checked;
+      saveDone(d);
+    });
+  });
+
   applyFilters();
+}
+
+function loadDone(){
+  try { return JSON.parse(localStorage.getItem('matchcut_done') || '{}'); }
+  catch(e) { return {}; }
+}
+function saveDone(d){
+  try { localStorage.setItem('matchcut_done', JSON.stringify(d)); }
+  catch(e) {}
 }
 
 function applyFilters(){
