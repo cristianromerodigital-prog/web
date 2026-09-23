@@ -333,7 +333,7 @@ document.querySelectorAll('.chip[data-loc]').forEach(chip => {
 const modal = document.getElementById('modal');
 const modalFrame = document.getElementById('modalFrame');
 const modalCap = document.getElementById('modalCap');
-function openModal(id, cap){ modalFrame.src = embedUrl(id) + '?autoplay=1'; modalCap.textContent = cap || ''; modal.hidden = false; }
+function openModal(id, cap){ modalCap.textContent = cap || ''; modal.hidden = false; modalFrame.src = embedUrl(id) + '?autoplay=1'; }
 function closeModal(){ modal.hidden = true; modalFrame.src = ''; }
 document.getElementById('modalClose').addEventListener('click', closeModal);
 modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
