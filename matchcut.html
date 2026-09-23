@@ -176,6 +176,7 @@
       <input id="q" type="text" placeholder="Buscar plano, acción, ref…" autocomplete="off">
     </label>
     <button class="chip chip-mc" id="mcToggle" aria-pressed="false">Solo Matchcut</button>
+    <button class="chip" id="collapseToggle" type="button">Colapsar todo</button>
     <span class="filter-divider"></span>
     <button class="chip" data-loc="all" aria-pressed="true">Todas</button>
     <button class="chip" data-loc="Barrio Inglés (Mañana)" aria-pressed="false">Barrio Inglés</button>
@@ -442,6 +443,13 @@ document.querySelectorAll('.chip[data-loc]').forEach(chip => {
     chip.setAttribute('aria-pressed','true');
     applyFilters();
   });
+});
+
+document.getElementById('collapseToggle').addEventListener('click', function(){
+  const blocks = [...document.querySelectorAll('.tblock')];
+  const anyOpen = blocks.some(b => b.open);
+  blocks.forEach(b => { b.open = !anyOpen; });
+  this.textContent = anyOpen ? 'Expandir todo' : 'Colapsar todo';
 });
 
 const modal = document.getElementById('modal');
