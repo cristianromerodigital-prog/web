@@ -60,12 +60,6 @@
 
   main{ max-width:820px; margin:0 auto; padding:18px 20px 60px; }
 
-  .loc-header{ display:flex; align-items:baseline; gap:10px; margin:30px 0 14px; }
-  .loc-header:first-child{ margin-top:6px; }
-  .loc-header h2{ font-size:16px; margin:0; color:var(--text); }
-  .loc-header .count{ font-size:12px; color:var(--text-faint); font-family:'Karla',sans-serif; text-transform:none; letter-spacing:0; }
-  .loc-header hr{ flex:1; border:0; border-top:1px solid var(--border); }
-
   .card{ background:var(--surface); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); padding:16px 16px 14px; margin-bottom:12px; }
   .card.is-mc{ border-color:color-mix(in srgb, var(--accent) 45%, var(--border)); }
   .card-top{ display:flex; gap:12px; align-items:flex-start; }
@@ -80,6 +74,13 @@
   .encuadre{ font-family:'Oswald',sans-serif; font-size:12.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); margin:2px 0 4px; display:flex; align-items:center; gap:8px; }
   .mc-badge{ font-family:'Karla',sans-serif; text-transform:none; letter-spacing:0; font-size:10.5px; font-weight:700; color:var(--accent-ink); background:var(--accent); border-radius:5px; padding:1px 6px; }
   .accion{ font-size:15px; line-height:1.45; margin:0; }
+
+  .meta-row{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .meta-chip{
+    font-size:11px; color:var(--text-dim); background:var(--surface-2); border:1px solid var(--border);
+    border-radius:6px; padding:3px 8px; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;
+  }
+  .meta-chip b{ color:var(--text-faint); font-weight:600; }
 
   .slate{ margin-top:12px; background:var(--slate-bg); color:var(--slate-text); border-radius:10px; padding:10px 12px; display:flex; flex-direction:column; gap:3px; }
   .slate .mc{ font-size:14px; font-weight:600; }
@@ -118,66 +119,6 @@
   @media (max-width:420px){
     .plano-num{ min-width:38px; height:38px; font-size:17px; }
   }
-
-  /* ---------- Callsheet ---------- */
-  .callsheet{
-    max-width:820px; margin:0 auto; padding:0 20px 8px;
-  }
-  .cs-box{
-    background:var(--surface); border:1px solid var(--border); border-radius:14px;
-    box-shadow:var(--shadow); overflow:hidden;
-  }
-  .cs-box summary{
-    cursor:pointer; list-style:none; padding:14px 16px;
-    display:flex; align-items:center; justify-content:space-between; gap:10px;
-  }
-  .cs-box summary::-webkit-details-marker{ display:none; }
-  .cs-summary-title{ display:flex; flex-direction:column; gap:2px; }
-  .cs-summary-title b{ font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:.04em; text-transform:uppercase; }
-  .cs-summary-title span{ font-size:12px; color:var(--text-faint); }
-  .cs-chevron{ font-size:12px; color:var(--text-faint); transition:transform .2s; flex:none; }
-  .cs-box[open] .cs-chevron{ transform:rotate(180deg); }
-  .cs-body{ padding:4px 16px 16px; border-top:1px solid var(--border); }
-
-  .cs-meta{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:10px 16px; margin:14px 0; }
-  .cs-meta div{ display:flex; flex-direction:column; gap:2px; }
-  .cs-meta label{ font-family:'Oswald',sans-serif; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-faint); }
-  .cs-meta span{ font-size:13.5px; }
-
-  .cs-locs{ display:flex; flex-direction:column; gap:10px; margin:14px 0; }
-  .cs-loc{ background:var(--surface-2); border-radius:10px; padding:10px 12px; }
-  .cs-loc b{ font-family:'Oswald',sans-serif; font-size:12.5px; letter-spacing:.04em; text-transform:uppercase; color:var(--accent); }
-  .cs-loc p{ margin:4px 0 0; font-size:13px; color:var(--text-dim); line-height:1.45; }
-  .cs-loc a{ color:var(--accent-2); text-decoration:none; }
-  .cs-loc a:hover{ text-decoration:underline; }
-
-  .cs-credit{ margin-top:14px; font-size:11.5px; color:var(--text-faint); border-top:1px solid var(--border); padding-top:10px; }
-
-  /* ---------- Timeline inline (planos intercalados con el horario) ---------- */
-  .tl-block{ margin:26px 0 4px; }
-  .tl-clock{
-    display:inline-flex; align-items:center; gap:8px; font-family:'Oswald',sans-serif; font-size:12.5px;
-    letter-spacing:.05em; text-transform:uppercase; color:var(--accent);
-    background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:6px 12px; margin-bottom:10px;
-  }
-  .tl-clock .n{ color:var(--text-faint); font-family:'Karla',sans-serif; text-transform:none; letter-spacing:0; font-weight:400; }
-
-  .tl-marker{ margin:30px 0 14px; padding-top:16px; border-top:1px solid var(--border); display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
-  .tl-marker:first-child{ margin-top:6px; padding-top:0; border-top:none; }
-  .tl-marker .time{ font-family:'Oswald',sans-serif; font-size:12px; color:var(--text-faint); font-variant-numeric:tabular-nums; }
-  .tl-marker .label{ font-family:'Oswald',sans-serif; font-size:16px; letter-spacing:.05em; text-transform:uppercase; color:var(--accent); }
-  .tl-marker.is-end{ border-top:2px solid var(--accent); }
-  .tl-marker.is-end .label{ color:var(--text); }
-
-  .tl-vestuario{
-    margin:16px 0; background:var(--surface-2); border:1px dashed var(--border); border-radius:10px;
-    padding:9px 12px; display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; font-size:13px;
-  }
-  .tl-vestuario::before{ content:"👗"; }
-  .tl-vestuario b{ font-size:13px; }
-  .tl-vestuario span{ color:var(--text-faint); font-size:12.5px; }
-
-  .tl-continue{ font-size:12.5px; color:var(--text-faint); border:1px dashed var(--border); border-radius:8px; padding:9px 12px; margin-bottom:14px; }
 </style>
 </head>
 <body>
@@ -185,48 +126,12 @@
 <div class="topbar">
   <p class="eyebrow">Cristian Romero Producciones</p>
   <h1>Shot List · Guía de Rodaje</h1>
-  <p>Los 39 planos de la planilla. Los que tienen matchcut contra la serie de referencia (Emily in Paris) traen sus videos — tocá uno para verlo antes de grabar el plano equivalente.</p>
+  <p>Los 39 planos de la planilla, cada uno con su horario, locación y vestuario del día de rodaje. Los que tienen matchcut contra la serie de referencia (Emily in Paris) traen sus videos — tocá uno para verlo antes de grabar el plano equivalente.</p>
   <div class="stats">
     <div class="stat"><b id="statTotal">–</b><span>Planos totales</span></div>
     <div class="stat"><b id="statPlanos">–</b><span>Con matchcut</span></div>
     <div class="stat"><b id="statVideos">–</b><span>Videos de referencia</span></div>
   </div>
-</div>
-
-<div class="callsheet">
-  <details class="cs-box" open>
-    <summary>
-      <div class="cs-summary-title">
-        <b>Callsheet · Emily en París</b>
-        <span>Día 01 de 01 — miércoles 23/09/2026</span>
-      </div>
-      <span class="cs-chevron">▾</span>
-    </summary>
-    <div class="cs-body">
-      <div class="cs-meta">
-        <div><label>Producción</label><span>Cristian Romero Producciones</span></div>
-        <div><label>Director</label><span>Matías L.</span></div>
-        <div><label>DF</label><span>Emiliano S.</span></div>
-        <div><label>Listos para grabar</label><span>15:10</span></div>
-        <div><label>Atardecer</label><span>18:50</span></div>
-        <div><label>Fin de rodaje</label><span>20:15</span></div>
-      </div>
-
-      <div class="cs-locs">
-        <div class="cs-loc">
-          <b>Loc. 1 · Barrio Inglés</b>
-          <p><a href="https://maps.google.com/?q=Antonino+M.+Ferrari,+C1424+CABA" target="_blank" rel="noopener">Antonino M. Ferrari, C1424, Cdad. Autónoma de Buenos Aires ↗</a></p>
-        </div>
-        <div class="cs-loc">
-          <b>Loc. 2 · Recoleta</b>
-          <p><a href="https://maps.google.com/?q=Arroyo+834,+C1007AAB+CABA" target="_blank" rel="noopener">Arroyo 834, C1007AAB, Cdad. Autónoma de Buenos Aires ↗</a></p>
-          <p>Referencias cercanas: Av. Alvear · <a href="https://maps.google.com/?q=Dr.+Luis+Agote+2400,+C1119+CABA" target="_blank" rel="noopener">Dr. Luis Agote 2400, C1119 ↗</a></p>
-        </div>
-      </div>
-
-      <p class="cs-credit">Tomás García · CR Producciones · Buenos Aires, Argentina — el horario completo, intercalado con cada plano, está más abajo en la lista.</p>
-    </div>
-  </details>
 </div>
 
 <div class="filterbar">
@@ -249,6 +154,8 @@
 <footer>
   <a href="https://docs.google.com/spreadsheets/d/17rw_H7j8q0bYB1BACPNRfpvfKiZU4u9IIU_rRZrJIXE/edit?gid=1488499904" target="_blank" rel="noopener">Shot list completo (Sheets) ↗</a>
   <a href="https://drive.google.com/drive/folders/1l6CjflSMvIQDRPISDyu9zBv8WDT-XVo1" target="_blank" rel="noopener">Carpeta de videos (Drive) ↗</a>
+  <a href="https://maps.google.com/?q=Antonino+M.+Ferrari,+C1424+CABA" target="_blank" rel="noopener">Loc. 1 · Barrio Inglés (Maps) ↗</a>
+  <a href="https://maps.google.com/?q=Arroyo+834,+C1007AAB+CABA" target="_blank" rel="noopener">Loc. 2 · Arroyo y Recoleta (Maps) ↗</a>
 </footer>
 
 <div class="modal" id="modal" hidden>
@@ -327,40 +234,39 @@ const DATA = [
   { "loc":"Locación C: Calle Porteña (Fin)", "num":"49", "encuadre":"Plano General", "accion":"Camina como si nada por calle muy porteña (kiosco, carteles).", "matchcut":"", "equipo":"a7C (Cámara en mano).", "notas":"El gag visual. Romper el glamour. Luz natural directa, sin estilizar tanto.", "videos":[] }
 ];
 
-const DATA_BY_NUM = Object.fromEntries(DATA.map(p => [p.num, p]));
+const LOOSE_NOTE = { matchcut: "Torre Eiffel", ref: "T3 E1 · m0:27", note: "Referencia suelta en la planilla, sin N° de plano asignado — B-roll de apoyo si hay oportunidad, se funde con el plano 40." };
 
-const LOOSE_NOTE = { matchcut: "Torre Eiffel", ref: "T3 E1 · m0:27", note: "Referencia suelta en la planilla, sin N° de plano asignado — B-roll de apoyo si hay oportunidad." };
+// Horario, locación corta y vestuario por plano, tomados del callsheet (planilla "plan de rodaje").
+const HORARIO_BY_NUM = {
+  "1":"15:10–15:25", "2":"15:10–15:25", "3":"15:10–15:25", "4":"15:10–15:25", "5":"15:10–15:25", "8":"15:10–15:25", "9":"15:10–15:25", "13":"15:10–15:25",
+  "6":"15:25–16:00", "7":"15:25–16:00", "10":"15:25–16:00", "11":"15:25–16:00", "12":"15:25–16:00",
+  "14":"16:10–16:20", "15":"16:10–16:20", "16":"16:10–16:20", "17":"16:10–16:20",
+  "M":"sin horario fijo",
+  "24":"17:00–17:40", "25":"17:00–17:40", "26":"17:00–17:40", "27":"17:00–17:40",
+  "18":"17:40–17:50", "19":"17:40–17:50",
+  "20":"18:00–18:20", "21":"18:00–18:20", "22":"18:00–18:20", "23":"18:00–18:20",
+  "28":"18:20–18:30", "29":"18:20–18:30",
+  "30-34":"18:30–18:40",
+  "35":"18:40–18:50", "36":"18:40–18:50",
+  "37-39":"18:50–19:00",
+  "40":"19:00–19:10", "41-45":"19:00–19:30",
+  "46-48":"19:30–19:50",
+  "49":"19:50–20:15"
+};
 
-// Secuencia del callsheet intercalada con los planos: cada "time" agrupa las
-// cards que se filman en ese bloque horario (nums = claves del campo "num" en DATA).
-const BARRIO = "Barrio Inglés (Mañana)";
-const ARROYO = "Locación B: Arroyo y Recoleta (Tarde)";
-const PORTENA = "Locación C: Calle Porteña (Fin)";
+const VESTUARIO_BY_NUM = {
+  ...Object.fromEntries(["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","M"].map(n => [n, "Vestuario 1"])),
+  ...Object.fromEntries(["24","25","26","27","18","19","20","21","22","23","28","29"].map(n => [n, "Vestuario 2 · Pink con chaqueta"])),
+  ...Object.fromEntries(["30-34","35","36","37-39","40","41-45"].map(n => [n, "Vestuario 2 · Pink sin chaqueta"])),
+  ...Object.fromEntries(["46-48","49"].map(n => [n, "Vestuario 3 · Chaqueta azul · Botas fuxia"]))
+};
 
-const SEQUENCE = [
-  { type:"marker", loc:BARRIO, time:"15:00", text:"En Loc. 1 · Barrio Inglés" },
-  { type:"marker", loc:BARRIO, time:"15:10", text:"Listos para grabar" },
-  { type:"time", loc:BARRIO, time:"15:10 a 15:25", nums:["1","2","3","4","5","8","9","13"] },
-  { type:"time", loc:BARRIO, time:"15:25 a 16:00", nums:["6","7","10","11","12"] },
-  { type:"time", loc:BARRIO, time:"16:10 a 16:20", nums:["14","15","16","17"] },
-  { type:"time", loc:BARRIO, time:"sin horario fijo", nums:["M"], note:"Colchón de B-roll — grabar cuando haya un hueco en Loc. 1." },
-  { type:"marker", loc:ARROYO, time:"17:00", text:"En Loc. 2 · Arroyo y Recoleta" },
-  { type:"vestuario", loc:ARROYO, text:"Cambio a vestuario 2", extra:"Pink con chaqueta" },
-  { type:"time", loc:ARROYO, time:"17:00 a 17:40", nums:["24","25","26","27"] },
-  { type:"time", loc:ARROYO, time:"17:40 a 17:50", nums:["18","19"] },
-  { type:"time", loc:ARROYO, time:"18:00 a 18:20", nums:["20","21","22","23"] },
-  { type:"time", loc:ARROYO, time:"18:20 a 18:30", nums:["28","29"] },
-  { type:"vestuario", loc:ARROYO, text:"Cambio de vestuario", extra:"Pink sin chaqueta" },
-  { type:"time", loc:ARROYO, time:"18:30 a 18:40", nums:["30-34"] },
-  { type:"time", loc:ARROYO, time:"18:40 a 18:50", nums:["35","36"] },
-  { type:"time", loc:ARROYO, time:"18:50 a 19:00", nums:["37-39"] },
-  { type:"time", loc:ARROYO, time:"19:00 a 19:10", nums:["40","41-45"], loose:true },
-  { type:"time", loc:ARROYO, time:"19:10 a 19:30", nums:[], note:"Planos 42-43-44-45 — agrupados arriba en el plano 41-45 (bloque 19:00 a 19:10)." },
-  { type:"vestuario", loc:ARROYO, text:"Cambio a vestuario 3", extra:"Chaqueta azul · Botas fuxia" },
-  { type:"time", loc:ARROYO, time:"19:30 a 19:50", nums:["46-48"] },
-  { type:"time", loc:PORTENA, time:"19:50 a 20:15", nums:["49"] },
-  { type:"marker", loc:"", time:"20:15", text:"Fin de rodaje", end:true }
-];
+function locShort(loc){
+  if (loc.startsWith("Barrio")) return "Barrio Inglés";
+  if (loc.startsWith("Locación B")) return "Arroyo y Recoleta";
+  if (loc.startsWith("Locación C")) return "Calle Porteña";
+  return loc;
+}
 
 function thumbUrl(id){ return `https://drive.google.com/thumbnail?id=${id}&sz=w400`; }
 function embedUrl(id){ return `https://drive.google.com/file/d/${id}/preview`; }
@@ -377,6 +283,16 @@ function cardHtml(p){
         </button>`).join('')}</div>`
     : `<div class="no-video">Sin video de referencia cargado todavía.</div>`);
 
+  const metaRow = `<div class="meta-row">
+    <span class="meta-chip">🕒 <b>${HORARIO_BY_NUM[p.num] || '—'}</b></span>
+    <span class="meta-chip">📍 ${locShort(p.loc)}</span>
+    <span class="meta-chip">👗 ${VESTUARIO_BY_NUM[p.num] || '—'}</span>
+  </div>`;
+
+  const looseHtml = p.num === "40"
+    ? `<div class="loose-note"><span><b>${LOOSE_NOTE.matchcut}</b> — ${LOOSE_NOTE.note}</span><span>${LOOSE_NOTE.ref}</span></div>`
+    : '';
+
   return `
   <article class="card ${isMc ? 'is-mc' : ''}" data-loc="${p.loc}" data-mc="${isMc}" data-search="${(p.num+' '+p.encuadre+' '+p.accion+' '+p.matchcut+' '+p.notas).toLowerCase()}">
     <div class="card-top">
@@ -386,42 +302,18 @@ function cardHtml(p){
         <p class="accion">${p.accion}</p>
       </div>
     </div>
+    ${metaRow}
     ${isMc ? `<div class="slate"><span class="mc">${p.matchcut}</span></div>` : ''}
     ${p.notas ? `<div class="notes"><span class="icon">🗒️</span><span>${p.notas}</span></div>` : ''}
     ${p.equipo ? `<span class="equipo">${p.equipo}</span>` : ''}
     ${videosHtml}
-  </article>`;
-}
-
-function seqItemHtml(item){
-  if (item.type === "marker"){
-    return `<div class="tl-marker ${item.end ? 'is-end' : ''}" data-loc="${item.loc}">
-      <span class="time">${item.time}</span><span class="label">${item.text}</span>
-    </div>`;
-  }
-  if (item.type === "vestuario"){
-    return `<div class="tl-vestuario" data-loc="${item.loc}"><b>${item.text}</b><span>${item.extra}</span></div>`;
-  }
-  // type === "time"
-  const cards = item.nums.map(n => DATA_BY_NUM[n]).filter(Boolean);
-  const cardsHtml = cards.map(cardHtml).join('');
-  const looseHtml = item.loose
-    ? `<div class="loose-note" data-loc="${item.loc}"><span><b>${LOOSE_NOTE.matchcut}</b> — ${LOOSE_NOTE.note}</span><span>${LOOSE_NOTE.ref}</span></div>`
-    : '';
-  const noteHtml = (item.note && cards.length === 0)
-    ? `<div class="tl-continue" data-loc="${item.loc}">${item.note}</div>`
-    : (item.note ? `<p class="notes" style="margin-top:0"><span class="icon">↳</span><span>${item.note}</span></p>` : '');
-  return `<section class="tl-block" data-loc="${item.loc}">
-    <div class="tl-clock">${item.time} <span class="n">· ${cards.length || 'sin plano nuevo'}${cards.length ? ' plano'+(cards.length>1?'s':'') : ''}</span></div>
-    ${noteHtml}
-    ${cardsHtml}
     ${looseHtml}
-  </section>`;
+  </article>`;
 }
 
 function render(){
   const main = document.getElementById('main');
-  main.innerHTML = SEQUENCE.map(seqItemHtml).join('');
+  main.innerHTML = DATA.map(cardHtml).join('');
 
   document.getElementById('statTotal').textContent = DATA.length;
   document.getElementById('statPlanos').textContent = DATA.filter(p => p.matchcut).length;
@@ -444,22 +336,6 @@ function applyFilters(){
     const matchesQ = !q || card.dataset.search.includes(q);
     const matchesMc = !mcOnly || card.dataset.mc === 'true';
     card.style.display = (matchesLoc && matchesQ && matchesMc) ? '' : 'none';
-  });
-
-  document.querySelectorAll('.tl-block').forEach(block => {
-    const loc = block.dataset.loc;
-    const locOk = activeLoc === 'all' || activeLoc === loc;
-    const cardsInBlock = [...block.querySelectorAll('.card')];
-    const show = cardsInBlock.length
-      ? (locOk && cardsInBlock.some(c => c.style.display !== 'none'))
-      : (locOk && !q && !mcOnly); // bloques nota-only (sin cards), ej. la continuación 19:10–19:30
-    block.style.display = show ? '' : 'none';
-  });
-
-  document.querySelectorAll('.tl-marker, .tl-vestuario').forEach(el => {
-    const loc = el.dataset.loc;
-    const locOk = loc === '' || activeLoc === 'all' || activeLoc === loc;
-    el.style.display = (locOk && !q && !mcOnly) ? '' : 'none';
   });
 }
 
@@ -487,7 +363,6 @@ modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
 
 render();
-renderTimeline();
 </script>
 </body>
 </html>
