@@ -672,9 +672,12 @@ const PRESUPUESTO_BOOKS_DEFAULT = {
   paymentMethods: 'Efectivo · Transferencia bancaria · Mercado Pago'
 };
 
-const _PR_TIPO = new URLSearchParams(location.search).get('tipo');
-const _PR_KEY = _PR_TIPO === 'boda' ? 'crd_presupuesto_boda' : _PR_TIPO === '18ymas' ? 'crd_presupuesto_18ymas' : _PR_TIPO === 'egresados' ? 'crd_presupuesto_egresados' : _PR_TIPO === 'books' ? 'crd_presupuesto_books' : 'crd_presupuesto';
-const _PR_DEFAULT = _PR_TIPO === 'books' ? PRESUPUESTO_BOOKS_DEFAULT : PRESUPUESTO_DEFAULT;
+const _PR_QS = new URLSearchParams(location.search);
+const _PR_TIPO = _PR_QS.get('tipo');
+const _PR_PREMIUM = _PR_QS.get('linea') === 'premium';
+const _PR_BASE_KEY = { boda: 'crd_presupuesto_boda', '18ymas': 'crd_presupuesto_18ymas', egresados: 'crd_presupuesto_egresados', books: 'crd_presupuesto_books' }[_PR_TIPO] || 'crd_presupuesto';
+const _PR_KEY = _PR_BASE_KEY + (_PR_PREMIUM ? '_premium' : '');
+const _PR_DEFAULT = _PR_TIPO === 'books' && !_PR_PREMIUM ? PRESUPUESTO_BOOKS_DEFAULT : PRESUPUESTO_DEFAULT;
 
 function getData() {
   try { return JSON.parse(localStorage.getItem(_PR_KEY)) || JSON.parse(JSON.stringify(_PR_DEFAULT)); }

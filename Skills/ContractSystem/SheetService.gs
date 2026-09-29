@@ -324,6 +324,17 @@ function _calGet(calendarId) {
   return cal || CalendarApp.getDefaultCalendar();
 }
 
+// Normaliza IDs de CalendarApp ("xxx_R20260711@google.com") y de la API avanzada
+// ("xxx_20260811T000000Z") a la misma base, para poder deduplicar ocurrencias
+// de eventos recurrentes aunque vengan con formatos de ID distintos.
+function _baseId(gid) {
+  var s = String(gid || '');
+  var at = s.indexOf('@');
+  if (at !== -1) s = s.slice(0, at);
+  var us = s.indexOf('_');
+  return us !== -1 ? s.slice(0, us) : s;
+}
+
 function _calInicio(fecha, hora) {
   var p = fecha.split('-');
   var h = (hora || '09:00').split(':');
@@ -371,66 +382,128 @@ function deleteCalendarEvent(gcalId, calendarId) {
   return { ok: true };
 }
 
+// ID sin sufijo "@google.com": formato que acepta la API avanzada de Calendar.
+function _normId(gid) {
+  var s = String(gid || '');
+  var at = s.indexOf('@');
+  return at !== -1 ? s.slice(0, at) : s;
+}
+
+function _apiEvData(gEv) {
+  var isAllDay = !!(gEv.start && gEv.start.date);
+  var startVal = isAllDay ? gEv.start.date : (gEv.start && gEv.start.dateTime);
+  if (!startVal) return null;
+  var startDate = new Date(startVal);
+  return {
+    gcal_id: gEv.id,
+    titulo: gEv.summary || '(sin título)',
+    fecha: isAllDay ? gEv.start.date : _fmtFecha(startDate),
+    hora: isAllDay ? '' : _fmtHora(startDate),
+    lugar: gEv.location || ''
+  };
+}
+
+// CalendarApp.getEventById() devuelve también eventos borrados (papelera), por eso no sirve
+// para detectar borrados. La API avanzada sí: status 'cancelled' o 404/410 = borrado.
+// Devuelve { state: 'alive', ev } | { state: 'gone' } | { state: 'unknown' } (error transitorio: no tocar).
+function _gcalLookup(calId, gid) {
+  try {
+    var gEv = Calendar.Events.get(calId, _normId(gid));
+    if (!gEv || gEv.status === 'cancelled') return { state: 'gone' };
+    var d = _apiEvData(gEv);
+    return d ? { state: 'alive', ev: d } : { state: 'unknown' };
+  } catch (e) {
+    var msg = String(e && e.message || e);
+    if (/404|410|not found|deleted/i.test(msg)) return { state: 'gone' };
+    Logger.log('fullSync lookup error ' + gid + ': ' + msg);
+    return { state: 'unknown' };
+  }
+}
+
 function fullSyncCalendar(payload) {
-  var cal = _calGet(payload.calendarId);
+  var calId = payload.calendarId || Session.getActiveUser().getEmail() || 'primary';
   var system = payload.system || [];
   var knownExternal = payload.known_external_ids || [];
   var created = [], deleted = [], moved = [];
   var externalsNew = [], externalsUpdated = [], externalsGone = [];
-  var systemIds = {};
+  var seenKeys = {}; // baseId+fecha, para deduplicar ocurrencias recurrentes entre formatos de ID
+
+  // Eventos vivos del calendario vía API avanzada: expande todas las ocurrencias de series
+  // recurrentes dentro del rango y es la fuente de verdad de qué existe y qué se borró.
+  var hoy = new Date();
+  var desde = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
+  var hasta = new Date(hoy.getFullYear() + 2, hoy.getMonth(), 1);
+  var live = [], liveById = {}, liveByKey = {};
+  var pageToken = null;
+  do {
+    var resp = Calendar.Events.list(calId, {
+      timeMin: desde.toISOString(),
+      timeMax: hasta.toISOString(),
+      singleEvents: true,
+      maxResults: 2500,
+      pageToken: pageToken
+    });
+    (resp.items || []).forEach(function(gEv) {
+      if (gEv.status === 'cancelled') return;
+      var d = _apiEvData(gEv);
+      if (!d) return;
+      live.push(d);
+      liveById[_normId(d.gcal_id)] = d;
+      liveByKey[_baseId(d.gcal_id) + '|' + d.fecha] = d;
+    });
+    pageToken = resp.nextPageToken;
+  } while (pageToken);
+
+  // Si no está en el rango listado (movido fuera del rango, formato de ID viejo, o borrado)
+  // se confirma contra la API antes de darlo por borrado.
+  function findLive(gid, fecha) {
+    var d = liveById[_normId(gid)] || liveByKey[_baseId(gid) + '|' + fecha];
+    return d ? { state: 'alive', ev: d } : _gcalLookup(calId, gid);
+  }
 
   system.forEach(function(ev) {
     try {
       if (!ev.gcal_id) {
         var r = upsertCalendarEvent(ev, payload.calendarId);
         created.push({ key: ev.key, gcal_id: r.gcal_id });
-        systemIds[r.gcal_id] = true;
+        seenKeys[_baseId(r.gcal_id) + '|' + ev.fecha] = true;
         return;
       }
-      systemIds[ev.gcal_id] = true;
-      var gEv = null;
-      try { gEv = cal.getEventById(ev.gcal_id); } catch (e) {}
-      if (!gEv) { deleted.push(ev.key); return; }
-      var f = _fmtFecha(gEv.getStartTime());
-      var h = gEv.isAllDayEvent() ? '' : _fmtHora(gEv.getStartTime());
+      seenKeys[_baseId(ev.gcal_id) + '|' + ev.fecha] = true;
+      var found = findLive(ev.gcal_id, ev.fecha);
+      if (found.state === 'gone') { deleted.push(ev.key); return; }
+      if (found.state !== 'alive') return;
+      var f = found.ev.fecha, h = found.ev.hora;
       if (f !== ev.fecha || (h && ev.hora && h !== ev.hora)) {
         moved.push({ key: ev.key, fecha: f, hora: h || ev.hora });
       }
+      seenKeys[_baseId(found.ev.gcal_id) + '|' + f] = true;
     } catch (e) {
       Logger.log('fullSync system error ' + ev.key + ': ' + e.message);
     }
   });
 
-  var knownSet = {};
-  knownExternal.forEach(function(gid) {
-    knownSet[gid] = true;
-    var gEv = null;
-    try { gEv = cal.getEventById(gid); } catch (e) {}
-    if (!gEv) { externalsGone.push(gid); return; }
+  knownExternal.forEach(function(item) {
+    var gid = item.gcal_id, fechaConocida = item.fecha;
+    seenKeys[_baseId(gid) + '|' + fechaConocida] = true;
+    var found = findLive(gid, fechaConocida);
+    if (found.state === 'gone') { externalsGone.push(gid); return; }
+    if (found.state !== 'alive') return;
+    seenKeys[_baseId(found.ev.gcal_id) + '|' + found.ev.fecha] = true;
     externalsUpdated.push({
       gcal_id: gid,
-      titulo: gEv.getTitle(),
-      fecha: _fmtFecha(gEv.getStartTime()),
-      hora: gEv.isAllDayEvent() ? '' : _fmtHora(gEv.getStartTime()),
-      lugar: gEv.getLocation() || ''
+      titulo: found.ev.titulo,
+      fecha: found.ev.fecha,
+      hora: found.ev.hora,
+      lugar: found.ev.lugar
     });
   });
 
-  var hoy = new Date();
-  var desde = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
-  var hasta = new Date(hoy.getFullYear() + 2, hoy.getMonth(), 1);
-  var vistos = {};
-  cal.getEvents(desde, hasta).forEach(function(gEv) {
-    var gid = gEv.getId();
-    if (systemIds[gid] || knownSet[gid] || vistos[gid]) return;
-    vistos[gid] = true;
-    externalsNew.push({
-      gcal_id: gid,
-      titulo: gEv.getTitle(),
-      fecha: _fmtFecha(gEv.getStartTime()),
-      hora: gEv.isAllDayEvent() ? '' : _fmtHora(gEv.getStartTime()),
-      lugar: gEv.getLocation() || ''
-    });
+  live.forEach(function(d) {
+    var key = _baseId(d.gcal_id) + '|' + d.fecha;
+    if (seenKeys[key]) return;
+    seenKeys[key] = true;
+    externalsNew.push(d);
   });
 
   return { ok: true, created: created, deleted: deleted, moved: moved, externals_new: externalsNew, externals_updated: externalsUpdated, externals_gone: externalsGone };
