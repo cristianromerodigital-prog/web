@@ -5,3 +5,4 @@
 .crbot-launch[aria-expanded="true"] .crbot-bubble{display:none}
 
 @media(max-width:600px){html.crbot-open{overflow:hidden}}
+.crbot-more-body{overflow:hidden;-webkit-mask-image:linear-gradient(#000 70%,transparent);mask-image:linear-gradient(#000 70%,transparent)}.crbot-more-body.open{-webkit-mask-image:none;mask-image:none}.crbot-more{display:block;margin-top:8px;border:0;background:transparent;color:var(--gold);padding:6px 0;font:600 12px var(--sans);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
